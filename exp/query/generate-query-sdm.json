@@ -1,0 +1,6 @@
+{
+	"output" : "../exp/query/query-sdm.json",
+	"model" : "sdm",
+	"requested" : "1000"
+}
+

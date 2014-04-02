@@ -1,0 +1,4 @@
+{
+	"queryFile" : "../data/query/wt09.topics.queries-only",
+	"index" : "../data/index"
+}
