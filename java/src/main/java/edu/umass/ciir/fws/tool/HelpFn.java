@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.umass.ciir.fws.utility;
+package edu.umass.ciir.fws.tool;
 
 import edu.umass.ciir.fws.tool.App;
 import java.io.PrintStream;

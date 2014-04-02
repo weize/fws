@@ -1,5 +1,0 @@
-{
-	"index" : "index-path",
-	"input" : "../exp/query/wt09.topics.queries-only",
-	"output" : "../exp/query/wt09.topics.queries.sdm.param"
-}

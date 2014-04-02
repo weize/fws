@@ -23,43 +23,47 @@ public class GenerateQueryParameterFile extends AppFunction {
     public String getHelpString() {
         return "fws " + name + " <parameters>+: \n"
                 + "Parameters:\n"
-                + "  --input={filename} : input query file. Format: <qid> TAB <text>\n"
+                + "  --queryFile={filename} : input query file. Format: <qid> TAB <text>\n"
                 + "  --output={filename} \n"
                 + "  --model={filename} \n";
     }
 
     @Override
     public void run(Parameters p, PrintStream output) throws Exception {
-        assert (p.isString("input")) : "missing input file, --input";
+        assert (p.isString("queryFile")) : "missing input file, --input";
         assert (p.isString("output")) : "missing output file, --output";
         assert (p.isString("model")) : "missing --model (SDM)";
 
-        String inputFile = p.get("input", "");
+        String inputFile = p.get("queryFile", "");
         String outputFile = p.get("output", "");
         String model = p.get("model", "");
 
         Parameters queryParams = new Parameters();
-        BufferedReader reader = Utility.getReader(inputFile);
-        String line;
         
-        queryParams.put("index", "this is the index");
-        queryParams.put("query", "this is the query");
-     
-        ArrayList<Parameters> queries = new ArrayList<Parameters>();
-        while((line = reader.readLine())!= null) {
-            Query q = new Query(line);
+        
+        queryParams.put("index", p.get("index"));
+        queryParams.put("requested", p.get("requested"));
+        
+        Query [] queries = Query.loadQueryList(inputFile);
+        ArrayList<Parameters> queriesParam = new ArrayList<Parameters>();
+        for (Query q : queries) {
             Parameters queryParam = new Parameters();
+            
+            String text = q.text;
+            if (model.equalsIgnoreCase("sdm")) {
+                text = Query.toSDM(q);
+            }
             queryParam.put("number", q.id);
-            queryParam.put("text", q.text);
-            queries.add(queryParam);
+            queryParam.put("text", text);
+            queriesParam.add(queryParam);
         }
-        reader.close();
-        
-        queryParams.put("queries", queries);
+        queryParams.put("queries", queriesParam);
         
         BufferedWriter writer = Utility.getWriter(outputFile);
         writer.write(queryParams.toPrettyString());
+        writer.newLine();
         writer.close();
+        output.println("written in " + outputFile);
        
     }
 }
