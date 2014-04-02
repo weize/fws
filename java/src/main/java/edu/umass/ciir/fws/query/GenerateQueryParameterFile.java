@@ -1,26 +1,27 @@
 package edu.umass.ciir.fws.query;
 
 import edu.umass.ciir.fws.utility.Utility;
-import org.lemurproject.galago.core.tools.AppFunction;
-import org.lemurproject.galago.tupleflow.Parameters;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import org.lemurproject.galago.core.tools.AppFunction;
+import org.lemurproject.galago.tupleflow.Parameters;
 
 /**
  * Created by wkong on 4/1/14.
  */
 public class GenerateQueryParameterFile extends AppFunction {
+    private static final String name = "generate-query-params";
+    
     @Override
     public String getName() {
-        return "genQueryParamFile";
+        return name;
     }
 
     @Override
     public String getHelpString() {
-        return "fws genQueryParamFile <parameters>+: \n"
+        return "fws " + name + " <parameters>+: \n"
                 + "Parameters:\n"
                 + "  --input={filename} : input query file. Format: <qid> TAB <text>\n"
                 + "  --output={filename} \n"
