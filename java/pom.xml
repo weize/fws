@@ -11,7 +11,7 @@
     <properties>
         <galago.version>3.6-SNAPSHOT</galago.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>1.6</java.version>
+        <java.version>1.7</java.version>
     </properties>
 
     <build>

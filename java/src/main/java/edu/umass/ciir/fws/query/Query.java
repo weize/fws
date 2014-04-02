@@ -25,7 +25,7 @@ public class Query {
     }
 
     public static Query[] loadQueryList(String queryFile) throws IOException {
-        ArrayList<Query> queries = new ArrayList<Query>();
+        ArrayList<Query> queries = new ArrayList<>();
 
         BufferedReader reader = Utility.getReader(queryFile);
         String line;

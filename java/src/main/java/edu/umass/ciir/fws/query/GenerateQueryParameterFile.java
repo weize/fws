@@ -45,7 +45,7 @@ public class GenerateQueryParameterFile extends AppFunction {
         queryParams.put("requested", p.get("requested"));
         
         Query [] queries = Query.loadQueryList(inputFile);
-        ArrayList<Parameters> queriesParam = new ArrayList<Parameters>();
+        ArrayList<Parameters> queriesParam = new ArrayList<>();
         for (Query q : queries) {
             Parameters queryParam = new Parameters();
             
