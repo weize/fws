@@ -1,155 +1,455 @@
 {
   "index" : "../data/index",
   "queries" : [     {
-      "number" : "wt09-1",
-      "text" : "#sdm( obama family tree )"
+      "number" : "51",
+      "text" : "#sdm( horse hooves )"
     } ,     {
-      "number" : "wt09-2",
-      "text" : "#sdm( french lick resort and casino )"
+      "number" : "52",
+      "text" : "#sdm( avp )"
     } ,     {
-      "number" : "wt09-3",
-      "text" : "#sdm( getting organized )"
+      "number" : "53",
+      "text" : "#sdm( discovery channel store )"
     } ,     {
-      "number" : "wt09-4",
-      "text" : "#sdm( toilet )"
+      "number" : "54",
+      "text" : "#sdm( president of the united states )"
     } ,     {
-      "number" : "wt09-5",
-      "text" : "#sdm( mitchell college )"
+      "number" : "55",
+      "text" : "#sdm( iron )"
     } ,     {
-      "number" : "wt09-6",
-      "text" : "#sdm( kcs )"
+      "number" : "56",
+      "text" : "#sdm( uss yorktown charleston sc )"
     } ,     {
-      "number" : "wt09-7",
-      "text" : "#sdm( air travel information )"
+      "number" : "57",
+      "text" : "#sdm( ct jobs )"
     } ,     {
-      "number" : "wt09-8",
-      "text" : "#sdm( appraisals )"
+      "number" : "58",
+      "text" : "#sdm( penguins )"
     } ,     {
-      "number" : "wt09-9",
-      "text" : "#sdm( used car parts )"
+      "number" : "59",
+      "text" : "#sdm( how to build a fence )"
     } ,     {
-      "number" : "wt09-10",
-      "text" : "#sdm( cheap internet )"
+      "number" : "60",
+      "text" : "#sdm( bellevue )"
     } ,     {
-      "number" : "wt09-11",
-      "text" : "#sdm( gmat prep classes )"
+      "number" : "61",
+      "text" : "#sdm( worm )"
     } ,     {
-      "number" : "wt09-12",
-      "text" : "#sdm( djs )"
+      "number" : "62",
+      "text" : "#sdm( texas border patrol )"
     } ,     {
-      "number" : "wt09-13",
-      "text" : "#sdm( map )"
+      "number" : "63",
+      "text" : "#sdm( flushing )"
     } ,     {
-      "number" : "wt09-14",
-      "text" : "#sdm( dinosaurs )"
+      "number" : "64",
+      "text" : "#sdm( moths )"
     } ,     {
-      "number" : "wt09-15",
-      "text" : "#sdm( espn sports )"
+      "number" : "65",
+      "text" : "#sdm( korean language )"
     } ,     {
-      "number" : "wt09-16",
-      "text" : "#sdm( arizona game and fish )"
+      "number" : "66",
+      "text" : "#sdm( income tax return online )"
     } ,     {
-      "number" : "wt09-17",
-      "text" : "#sdm( poker tournaments )"
+      "number" : "67",
+      "text" : "#sdm( vldl levels )"
     } ,     {
-      "number" : "wt09-18",
-      "text" : "#sdm( wedding budget calculator )"
+      "number" : "68",
+      "text" : "#sdm( pvc )"
     } ,     {
-      "number" : "wt09-19",
-      "text" : "#sdm( the current )"
+      "number" : "69",
+      "text" : "#sdm( sewing instructions )"
     } ,     {
-      "number" : "wt09-20",
-      "text" : "#sdm( defender )"
+      "number" : "70",
+      "text" : "#sdm( to be or not to be that is the question )"
     } ,     {
-      "number" : "wt09-21",
-      "text" : "#sdm( volvo )"
+      "number" : "71",
+      "text" : "#sdm( living in india )"
     } ,     {
-      "number" : "wt09-22",
-      "text" : "#sdm( rick warren )"
+      "number" : "72",
+      "text" : "#sdm( the sun )"
     } ,     {
-      "number" : "wt09-23",
-      "text" : "#sdm( yahoo )"
+      "number" : "73",
+      "text" : "#sdm( neil young )"
     } ,     {
-      "number" : "wt09-24",
-      "text" : "#sdm( diversity )"
+      "number" : "74",
+      "text" : "#sdm( kiwi )"
     } ,     {
-      "number" : "wt09-25",
-      "text" : "#sdm( euclid )"
+      "number" : "75",
+      "text" : "#sdm( tornadoes )"
     } ,     {
-      "number" : "wt09-26",
-      "text" : "#sdm( lower heart rate )"
+      "number" : "76",
+      "text" : "#sdm( raised gardens )"
     } ,     {
-      "number" : "wt09-27",
-      "text" : "#sdm( starbucks )"
+      "number" : "77",
+      "text" : "#sdm( bobcat )"
     } ,     {
-      "number" : "wt09-28",
-      "text" : "#sdm( inuyasha )"
+      "number" : "78",
+      "text" : "#sdm( dieting )"
     } ,     {
-      "number" : "wt09-29",
-      "text" : "#sdm( ps 2 games )"
+      "number" : "79",
+      "text" : "#sdm( voyager )"
     } ,     {
-      "number" : "wt09-30",
-      "text" : "#sdm( diabetes education )"
+      "number" : "80",
+      "text" : "#sdm( keyboard reviews )"
     } ,     {
-      "number" : "wt09-31",
-      "text" : "#sdm( atari )"
+      "number" : "81",
+      "text" : "#sdm( afghanistan )"
     } ,     {
-      "number" : "wt09-32",
-      "text" : "#sdm( website design hosting )"
+      "number" : "82",
+      "text" : "#sdm( joints )"
     } ,     {
-      "number" : "wt09-33",
-      "text" : "#sdm( elliptical trainer )"
+      "number" : "83",
+      "text" : "#sdm( memory )"
     } ,     {
-      "number" : "wt09-34",
-      "text" : "#sdm( cell phones )"
+      "number" : "84",
+      "text" : "#sdm( continental plates )"
     } ,     {
-      "number" : "wt09-35",
-      "text" : "#sdm( hoboken )"
+      "number" : "85",
+      "text" : "#sdm( milwaukee journal sentinel )"
     } ,     {
-      "number" : "wt09-36",
-      "text" : "#sdm( gps )"
+      "number" : "86",
+      "text" : "#sdm( bart sf )"
     } ,     {
-      "number" : "wt09-37",
-      "text" : "#sdm( pampered chef )"
+      "number" : "87",
+      "text" : "#sdm( who invented music )"
     } ,     {
-      "number" : "wt09-38",
-      "text" : "#sdm( dogs for adoption )"
+      "number" : "88",
+      "text" : "#sdm( forearm pain )"
     } ,     {
-      "number" : "wt09-39",
-      "text" : "#sdm( disneyland hotel )"
+      "number" : "89",
+      "text" : "#sdm( ocd )"
     } ,     {
-      "number" : "wt09-40",
-      "text" : "#sdm( michworks )"
+      "number" : "90",
+      "text" : "#sdm( mgb )"
     } ,     {
-      "number" : "wt09-41",
-      "text" : "#sdm( orange county convention center )"
+      "number" : "91",
+      "text" : "#sdm( er tv show )"
     } ,     {
-      "number" : "wt09-42",
-      "text" : "#sdm( the music man )"
+      "number" : "92",
+      "text" : "#sdm( the wall )"
     } ,     {
-      "number" : "wt09-43",
-      "text" : "#sdm( the secret garden )"
+      "number" : "93",
+      "text" : "#sdm( raffles )"
     } ,     {
-      "number" : "wt09-44",
-      "text" : "#sdm( map of the united states )"
+      "number" : "94",
+      "text" : "#sdm( titan )"
     } ,     {
-      "number" : "wt09-45",
-      "text" : "#sdm( solar panels )"
+      "number" : "95",
+      "text" : "#sdm( earn money at home )"
     } ,     {
-      "number" : "wt09-46",
-      "text" : "#sdm( alexian brothers hospital )"
+      "number" : "96",
+      "text" : "#sdm( rice )"
     } ,     {
-      "number" : "wt09-47",
-      "text" : "#sdm( indexed annuity )"
+      "number" : "97",
+      "text" : "#sdm( south africa )"
     } ,     {
-      "number" : "wt09-48",
-      "text" : "#sdm( wilson antenna )"
+      "number" : "98",
+      "text" : "#sdm( sat )"
     } ,     {
-      "number" : "wt09-49",
-      "text" : "#sdm( flame designs )"
+      "number" : "99",
+      "text" : "#sdm( satellite )"
     } ,     {
-      "number" : "wt09-50",
-      "text" : "#sdm( dog heat )"
+      "number" : "100",
+      "text" : "#sdm( rincon puerto rico )"
+    } ,     {
+      "number" : "101",
+      "text" : "#sdm( ritz carlton lake las vegas )"
+    } ,     {
+      "number" : "102",
+      "text" : "#sdm( fickle creek farm )"
+    } ,     {
+      "number" : "103",
+      "text" : "#sdm( madam cj walker )"
+    } ,     {
+      "number" : "104",
+      "text" : "#sdm( indiana child support )"
+    } ,     {
+      "number" : "105",
+      "text" : "#sdm( sonoma county medical services )"
+    } ,     {
+      "number" : "106",
+      "text" : "#sdm( universal animal cuts reviews )"
+    } ,     {
+      "number" : "107",
+      "text" : "#sdm( cass county missouri )"
+    } ,     {
+      "number" : "108",
+      "text" : "#sdm( ralph owen brewster )"
+    } ,     {
+      "number" : "109",
+      "text" : "#sdm( mayo clinic jacksonville fl )"
+    } ,     {
+      "number" : "110",
+      "text" : "#sdm( map of brazil )"
+    } ,     {
+      "number" : "111",
+      "text" : "#sdm( lymphoma in dogs )"
+    } ,     {
+      "number" : "112",
+      "text" : "#sdm( kenmore gas water heater )"
+    } ,     {
+      "number" : "113",
+      "text" : "#sdm( hp mini 2140 )"
+    } ,     {
+      "number" : "114",
+      "text" : "#sdm( adobe indian houses )"
+    } ,     {
+      "number" : "115",
+      "text" : "#sdm( pacific northwest laboratory )"
+    } ,     {
+      "number" : "116",
+      "text" : "#sdm( california franchise tax board )"
+    } ,     {
+      "number" : "117",
+      "text" : "#sdm( dangers of asbestos )"
+    } ,     {
+      "number" : "118",
+      "text" : "#sdm( poem in your pocket day )"
+    } ,     {
+      "number" : "119",
+      "text" : "#sdm( interview thank you )"
+    } ,     {
+      "number" : "120",
+      "text" : "#sdm( tv on computer )"
+    } ,     {
+      "number" : "121",
+      "text" : "#sdm( sit and reach test )"
+    } ,     {
+      "number" : "122",
+      "text" : "#sdm( culpeper national cemetery )"
+    } ,     {
+      "number" : "123",
+      "text" : "#sdm( von willebrand disease )"
+    } ,     {
+      "number" : "124",
+      "text" : "#sdm( bowflex power pro )"
+    } ,     {
+      "number" : "125",
+      "text" : "#sdm( butter and margarine )"
+    } ,     {
+      "number" : "126",
+      "text" : "#sdm( us capitol map )"
+    } ,     {
+      "number" : "127",
+      "text" : "#sdm( dutchess county tourism )"
+    } ,     {
+      "number" : "128",
+      "text" : "#sdm( atypical squamous cells )"
+    } ,     {
+      "number" : "129",
+      "text" : "#sdm( iowa food stamp program )"
+    } ,     {
+      "number" : "130",
+      "text" : "#sdm( fact on uranus )"
+    } ,     {
+      "number" : "131",
+      "text" : "#sdm( equal opportunity employer )"
+    } ,     {
+      "number" : "132",
+      "text" : "#sdm( mothers day songs )"
+    } ,     {
+      "number" : "133",
+      "text" : "#sdm( all men are created equal )"
+    } ,     {
+      "number" : "134",
+      "text" : "#sdm( electronic skeet shoot )"
+    } ,     {
+      "number" : "135",
+      "text" : "#sdm( source of the nile )"
+    } ,     {
+      "number" : "136",
+      "text" : "#sdm( american military university )"
+    } ,     {
+      "number" : "137",
+      "text" : "#sdm( rock and gem shows )"
+    } ,     {
+      "number" : "138",
+      "text" : "#sdm( jax chemical company )"
+    } ,     {
+      "number" : "139",
+      "text" : "#sdm( rocky mountain news )"
+    } ,     {
+      "number" : "140",
+      "text" : "#sdm( east ridge high school )"
+    } ,     {
+      "number" : "141",
+      "text" : "#sdm( va dmv registration )"
+    } ,     {
+      "number" : "142",
+      "text" : "#sdm( illinois state tax )"
+    } ,     {
+      "number" : "143",
+      "text" : "#sdm( arkadelphia health club )"
+    } ,     {
+      "number" : "144",
+      "text" : "#sdm( trombone for sale )"
+    } ,     {
+      "number" : "145",
+      "text" : "#sdm( vines for shade )"
+    } ,     {
+      "number" : "146",
+      "text" : "#sdm( sherwood regional library )"
+    } ,     {
+      "number" : "147",
+      "text" : "#sdm( tangible personal property tax )"
+    } ,     {
+      "number" : "148",
+      "text" : "#sdm( martha stewart and imclone )"
+    } ,     {
+      "number" : "149",
+      "text" : "#sdm( uplift at yellowstone national park )"
+    } ,     {
+      "number" : "150",
+      "text" : "#sdm( tn highway patrol )"
+    } ,     {
+      "number" : "151",
+      "text" : "#sdm( 403b )"
+    } ,     {
+      "number" : "152",
+      "text" : "#sdm( angular cheilitis )"
+    } ,     {
+      "number" : "153",
+      "text" : "#sdm( pocono )"
+    } ,     {
+      "number" : "154",
+      "text" : "#sdm( figs )"
+    } ,     {
+      "number" : "155",
+      "text" : "#sdm( last supper painting )"
+    } ,     {
+      "number" : "156",
+      "text" : "#sdm( university of phoenix )"
+    } ,     {
+      "number" : "157",
+      "text" : "#sdm( the beatles rock band )"
+    } ,     {
+      "number" : "158",
+      "text" : "#sdm( septic system design )"
+    } ,     {
+      "number" : "159",
+      "text" : "#sdm( porterville )"
+    } ,     {
+      "number" : "160",
+      "text" : "#sdm( grilling )"
+    } ,     {
+      "number" : "161",
+      "text" : "#sdm( furniture for small spaces )"
+    } ,     {
+      "number" : "162",
+      "text" : "#sdm( dnr )"
+    } ,     {
+      "number" : "163",
+      "text" : "#sdm( arkansas )"
+    } ,     {
+      "number" : "164",
+      "text" : "#sdm( hobby stores )"
+    } ,     {
+      "number" : "165",
+      "text" : "#sdm( blue throated hummingbird )"
+    } ,     {
+      "number" : "166",
+      "text" : "#sdm( computer programming )"
+    } ,     {
+      "number" : "167",
+      "text" : "#sdm( barbados )"
+    } ,     {
+      "number" : "168",
+      "text" : "#sdm( lipoma )"
+    } ,     {
+      "number" : "169",
+      "text" : "#sdm( battles in the civil war )"
+    } ,     {
+      "number" : "170",
+      "text" : "#sdm( scooters )"
+    } ,     {
+      "number" : "171",
+      "text" : "#sdm( ron howard )"
+    } ,     {
+      "number" : "172",
+      "text" : "#sdm( becoming a paralegal )"
+    } ,     {
+      "number" : "173",
+      "text" : "#sdm( hip fractures )"
+    } ,     {
+      "number" : "174",
+      "text" : "#sdm( rock art )"
+    } ,     {
+      "number" : "175",
+      "text" : "#sdm( signs of a heartattack )"
+    } ,     {
+      "number" : "176",
+      "text" : "#sdm( weather strip )"
+    } ,     {
+      "number" : "177",
+      "text" : "#sdm( best long term care insurance )"
+    } ,     {
+      "number" : "178",
+      "text" : "#sdm( pork tenderloin )"
+    } ,     {
+      "number" : "179",
+      "text" : "#sdm( black history )"
+    } ,     {
+      "number" : "180",
+      "text" : "#sdm( newyork hotels )"
+    } ,     {
+      "number" : "181",
+      "text" : "#sdm( old coins )"
+    } ,     {
+      "number" : "182",
+      "text" : "#sdm( quit smoking )"
+    } ,     {
+      "number" : "183",
+      "text" : "#sdm( kansas city mo )"
+    } ,     {
+      "number" : "184",
+      "text" : "#sdm( civil right movement )"
+    } ,     {
+      "number" : "185",
+      "text" : "#sdm( credit report )"
+    } ,     {
+      "number" : "186",
+      "text" : "#sdm( unc )"
+    } ,     {
+      "number" : "187",
+      "text" : "#sdm( vanuatu )"
+    } ,     {
+      "number" : "188",
+      "text" : "#sdm( internet phone service )"
+    } ,     {
+      "number" : "189",
+      "text" : "#sdm( gs pay rate )"
+    } ,     {
+      "number" : "190",
+      "text" : "#sdm( brooks brothers clearance )"
+    } ,     {
+      "number" : "191",
+      "text" : "#sdm( churchill downs )"
+    } ,     {
+      "number" : "192",
+      "text" : "#sdm( condos in florida )"
+    } ,     {
+      "number" : "193",
+      "text" : "#sdm( dog clean up bags )"
+    } ,     {
+      "number" : "194",
+      "text" : "#sdm( designer dog breeds )"
+    } ,     {
+      "number" : "195",
+      "text" : "#sdm( pressure washers )"
+    } ,     {
+      "number" : "196",
+      "text" : "#sdm( sore throat )"
+    } ,     {
+      "number" : "197",
+      "text" : "#sdm( idaho state flower )"
+    } ,     {
+      "number" : "198",
+      "text" : "#sdm( indiana state fairgrounds )"
+    } ,     {
+      "number" : "199",
+      "text" : "#sdm( fybromyalgia )"
+    } ,     {
+      "number" : "200",
+      "text" : "#sdm( ontario california airport )"
     }],
-  "requested" : "1000"
+  "requested" : 1000
 }
