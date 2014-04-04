@@ -56,7 +56,7 @@ public class TupleFlowTestFn extends AppFunction {
         
         job.connect("split", "parse", ConnectionAssignmentType.Each);
         job.connect("parse", "extract", ConnectionAssignmentType.Each);
-        job.connect("extract", "write", ConnectionAssignmentType.Each);
+        job.connect("extract", "write", ConnectionAssignmentType.Combined);
         
         return job;
     }

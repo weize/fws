@@ -41,6 +41,7 @@ public class CandidateListWriter implements Processor<CandidateList>{
         }
         
         writer.write(cList.toString()+"\n");
+        last = cList;
     }
 
     @Override
