@@ -1,5 +1,6 @@
 package edu.umass.ciir.fws.query;
 
+import edu.umass.ciir.fws.types.Query;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -44,17 +45,17 @@ public class GenerateQueryParameterFile extends AppFunction {
         queryParams.put("index", p.get("index"));
         queryParams.put("requested", p.get("requested"));
         
-        Query [] queries = Query.loadQueryList(inputFile);
-        ArrayList<Parameters> queriesParam = new ArrayList<>();
+        Query [] queries = QueryFileParser.loadQueryList(inputFile);
+        ArrayList<Parameters> queriesParam = new ArrayList<Parameters>();
         for (Query q : queries) {
             Parameters queryParam = new Parameters();
             
-            String text = q.text;
+            Query newQuery = q;
             if (model.equalsIgnoreCase("sdm")) {
-                text = Query.toSDM(q);
+                newQuery = QueryProcessing.toSDMQuery(q);
             }
-            queryParam.put("number", q.id);
-            queryParam.put("text", text);
+            queryParam.put("number", newQuery.id);
+            queryParam.put("text", newQuery.text);
             queriesParam.add(queryParam);
         }
         queryParams.put("queries", queriesParam);

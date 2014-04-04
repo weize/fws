@@ -1,0 +1,8 @@
+package edu.umass.ciir.fws.types;
+
+type Query {
+	String id;
+	String text;
+	
+	order: +id;
+}

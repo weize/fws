@@ -1,12 +1,9 @@
 package edu.umass.ciir.fws.clist;
 
-import edu.umass.ciir.fws.query.*;
-import edu.umass.ciir.fws.utility.Utility;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
+import edu.umass.ciir.fws.query.QueryFileParser;
+import edu.umass.ciir.fws.types.Query;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.ArrayList;
 import org.lemurproject.galago.core.retrieval.Retrieval;
 import org.lemurproject.galago.core.retrieval.RetrievalFactory;
 import org.lemurproject.galago.core.tools.AppFunction;
@@ -51,7 +48,7 @@ public class ExtractCandidateLists extends AppFunction {
         topNum = p.get("topNum", 100);
 
         // load queries
-        queries = Query.loadQueryList(queryFile);
+        queries = QueryFileParser.loadQueryList(queryFile);
         // load index
         retrieval = RetrievalFactory.instance(p);
         
