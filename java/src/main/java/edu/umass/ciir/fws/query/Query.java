@@ -1,5 +1,6 @@
 package edu.umass.ciir.fws.query;
 
+import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,8 +11,8 @@ import java.util.ArrayList;
  */
 public class Query {
 
-    String id;
-    String text;
+    public String id;
+    public String text; // not cleaned
 
     public Query(String id, String text) {
         this.id = id;
@@ -39,6 +40,7 @@ public class Query {
     }
     
     public static String toSDM(Query q) {
-        return "#sdm( " + q.text + " )";
+        String textClean = TextProcessing.clean(q.text);
+        return "#sdm( " + textClean + " )";
     }
 }

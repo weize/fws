@@ -7,23 +7,15 @@ package edu.umass.ciir.fws.utility;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.lemurproject.galago.core.parse.Document;
+import org.lemurproject.galago.core.parse.TagTokenizer;
+import org.lemurproject.galago.tupleflow.NullProcessor;
 
 /**
  *
  * @author wkong
  */
 public class TextProcessing {
-
-    public static String clean(String text) {
-        text = text.toLowerCase();
-        // remove '
-        text = text.replaceAll("'", "");
-        text = text.replaceAll("’", "");
-        text = text.replaceAll("[^a-z0-9]", " ");
-        text = text.replaceAll("\\s+", " ");
-        text = text.trim();
-        return text;
-    }
 
     public static int CountSubstring(String fullString, String subString) {
         int lastIndex = 0;
@@ -35,6 +27,19 @@ public class TextProcessing {
             }
         }
         return count;
+    }
+
+    public static String[] tokenize(String text) {
+        TagTokenizer tokenizer = new TagTokenizer();
+        Document document = new Document();
+        document.text = text;
+        tokenizer.tokenize(document);
+        return document.terms.toArray(new String[0]);
+    }
+
+    public static String clean(String text) {
+        String[] tokens = tokenize(text);
+        return join(tokens, " ");
     }
 
     public static int countWords(String text) {
@@ -52,8 +57,8 @@ public class TextProcessing {
         }
         return sb.toString();
     }
-    
-    public static String join(Object [] list, String delimiter) {
+
+    public static String join(Object[] list, String delimiter) {
         if (list.length == 0) {
             return "";
         }
@@ -64,8 +69,8 @@ public class TextProcessing {
         }
         return sb.toString();
     }
-    
-    public static String join(int [] list, String delimiter) {
+
+    public static String join(int[] list, String delimiter) {
         if (list.length == 0) {
             return "";
         }

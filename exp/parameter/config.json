@@ -1,0 +1,7 @@
+{
+	"queryFile" : "../data/query/query",
+	"index" : "../data/index",
+	"rankedListFile" : "../exp/query/query-sdm-rank",
+	"clistDir" : "../exp/clist",
+	"topNum" : 2
+}
