@@ -4,7 +4,10 @@
  */
 package edu.umass.ciir.fws.tool;
 
+import edu.umass.ciir.fws.clist.CandidateListExtractor;
+import edu.umass.ciir.fws.clist.CandidateListWriter;
 import edu.umass.ciir.fws.query.QueryFileParser;
+import edu.umass.ciir.fws.types.CandidateList;
 import edu.umass.ciir.fws.types.Query;
 import java.io.File;
 import java.io.PrintStream;
@@ -49,7 +52,12 @@ public class TupleFlowTestFn extends AppFunction {
         job.add(getSplitStage(parameters));
         job.add(getParseStage(parameters));
         job.add(getExtractStage(parameters));
-
+        job.add(getOutputStage(parameters));
+        
+        job.connect("split", "parse", ConnectionAssignmentType.Each);
+        job.connect("parse", "extract", ConnectionAssignmentType.Each);
+        job.connect("extract", "write", ConnectionAssignmentType.Each);
+        
         return job;
     }
 
@@ -91,8 +99,23 @@ public class TupleFlowTestFn extends AppFunction {
         Stage stage = new Stage("extract");
 
         stage.addInput("praseQueries", new Query.IdOrder());
-        stage.addOutput("praseQueries", new Query.IdOrder());
+        stage.addOutput("extractCandidateLists", new CandidateList.QidDocRankListTypeItemListOrder());
+        
+        stage.add(new InputStep("praseQueries"));
+        stage.add(new Step(CandidateListExtractor.class, parameters));
+        stage.add(Utility.getSorter(new CandidateList.QidDocRankListTypeItemListOrder()));
+        stage.add(new OutputStep("extractCandidateLists"));
 
+        return stage;
+    }
+
+        private Stage getOutputStage(Parameters parameters) {
+        Stage stage = new Stage("write");
+
+        stage.addInput("extractCandidateLists", new CandidateList.QidDocRankListTypeItemListOrder());
+
+        stage.add(new InputStep("extractCandidateLists"));
+        stage.add(new Step(CandidateListWriter.class, parameters));
         return stage;
     }
 }
