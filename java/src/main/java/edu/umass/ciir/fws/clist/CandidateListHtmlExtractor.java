@@ -4,8 +4,9 @@
  */
 package edu.umass.ciir.fws.clist;
 
-import java.io.File;
+import edu.umass.ciir.fws.types.Query;
 import java.util.ArrayList;
+import java.util.List;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
@@ -36,48 +37,43 @@ public class CandidateListHtmlExtractor {
             return (tagname.equals(OL) || tagname.equals(UL) || tagname.equals(SELECT) || tagname.equals(TABLE));
         }
     }
+
     ArrayList<CandidateList> clists;
     org.jsoup.nodes.Document htmlDoc;
+    Query query;
+    Document document;
 
     public CandidateListHtmlExtractor() {
         clists = new ArrayList<>();
     }
 
-    private void extract(Document document) {
-        clists.clear();
+    public List<CandidateList> extract(Document document, Query query) {
+        this.clists.clear();
+        this.query = query;
+        this.document = document;
 
         try {
             htmlDoc = Jsoup.parse(document.html, "UTF-8");
-        } catch (Exception ex) {
+        } catch (Exception exception) {
             System.err.println("ERROR: cannot process document - " + document.name);
-            return;
+            return clists;
         }
 
-
-        // extract from ul
-        Elements es;
-        es = htmlDoc.getElementsByTag(HtmlTag.UL);
-        for (Element e : es) {
-            extractFromUOLSelect(e);
-        }
-
-        // extract from ol
-        es = htmlDoc.getElementsByTag(HtmlTag.OL);
-        for (Element e : es) {
-            extractFromUOLSelect(e);
-        }
-
-        // extract from select
-        es = htmlDoc.getElementsByTag(HtmlTag.SELECT);
-        for (Element e : es) {
-            extractFromUOLSelect(e);
+        // extract from ul, ol, select tags
+        String[] tags = {HtmlTag.UL, HtmlTag.OL, HtmlTag.SELECT};
+        for (String tag : tags) {
+            Elements es = htmlDoc.getElementsByTag(tag);
+            for (Element e : es) {
+                extractFromUOLSelect(e);
+            }
         }
 
         // extract from table
-        es = htmlDoc.getElementsByTag(HtmlTag.TABLE);
+        Elements es = htmlDoc.getElementsByTag(HtmlTag.TABLE);
         for (Element e : es) {
             extractFromTABLE(e);
         }
+        return clists;
     }
 
     /**
@@ -88,7 +84,7 @@ public class CandidateListHtmlExtractor {
     private void extractFromUOLSelect(Element e) {
         Elements children = e.children();
         String type = e.tagName().toLowerCase();
-        ArrayList<String> keyphrases = new ArrayList<>();
+        ArrayList<String> items = new ArrayList<>();
 
         String childType = type.equals(HtmlTag.SELECT) ? HtmlTag.OPTION : HtmlTag.LI;
 
@@ -98,14 +94,11 @@ public class CandidateListHtmlExtractor {
                 if (text.length() == 0) {
                     continue;
                 }
-                keyphrases.add(text);
+                items.add(text);
             }
         }
 
-        AspectHtmlList list = new AspectHtmlList(type, qid, docid, keyphrases.toArray(new String[0]));
-        if (list.valid()) {
-            lists.add(list);
-        }
+        addCandidateList(type, items.toArray(new String[0]));
     }
 
     /**
@@ -152,12 +145,81 @@ public class CandidateListHtmlExtractor {
         }
         return text.toString();
     }
-    
-    
+
+    /**
+     * *
+     * removes "|", because it's delimiter for itemlist
+     *
+     * @param text
+     * @return
+     */
     private String cleanText(String text) {
         text = text.replace('\u00a0', ' ');
         text = text.replace('|', ' ');
         text = text.replaceAll("\\s+", " ");
         return text.trim();
+    }
+
+    /**
+     * extract lists from table
+     *
+     * @param e
+     */
+    private void extractFromTABLE(Element e) {
+        ArrayList<ArrayList<String>> table = new ArrayList<ArrayList<String>>();
+        for (Element tr : e.getElementsByTag(HtmlTag.TR)) {
+            // not: <table> <tr>
+            // not: <table> <tbody> <tr>
+            if (!(tr.parent().equals(e) || (tr.parent().parent().equals(e)
+                    && tr.parent().tagName().equalsIgnoreCase(HtmlTag.TBODY)))) {
+                continue;
+            }
+
+            ArrayList<String> row = new ArrayList<String>();
+            for (Element td : tr.children()) {
+                if (td.tagName().equalsIgnoreCase(HtmlTag.TD)) {
+                    String text = cleanText(this.getHeadingText(td));
+                    if (text.length() == 0) {
+                        continue;
+                    }
+                    row.add(text);
+                }
+            }
+            if (row.size() > 0) {
+                table.add(row);
+            }
+        }
+
+        // row
+        int maxw = 0;
+        for (ArrayList<String> row : table) {
+            String type = HtmlTag.TR;
+            addCandidateList(type, row.toArray(new String[0]));
+            if (row.size() > maxw) {
+                maxw = row.size();
+            }
+        }
+
+        // col
+        for (int i = 0; i < maxw; i++) {
+            String type = HtmlTag.TD;
+            ArrayList<String> items = new ArrayList<String>();
+
+            for (ArrayList<String> row : table) {
+                if (row.size() > i) {
+                    items.add(row.get(i));
+                }
+            }
+
+            addCandidateList(type, items.toArray(new String[0]));
+        }
+    }
+
+    private void addCandidateList(String type, String[] items) {
+        CandidateList clist = new CandidateList(query.id, document.rank, type,
+                items);
+        if (clist.valid()) {
+            clists.add(clist);
+        }
     }
 }

@@ -29,25 +29,23 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 public class CandidateListExtractor extends StandardStep<Query, CandidateList> {
 
     HashMap<String, List<Document>> querySetDocuments;
+    CandidateListHtmlExtractor cListHtmlExtractor;
 
     public CandidateListExtractor(TupleFlowParameters parameters) throws Exception {
         Parameters p = parameters.getJSON();
         // load ranked lists for all queries        
-        loadRankedDocuments(p);       
+        loadRankedDocuments(p); 
+        cListHtmlExtractor = new CandidateListHtmlExtractor();
     }
 
     @Override
     public void process(Query query) throws IOException {
         List<Document> documents = querySetDocuments.get(query.id);
-        
-        
         for(Document doc: documents) {
-            //String qid, long docRank, String listType, String itemList
-            CandidateList cList = new CandidateList(query.id, doc.rank, "test", doc.name);
-            processor.process(cList);
-            cList = new CandidateList(query.id, doc.rank, "test2", doc.name);
-            processor.process(cList);
-            
+            List<edu.umass.ciir.fws.clist.CandidateList> lists = cListHtmlExtractor.extract(doc, query);
+            for(edu.umass.ciir.fws.clist.CandidateList list : lists) {
+                processor.process(list);
+            }
         }
     }
 
