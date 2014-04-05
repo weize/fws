@@ -26,15 +26,10 @@ public class QueryFileParser extends StandardStep<FileName, Query> {
 
     @Override
     public void process(FileName fileName) throws IOException {
-        BufferedReader reader = Utility.getReader(fileName.filename);
-        String line;
-        while ((line = reader.readLine()) != null) {
-            String[] fields = line.split("\t");
-            String qid = fields[0];
-            String text = fields[1];
-            processor.process(new Query(qid, text));
+        Query [] queries = QueryFileParser.loadQueryList(fileName.filename);
+        for(Query q : queries) {
+            processor.process(q);
         }
-        reader.close();
     }
 
     public static Query[] loadQueryList(String inputFile) throws IOException {

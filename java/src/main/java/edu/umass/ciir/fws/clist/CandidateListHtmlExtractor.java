@@ -4,6 +4,7 @@
  */
 package edu.umass.ciir.fws.clist;
 
+import edu.umass.ciir.fws.crawl.Document;
 import edu.umass.ciir.fws.types.Query;
 import java.util.ArrayList;
 import java.util.List;
