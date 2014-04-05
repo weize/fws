@@ -14,7 +14,7 @@ import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
 /**
- *
+ * Will be used in CandidateListExtractor (Tupleflow App)
  * @author wkong
  */
 public class CandidateListHtmlExtractor {
