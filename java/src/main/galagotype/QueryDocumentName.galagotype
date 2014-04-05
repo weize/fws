@@ -1,0 +1,8 @@
+package edu.umass.ciir.fws.types;
+
+type QueryDocumentName {
+        String qid;
+	String docName;
+
+	order: +qid +docName;
+}

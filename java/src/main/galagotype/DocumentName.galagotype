@@ -1,7 +1,0 @@
-package edu.umass.ciir.fws.types;
-
-type DocumentName {
-	String name;
-
-	order: +name;
-}
