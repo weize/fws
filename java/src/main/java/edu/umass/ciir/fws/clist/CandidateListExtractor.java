@@ -24,7 +24,7 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
  * @author wkong
  */
 @Verified
-@InputClass(className = "edu.umass.ciir.fws.types.Query", order = {"+id"})
+@InputClass(className = "edu.umass.ciir.fws.types.Query")
 @OutputClass(className = "edu.umass.ciir.fws.types.CandidateList")
 public class CandidateListExtractor extends StandardStep<Query, CandidateList> {
 

@@ -1,5 +1,6 @@
-package edu.umass.ciir.fws.clist;
+package edu.umass.ciir.fws.nlp;
 
+import edu.umass.ciir.fws.clist.*;
 import edu.umass.ciir.fws.query.QueryFileParser;
 import edu.umass.ciir.fws.types.CandidateList;
 import edu.umass.ciir.fws.types.Query;
@@ -24,9 +25,9 @@ import org.lemurproject.galago.tupleflow.types.FileName;
  *
  * @author wkong
  */
-public class ExtractCandidateLists extends AppFunction {
+public class ParseDocuments extends AppFunction {
 
-    private static final String name = "extract-candidate-lists";
+    private static final String name = "parse-documents";
 
     @Override
     public String getName() {
@@ -55,9 +56,14 @@ public class ExtractCandidateLists extends AppFunction {
         Job job = new Job();
 
         job.add(getSplitStage(parameters));
-        job.add(getProcessStage(parameters));
+        job.add(getParseStage(parameters));
+        job.add(getExtractStage(parameters));
+        job.add(getOutputStage(parameters));
         
         job.connect("split", "process", ConnectionAssignmentType.Each);
+        job.connect("parse", "extract", ConnectionAssignmentType.Each);
+        job.connect("extract", "write", ConnectionAssignmentType.Combined);
+        
         
         return job;
     }
@@ -65,7 +71,7 @@ public class ExtractCandidateLists extends AppFunction {
     private Stage getSplitStage(Parameters parameter) {
         Stage stage = new Stage("split");
 
-        stage.addOutput("praseQueries", new Query.IdOrder());
+        stage.addOutput("splitFiles", new FileName.FilenameOrder());
 
         List<String> inputFiles = parameter.getAsList("queryFile");
 
@@ -77,6 +83,18 @@ public class ExtractCandidateLists extends AppFunction {
 
         stage.add(new Step(FileSource.class, p));
         stage.add(Utility.getSorter(new FileName.FilenameOrder()));
+        stage.add(new OutputStep("splitFiles"));
+
+        return stage;
+    }
+
+    private Stage getParseStage(Parameters parameters) {
+        Stage stage = new Stage("parse");
+
+        stage.addInput("splitFiles", new FileName.FilenameOrder());
+        stage.addOutput("praseQueries", new Query.IdOrder());
+        
+        stage.add(new InputStep("splitFiles"));
         stage.add(new Step(QueryFileParser.class));
         stage.add(Utility.getSorter(new Query.IdOrder()));
         stage.add(new OutputStep("praseQueries"));
@@ -84,15 +102,27 @@ public class ExtractCandidateLists extends AppFunction {
         return stage;
     }
 
-    private Stage getProcessStage(Parameters parameters) {
-        Stage stage = new Stage("process");
+    private Stage getExtractStage(Parameters parameters) {
+        Stage stage = new Stage("extract");
 
         stage.addInput("praseQueries", new Query.IdOrder());
+        stage.addOutput("extractCandidateLists", new CandidateList.QidDocRankListTypeItemListOrder());
         
         stage.add(new InputStep("praseQueries"));
         stage.add(new Step(CandidateListExtractor.class, parameters));
-        stage.add(new Step(CandidateListWriter.class, parameters));
+        stage.add(Utility.getSorter(new CandidateList.QidDocRankListTypeItemListOrder()));
+        stage.add(new OutputStep("extractCandidateLists"));
 
+        return stage;
+    }
+
+        private Stage getOutputStage(Parameters parameters) {
+        Stage stage = new Stage("write");
+
+        stage.addInput("extractCandidateLists", new CandidateList.QidDocRankListTypeItemListOrder());
+
+        stage.add(new InputStep("extractCandidateLists"));
+        stage.add(new Step(CandidateListWriter.class, parameters));
         return stage;
     }
 }

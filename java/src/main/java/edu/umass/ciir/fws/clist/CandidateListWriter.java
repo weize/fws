@@ -19,7 +19,7 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
  * @author wkong
  */
 @Verified
-@InputClass(className = "edu.umass.ciir.fws.types.CandidateList", order = {"+qid", "+docRank", "+listType", "+itemList"})
+@InputClass(className = "edu.umass.ciir.fws.types.CandidateList")
 public class CandidateListWriter implements Processor<CandidateList> {
 
     String clistDir;
