@@ -20,12 +20,12 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
  */
 @Verified
 @InputClass(className = "edu.umass.ciir.fws.types.CandidateList", order = {"+qid", "+docRank", "+listType", "+itemList"})
-public class CandidateListWriter implements Processor<CandidateList>{
-    
+public class CandidateListWriter implements Processor<CandidateList> {
+
     String clistDir;
     CandidateList last = null;
     BufferedWriter writer;
-    
+
     public CandidateListWriter(TupleFlowParameters p) throws IOException {
         clistDir = p.getJSON().getString("clistDir");
     }
@@ -39,8 +39,9 @@ public class CandidateListWriter implements Processor<CandidateList>{
             writer.close();
             createFile(cList.qid);
         }
-        
-        writer.write(cList.toString()+"\n");
+
+        writer.write(String.format("%s\t%d\t%s\t%s\n",
+                cList.qid, cList.docRank, cList.listType, cList.itemList));
         last = cList;
     }
 
@@ -55,5 +56,5 @@ public class CandidateListWriter implements Processor<CandidateList>{
         String file = clistDir + File.separator + qid + ".clist";
         writer = Utility.getWriter(file);
     }
-    
+
 }
