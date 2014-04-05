@@ -5,7 +5,7 @@
 package edu.umass.ciir.fws.nlp;
 
 import edu.umass.ciir.fws.query.QueryFileParser;
-import edu.umass.ciir.fws.types.DocumentName;
+import edu.umass.ciir.fws.types.QueryDocumentName;
 import edu.umass.ciir.fws.types.Query;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
@@ -32,7 +32,7 @@ import org.lemurproject.galago.tupleflow.types.FileName;
 @Verified
 @InputClass(className = "org.lemurproject.galago.tupleflow.types.FileName")
 @OutputClass(className = "edu.umass.ciir.fws.types.DocumentName")
-public class QueryFileDocumentsParser extends StandardStep<FileName, DocumentName> {
+public class QueryFileDocumentsParser extends StandardStep<FileName, QueryDocumentName> {
     
     HashSet<String> docNames;
     Logger logger;
@@ -80,7 +80,7 @@ public class QueryFileDocumentsParser extends StandardStep<FileName, DocumentNam
     @Override
     public void close() throws IOException {
         for(String name : docNames) {
-            processor.process(new DocumentName(name));
+            processor.process(new QueryDocumentName(name,"test"));
         }
     }
 }

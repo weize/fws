@@ -35,7 +35,7 @@ public class QuerySetDocuments {
     public QuerySetDocuments(Parameters parameters) throws Exception {
         assert (parameters.isString("index")) : "missing --index";
         assert (parameters.isString("rankedListFile")) : "missing --rankedListFile";
-        assert (parameters.isString("topNum")) : "missing --topNum";
+        assert (parameters.isLong("topNum")) : "missing --topNum";
 
         rankedListFile = parameters.getString("rankedListFile");
         topNum = parameters.getLong("topNum");

@@ -1,7 +1,6 @@
 package edu.umass.ciir.fws.nlp;
 
 import edu.umass.ciir.fws.clist.*;
-import edu.umass.ciir.fws.types.DocumentName;
 import edu.umass.ciir.fws.types.Query;
 import java.io.File;
 import java.io.PrintStream;
@@ -76,7 +75,7 @@ public class ParseDocuments extends AppFunction {
 
         stage.add(new Step(FileSource.class, p));
         stage.add(new Step(QueryFileDocumentsParser.class));
-        stage.add(Utility.getSorter(new DocumentName.NameOrder()));
+        //stage.add(Utility.getSorter(new DocumentName.NameOrder()));
         stage.add(new OutputStep("docNames"));
 
         return stage;
@@ -85,7 +84,7 @@ public class ParseDocuments extends AppFunction {
     private Stage getProcessStage(Parameters parameters) {
         Stage stage = new Stage("process");
 
-        stage.addInput("docNames", new DocumentName.NameOrder());
+        //stage.addInput("docNames", new DocumentName.NameOrder());
         
         stage.add(new InputStep("docNames"));
         stage.add(new Step(DocumentNlpParser.class, parameters));
