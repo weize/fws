@@ -3,5 +3,6 @@
 	"index" : "../data/index",
 	"rankedListFile" : "../exp/query/query-sdm-rank",
 	"clistDir" : "../exp/clist",
+	"docDir" : "../exp/doc",
 	"topNum" : 100
 }
