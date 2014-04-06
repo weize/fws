@@ -4,7 +4,9 @@
  */
 package edu.umass.ciir.fws.tool;
 
+import edu.umass.ciir.fws.nlp.StanfordCoreNLPParser;
 import edu.umass.ciir.fws.utility.TextProcessing;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
 import org.lemurproject.galago.core.parse.Document;
@@ -38,7 +40,8 @@ public class TestFn extends AppFunction {
         output.println();
         
         //testPrintHTML(p, output);
-        testTokenizer(p, output);
+        testNlp(output);
+        //testTokenizer(p, output);
     }
 
     private void testPrintHTML(Parameters p, PrintStream output) throws Exception {
@@ -67,5 +70,12 @@ public class TestFn extends AppFunction {
         for(String token : tokens) {
             output.println(token);
         }
+    }
+
+    private void testNlp(PrintStream output) throws IOException {
+        output.println("In test nlp!");
+        StanfordCoreNLPParser stanfordParser = new StanfordCoreNLPParser();
+        String text = "Kosgi Santosh sent an email to Stanford University. He didn't get a reply. &&%$.";
+        stanfordParser.parse(text, "test.out");       
     }
 }

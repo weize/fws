@@ -66,7 +66,7 @@ public class HtmlContentExtractor {
 
         if (node instanceof TextNode) {
             TextNode textNode = (TextNode) node;
-            text.append(textNode.getWholeText());
+            text.append(textNode.getWholeText().replaceAll("\n", " "));
             return;
         }
 

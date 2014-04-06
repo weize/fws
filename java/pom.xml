@@ -57,7 +57,7 @@
                             <name>fws</name>
                         </program>
                     </programs>
-                    <extraJvmArguments>-Xms1500m -Xmx3700m -Dfile.encoding=UTF-8</extraJvmArguments>
+                    <extraJvmArguments>-Xms4g -Xmx4g -Dfile.encoding=UTF-8</extraJvmArguments>
                     <repositoryName>lib</repositoryName>
                     <repositoryLayout>flat</repositoryLayout>
                 </configuration>
@@ -95,14 +95,14 @@
         <dependency>
             <groupId>edu.stanford.nlp</groupId>
             <artifactId>stanford-corenlp</artifactId>
-            <version>1.3.4</version>
+            <version>3.3.1</version>
             <type>jar</type>
             <classifier>models</classifier>
         </dependency>
         <dependency>
             <groupId>edu.stanford.nlp</groupId>
             <artifactId>stanford-corenlp</artifactId>
-            <version>1.3.4</version>
+            <version>3.3.1</version>
             <type>jar</type>
         </dependency>
     </dependencies>

@@ -41,10 +41,8 @@ public class DocumentNlpParser implements Processor<QueryDocumentName> {
 
     public DocumentNlpParser(TupleFlowParameters parameters) throws IOException {
         this.parameters = parameters.getJSON();
-        String nlpPropsFile = this.parameters.getString("nlpPropsFile");
-
         logger = Logger.getLogger(DocumentNlpParser.class.toString());
-        stanfordParser = new StanfordCoreNLPParser(nlpPropsFile);
+        stanfordParser = new StanfordCoreNLPParser();
     }
 
     @Override
@@ -62,6 +60,7 @@ public class DocumentNlpParser implements Processor<QueryDocumentName> {
                 File.separator, queryDocName.docName);
 
         stanfordParser.parse(content, outputFileName);
+        System.err.println("Written in " + outputFileName);
     }
 
     @Override

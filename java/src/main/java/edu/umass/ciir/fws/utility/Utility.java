@@ -42,7 +42,7 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         if (!dir.exists()) {
             return dir.mkdir();
         } else {
-            System.err.println(String.format("Directory %s exists!", directoryName));
+            //System.err.println(String.format("Directory %s exists!", directoryName));
         }
         return true;
     }
