@@ -1,7 +1,7 @@
 package edu.umass.ciir.fws.nlp;
 
-import edu.umass.ciir.fws.clist.*;
 import edu.umass.ciir.fws.types.Query;
+import edu.umass.ciir.fws.types.QueryDocumentName;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -63,7 +63,7 @@ public class ParseDocuments extends AppFunction {
     private Stage getSplitStage(Parameters parameter) {
         Stage stage = new Stage("split");
 
-        stage.addOutput("docNames", new Query.IdOrder());
+        stage.addOutput("queryDocNames", new QueryDocumentName.QidDocNameOrder());
 
         List<String> inputFiles = parameter.getAsList("queryFile");
 
@@ -72,11 +72,11 @@ public class ParseDocuments extends AppFunction {
         for (String input : inputFiles) {
             p.getList("input").add(new File(input).getAbsolutePath());
         }
-
+        
         stage.add(new Step(FileSource.class, p));
-        stage.add(new Step(QueryFileDocumentsParser.class));
-        //stage.add(Utility.getSorter(new DocumentName.NameOrder()));
-        stage.add(new OutputStep("docNames"));
+        stage.add(new Step(QueryFileDocumentsParser.class, parameter));
+        stage.add(Utility.getSorter(new QueryDocumentName.QidDocNameOrder()));
+        stage.add(new OutputStep("queryDocNames"));
 
         return stage;
     }
@@ -84,12 +84,10 @@ public class ParseDocuments extends AppFunction {
     private Stage getProcessStage(Parameters parameters) {
         Stage stage = new Stage("process");
 
-        //stage.addInput("docNames", new DocumentName.NameOrder());
+        stage.addInput("queryDocNames", new QueryDocumentName.QidDocNameOrder());
         
-        stage.add(new InputStep("docNames"));
+        stage.add(new InputStep("queryDocNames"));
         stage.add(new Step(DocumentNlpParser.class, parameters));
-        // stage.add(new Step(CandidateListWriter.class, parameters));
-
         return stage;
     }
 }

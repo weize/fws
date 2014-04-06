@@ -14,7 +14,7 @@ import edu.umass.ciir.fws.utility.TextProcessing;
 public class QueryProcessing {
     
     public static Query toSDMQuery(Query query) {
-        String text = "#sdm" + TextProcessing.clean(query.text) + " )";
+        String text = "#sdm (" + TextProcessing.clean(query.text) + " )";
         Query newQuery = new Query(query.id, text);
         return newQuery;
     }

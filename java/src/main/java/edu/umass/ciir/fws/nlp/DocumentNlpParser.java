@@ -9,6 +9,7 @@ import edu.umass.ciir.fws.types.QueryDocumentName;
 import edu.umass.ciir.fws.types.Query;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -27,33 +28,44 @@ import org.lemurproject.galago.tupleflow.types.FileName;
 
 /**
  * Parse document using Stanford core nlp parser.
+ *
  * @author wkong
  */
 @Verified
 @InputClass(className = "edu.umass.ciir.fws.types.QueryDocumentName")
 public class DocumentNlpParser implements Processor<QueryDocumentName> {
-    
+
     Logger logger;
-    
-  
-    
+    Parameters parameters;
+    StanfordCoreNLPParser stanfordParser;
+
     public DocumentNlpParser(TupleFlowParameters parameters) throws IOException {
-        Parameters p = parameters.getJSON();
+        this.parameters = parameters.getJSON();
+        String nlpPropsFile = this.parameters.getString("nlpPropsFile");
+
         logger = Logger.getLogger(DocumentNlpParser.class.toString());
+        stanfordParser = new StanfordCoreNLPParser(nlpPropsFile);
     }
-    
-    
+
     @Override
-    public void process(QueryDocumentName docName) throws IOException {
-        
+    public void process(QueryDocumentName queryDocName) throws IOException {
+        String docDir = parameters.getString("docDir");
+        String parseDir = parameters.getString("parseDir");
+        String inputFileName = String.format("%s%s%s%s%s.html", docDir, File.separator,
+                queryDocName.qid, File.separator, queryDocName.docName);
+        String content = HtmlContentExtractor.extract(inputFileName);
+
+        String dirName = String.format("%s%s%s", parseDir, File.separator, queryDocName.qid);
+        Utility.createDirectory(dirName);
+
+        String outputFileName = String.format("%s%s%s.parse", dirName,
+                File.separator, queryDocName.docName);
+
+        stanfordParser.parse(content, outputFileName);
     }
-    
-    
-    
 
     @Override
     public void close() throws IOException {
     }
 
-    
 }

@@ -6,6 +6,7 @@
 package edu.umass.ciir.fws.crawl;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,9 +26,8 @@ import org.lemurproject.galago.tupleflow.Utility;
 public class QuerySetDocuments {
 
     HashMap<String, List<Document>> querySetDocuments;
+    HashMap<String, List<ScoredDocument>> querySetResults;
     String rankedListFile;
-    long topNum;
-    QuerySetResults querySetResults;
     Retrieval retrieval;
     String docDir;
     boolean loadDocsFromIndex;
@@ -38,7 +38,6 @@ public class QuerySetDocuments {
         assert (parameters.isLong("topNum")) : "missing --topNum";
 
         rankedListFile = parameters.getString("rankedListFile");
-        topNum = parameters.getLong("topNum");
         querySetDocuments = new HashMap<>();
 
         loadQuerySetDocuments(parameters);
@@ -46,51 +45,81 @@ public class QuerySetDocuments {
 
     private void loadQuerySetDocuments(Parameters parameters) throws Exception {
         loadDocsFromIndex = parameters.get("loadDocsFromIndex", false);
-        querySetResults = new QuerySetResults(rankedListFile);
+        long topNum = parameters.getLong("topNum");
+        querySetResults = loadQuerySetResults(rankedListFile, topNum);
 
         if (loadDocsFromIndex) {
             retrieval = RetrievalFactory.instance(parameters);
-            load(parameters);
+            loadQuerySetDocumentFromIndex();
             retrieval.close();
         } else {
-            docDir = parameters.getString(docDir);
-            load(parameters);
+            docDir = parameters.getString("docDir");
+            loadQuerySetDocumentFromFiles();
         }
     }
 
-    private void load(Parameters parameters) throws Exception {
-        for (String qid : querySetResults.getQueryIterator()) {
-            QueryResults queryResults = querySetResults.get(qid);
+
+    public List<Document> get(String id) {
+        return querySetDocuments.get(id);
+    }
+
+    /**
+     * load top documents as ScoredDocument
+     *
+     * @param rankedListFile
+     * @param topNum
+     * @return
+     * @throws IOException
+     */
+    public static HashMap<String, List<ScoredDocument>> loadQuerySetResults(String rankedListFile, long topNum) throws IOException {
+        HashMap<String, List<ScoredDocument>> querySetResults = new HashMap<>();
+        QuerySetResults querySetResultsFull = new QuerySetResults(rankedListFile);
+
+        for (String qid : querySetResultsFull.getQueryIterator()) {
+            QueryResults queryResultsFull = querySetResultsFull.get(qid);
+            ArrayList<ScoredDocument> queryResults = new ArrayList<>();
             // construct Documents from ScoreDocuments for each query
             int num = 0; // only using topNum documents
             boolean full = false;
-            ArrayList<Document> queryDocuments = new ArrayList<>();
-            for (ScoredDocument sd : queryResults.getIterator()) {
-                String html;
-                if (loadDocsFromIndex) {
-                    org.lemurproject.galago.core.parse.Document document = retrieval.getDocument(sd.documentName, new org.lemurproject.galago.core.parse.Document.DocumentComponents(true, true, true));
-                    html = document.text;
-                } else { // read from files
-                    String fileName = String.format("%s%s%s%s%s.html", 
-                            docDir, File.separator, qid, File.separator, sd.documentName);
-                    html = Utility.readFileToString(new File(fileName));
-                }
-                queryDocuments.add(new Document(sd, html));
+            for (ScoredDocument sd : queryResultsFull.getIterator()) {
+                queryResults.add(sd);
                 if (++num >= topNum) {
                     full = true;
                     break;
                 }
             }
-
             if (!full) {
                 System.err.print(String.format("warning only %d documents found for query %s\n", num, qid));
+            }
+            querySetResults.put(qid, queryResults);
+        }
+        return querySetResults;
+    }
+
+    private void loadQuerySetDocumentFromIndex() throws Exception {
+        for (String qid : querySetResults.keySet()) {
+            List<ScoredDocument> queryResults = querySetResults.get(qid);
+            ArrayList<Document> queryDocuments = new ArrayList<>();
+            for (ScoredDocument sd : queryResults) {
+                org.lemurproject.galago.core.parse.Document document = retrieval.getDocument(sd.documentName, new org.lemurproject.galago.core.parse.Document.DocumentComponents(true, true, true));
+                queryDocuments.add(new Document(sd, document.text));
             }
             querySetDocuments.put(qid, queryDocuments);
         }
     }
 
-    public List<Document> get(String id) {
-        return querySetDocuments.get(id);
+    private void loadQuerySetDocumentFromFiles( ) throws Exception {
+        for (String qid : querySetResults.keySet()) {
+            List<ScoredDocument> queryResults = querySetResults.get(qid);
+            ArrayList<Document> queryDocuments = new ArrayList<>();
+            for (ScoredDocument sd : queryResults) {
+                String fileName = String.format("%s%s%s%s%s.html",
+                        docDir, File.separator, qid, File.separator, sd.documentName);
+                String html = Utility.readFileToString(new File(fileName));
+                queryDocuments.add(new Document(sd, html));
+            }
+            querySetDocuments.put(qid, queryDocuments);
+        }
     }
 
 }

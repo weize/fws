@@ -4,14 +4,14 @@
  */
 package edu.umass.ciir.fws.nlp;
 
+import edu.umass.ciir.fws.crawl.QuerySetDocuments;
 import edu.umass.ciir.fws.query.QueryFileParser;
-import edu.umass.ciir.fws.types.QueryDocumentName;
 import edu.umass.ciir.fws.types.Query;
-import edu.umass.ciir.fws.utility.Utility;
-import java.io.BufferedReader;
+import edu.umass.ciir.fws.types.QueryDocumentName;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.logging.Logger;
 import org.lemurproject.galago.core.eval.QueryResults;
 import org.lemurproject.galago.core.eval.QuerySetResults;
@@ -31,23 +31,19 @@ import org.lemurproject.galago.tupleflow.types.FileName;
  */
 @Verified
 @InputClass(className = "org.lemurproject.galago.tupleflow.types.FileName")
-@OutputClass(className = "edu.umass.ciir.fws.types.DocumentName")
+@OutputClass(className = "edu.umass.ciir.fws.types.QueryDocumentName")
 public class QueryFileDocumentsParser extends StandardStep<FileName, QueryDocumentName> {
-    
-    HashSet<String> docNames;
     Logger logger;
-    QuerySetResults querySetResults;
+    HashMap<String, List<ScoredDocument>> querySetResults;
     
     long topNum;
     
     public QueryFileDocumentsParser(TupleFlowParameters parameters) throws IOException {
         Parameters p = parameters.getJSON();
-        String file = p.get("rankedListFile", "");
+        String file = p.getString("rankedListFile");
         topNum = p.get("topNum", 100);
         
-        docNames = new HashSet<>();
-        querySetResults = new QuerySetResults(file);
-
+        querySetResults = QuerySetDocuments.loadQuerySetResults(file, topNum);
         logger = Logger.getLogger(QueryFileDocumentsParser.class.toString());
     }
     
@@ -56,31 +52,9 @@ public class QueryFileDocumentsParser extends StandardStep<FileName, QueryDocume
     public void process(FileName fileName) throws IOException {
         Query [] queries = QueryFileParser.loadQueryList(fileName.filename);
         for(Query q : queries) {
-            processPerQuery(q.id);
-        }
-    }
-
-    private void processPerQuery(String qid) {
-        QueryResults documents = querySetResults.get(qid);
-
-        boolean full = false;
-        long num = 0;
-        for (ScoredDocument doc : documents.getIterator()) {
-            docNames.add(doc.documentName);
-            if (++num >= topNum) {
-                break;
+            for(ScoredDocument doc : querySetResults.get(q.id)) {
+                processor.process(new QueryDocumentName(q.id,doc.documentName));
             }
-        }
-
-        if (!full) {
-            logger.info(String.format("warning only %d documents found for query %s", num, qid));
-        }
-    }
-    
-    @Override
-    public void close() throws IOException {
-        for(String name : docNames) {
-            processor.process(new QueryDocumentName(name,"test"));
         }
     }
 }
