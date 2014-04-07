@@ -28,13 +28,13 @@ public class StanfordCoreNLPParser {
 
     StanfordCoreNLP pipeline;
     StanfordCoreNLP pipelineSsplit;
-    int splitMaxLn = 100;
     BufferedWriter writer;
 
     public StanfordCoreNLPParser() {
         Properties props = new Properties();
         props.put("annotators", "tokenize, ssplit, pos, lemma, ner, parse");
-        props.put("parse.maxlen", 80);
+        props.put("pos.maxlen", 50);
+        props.put("parse.maxlen", 50);
         props.put("ssplit.isOneSentence", true);
         pipeline = new StanfordCoreNLP(props);
 
