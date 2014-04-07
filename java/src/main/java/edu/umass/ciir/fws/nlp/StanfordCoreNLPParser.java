@@ -44,7 +44,7 @@ public class StanfordCoreNLPParser {
 
         pipelineSsplit = new StanfordCoreNLP(propsSen);
     }
-    
+
     /**
      * *
      *
@@ -57,7 +57,7 @@ public class StanfordCoreNLPParser {
         String[] sentences = splitSentences(text);
         for (String sen : sentences) {
             // only parse potential setences (sentences that contains "and" or "or"
-            // writer.write(sen+"\n\n");
+            writer.write("\nsentence:\n" + sen + "\n\n");
             if (containAndOr(sen)) {
                 prasePerSentence(sen);
             }
@@ -153,8 +153,13 @@ public class StanfordCoreNLPParser {
         ArrayList<String> sentencesText = new ArrayList<>();
         for (CoreMap sentence : sentences) {
             String senText = sentence.get(CoreAnnotations.TextAnnotation.class).trim();
-            if (senText.length() > 0) {
-                sentencesText.add(senText);
+            List<CoreLabel> tokens = sentence.get(CoreAnnotations.TokensAnnotation.class);
+            if (tokens.size() <= 300) {
+                if (senText.length() > 0) {
+                    sentencesText.add(senText);
+                }
+            } else {
+                System.err.println("Warning: sentence too long :" + senText);
             }
         }
         return sentencesText.toArray(new String[0]);

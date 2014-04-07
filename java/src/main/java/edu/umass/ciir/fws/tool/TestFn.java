@@ -4,8 +4,10 @@
  */
 package edu.umass.ciir.fws.tool;
 
+import edu.umass.ciir.fws.nlp.HtmlContentExtractor;
 import edu.umass.ciir.fws.nlp.StanfordCoreNLPParser;
 import edu.umass.ciir.fws.utility.TextProcessing;
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
@@ -17,6 +19,7 @@ import org.lemurproject.galago.core.retrieval.query.Node;
 import org.lemurproject.galago.core.retrieval.query.StructuredQuery;
 import org.lemurproject.galago.core.tools.AppFunction;
 import org.lemurproject.galago.tupleflow.Parameters;
+import org.lemurproject.galago.tupleflow.Utility;
 
 /**
  *
@@ -75,7 +78,10 @@ public class TestFn extends AppFunction {
     private void testNlp(PrintStream output) throws IOException {
         output.println("In test nlp!");
         StanfordCoreNLPParser stanfordParser = new StanfordCoreNLPParser();
-        String text = "Kosgi Santosh sent an email to Stanford University. He didn't get a reply. &&%$.";
-        stanfordParser.parse(text, "test.out");       
+        String htmlFile = "../exp/doc/51/clueweb09-en0000-02-14693.html";
+        String text = HtmlContentExtractor.extract(htmlFile);
+        Utility.copyStringToFile(text, new File("test.content"));
+        
+        stanfordParser.parse(text, "test.parse");       
     }
 }
