@@ -40,6 +40,7 @@ public class DocumentNlpParser implements Processor<QueryDocumentName> {
     StanfordCoreNLPParser stanfordParser;
 
     public DocumentNlpParser(TupleFlowParameters parameters) throws IOException {
+        System.out.println("alallalalalalalalalalallalalallalalalalalalalala");
         this.parameters = parameters.getJSON();
         logger = Logger.getLogger(DocumentNlpParser.class.toString());
         stanfordParser = new StanfordCoreNLPParser();

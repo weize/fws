@@ -10,6 +10,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import org.lemurproject.galago.tupleflow.InputClass;
+import org.lemurproject.galago.tupleflow.Parameters;
 import org.lemurproject.galago.tupleflow.Processor;
 import org.lemurproject.galago.tupleflow.TupleFlowParameters;
 import org.lemurproject.galago.tupleflow.execution.Verified;
@@ -25,9 +26,12 @@ public class CandidateListWriter implements Processor<CandidateList> {
     String clistDir;
     CandidateList last = null;
     BufferedWriter writer;
+    String suffix;
 
-    public CandidateListWriter(TupleFlowParameters p) throws IOException {
-        clistDir = p.getJSON().getString("clistDir");
+    public CandidateListWriter(TupleFlowParameters parameters) throws IOException {
+        Parameters p = parameters.getJSON();
+        clistDir = p.getString("clistDir");
+        suffix = p.getString("suffix");
     }
 
     @Override
@@ -53,7 +57,7 @@ public class CandidateListWriter implements Processor<CandidateList> {
     }
 
     private void createFile(String qid) throws IOException {
-        String file = clistDir + File.separator + qid + ".clist";
+        String file = String.format("%s%s%s.%s", clistDir, File.separator, qid, suffix);
         writer = Utility.getWriter(file);
     }
 

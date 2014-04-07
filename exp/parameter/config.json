@@ -1,10 +1,10 @@
 {
 	"queryFile" : "../data/query/query",
 	"index" : "../data/index",
+	"stopwordsFile" : "../data/stopword/stopword",
 	"rankedListFile" : "../exp/query/query-sdm-rank",
 	"clistDir" : "../exp/clist",
 	"docDir" : "../exp/doc",
 	"parseDir" : "../exp/parse",
-	"topNum" : 100,
-	"nlpPropsFile": "../exp/parameter/stanford-nlp-config.properties"
+	"topNum" : 100
 }

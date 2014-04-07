@@ -20,13 +20,12 @@ import org.lemurproject.galago.tupleflow.execution.Step;
 import org.lemurproject.galago.tupleflow.types.FileName;
 
 /**
- * *
  *
  * @author wkong
  */
-public class ExtractCandidateLists extends AppFunction {
+public class CleanCandidateLists extends AppFunction {
 
-    private static final String name = "extract-candidate-lists";
+    private static final String name = "clean-candidate-lists";
 
     @Override
     public String getName() {
@@ -87,11 +86,12 @@ public class ExtractCandidateLists extends AppFunction {
     private Stage getProcessStage(Parameters parameters) {
         Stage stage = new Stage("process");
 
-        parameters.set("suffix", "clist");
+        parameters.set("suffix", "clean.clist");
         stage.addInput("praseQueries", new Query.IdOrder());
         
         stage.add(new InputStep("praseQueries"));
-        stage.add(new Step(CandidateListExtractor.class, parameters));
+        stage.add(new Step(CandidateListParser.class, parameters));
+        stage.add(new Step(CandidateListCleaner.class, parameters));
         stage.add(new Step(CandidateListWriter.class, parameters));
 
         return stage;
