@@ -57,7 +57,7 @@ public class CandidateListWriter implements Processor<CandidateList> {
     }
 
     private void createFile(String qid) throws IOException {
-        String file = String.format("%s%s%s.%s", clistDir, File.separator, qid, suffix);
+        String file = Utility.getCandidateListFileName(clistDir, qid, suffix);
         writer = Utility.getWriter(file);
     }
 

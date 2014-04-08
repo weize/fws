@@ -19,7 +19,7 @@ import java.util.List;
  */
 public class CandidateListTextExtractor {
 
-    final static String type = "text";
+    public final static String type = "text";
 
     ArrayList<CandidateList> clists; // store the extracted lists
     String parseTreeText;

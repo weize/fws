@@ -27,21 +27,25 @@ public class DocumentNlpParser implements Processor<QueryDocumentName> {
     Logger logger;
     Parameters parameters;
     StanfordCoreNLPParser stanfordParser;
+    String parseDir;
+    String docDir;
 
     public DocumentNlpParser(TupleFlowParameters parameters) throws IOException {
         this.parameters = parameters.getJSON();
         logger = Logger.getLogger(DocumentNlpParser.class.toString());
         stanfordParser = new StanfordCoreNLPParser();
+        parseDir = this.parameters.getString("parseDir");
+        docDir = this.parameters.getString("docDir");
     }
 
     @Override
     public void process(QueryDocumentName queryDocName) throws IOException {
-        String parseDir = parameters.getString("parseDir");
-        String dirName = String.format("%s%s%s", parseDir, File.separator, queryDocName.qid);
+
+        String dirName = Utility.getParsedDocDirName(parseDir, queryDocName.qid);
         Utility.createDirectory(dirName);
 
-        String outputFileName = String.format("%s%s%s.parse", dirName,
-                File.separator, queryDocName.docName);
+        String outputFileName = Utility.getParsedDocFileName(
+                parseDir, queryDocName.qid, queryDocName.docName);
 
         // Do not parse again if the parse file already exists
         if (new File(outputFileName).exists()) {
@@ -49,9 +53,8 @@ public class DocumentNlpParser implements Processor<QueryDocumentName> {
             return;
         }
 
-        String docDir = parameters.getString("docDir");
-        String inputFileName = String.format("%s%s%s%s%s.html", docDir, File.separator,
-                queryDocName.qid, File.separator, queryDocName.docName);
+        String inputFileName = Utility.getDocFileName(
+                docDir, queryDocName.qid, queryDocName.docName);
         String content = HtmlContentExtractor.extract(inputFileName);
 
         System.err.println("processing  " + inputFileName);

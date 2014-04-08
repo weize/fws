@@ -8,6 +8,7 @@ import edu.umass.ciir.fws.crawl.QuerySetDocuments;
 import edu.umass.ciir.fws.crawl.Document;
 import edu.umass.ciir.fws.types.CandidateList;
 import edu.umass.ciir.fws.types.Query;
+import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -16,7 +17,6 @@ import org.lemurproject.galago.tupleflow.OutputClass;
 import org.lemurproject.galago.tupleflow.Parameters;
 import org.lemurproject.galago.tupleflow.StandardStep;
 import org.lemurproject.galago.tupleflow.TupleFlowParameters;
-import org.lemurproject.galago.tupleflow.Utility;
 import org.lemurproject.galago.tupleflow.execution.Verified;
 
 /**
@@ -61,8 +61,7 @@ public class CandidateListExtractor extends StandardStep<Query, CandidateList> {
     }
 
     private void extractText(Query query, Document doc) throws IOException {
-        String parseFileName = String.format("%s%s%s%s%s.parse",
-                parseDir, File.separator, query.id, File.separator, doc.name);
+        String parseFileName = Utility.getParsedDocFileName(parseDir, query.id, doc.name);
         String parseFileContent = Utility.readFileToString(new File(parseFileName));
 
         List<edu.umass.ciir.fws.clist.CandidateList> lists

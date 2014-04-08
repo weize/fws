@@ -5,6 +5,7 @@
  */
 package edu.umass.ciir.fws.crawl;
 
+import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,7 +17,6 @@ import org.lemurproject.galago.core.retrieval.Retrieval;
 import org.lemurproject.galago.core.retrieval.RetrievalFactory;
 import org.lemurproject.galago.core.retrieval.ScoredDocument;
 import org.lemurproject.galago.tupleflow.Parameters;
-import org.lemurproject.galago.tupleflow.Utility;
 
 /**
  * Represents retrieved documents for each queries.
@@ -107,7 +107,8 @@ public class QuerySetDocuments {
             ArrayList<Document> queryDocuments = new ArrayList<>();
             for (ScoredDocument sd : queryResults) {
                 org.lemurproject.galago.core.parse.Document document = retrieval.getDocument(sd.documentName, new org.lemurproject.galago.core.parse.Document.DocumentComponents(true, true, true));
-                queryDocuments.add(new Document(sd, document.text));
+                
+                queryDocuments.add(new Document(sd, document));
             }
             querySetDocuments.put(qid, queryDocuments);
         }
@@ -122,8 +123,7 @@ public class QuerySetDocuments {
             List<ScoredDocument> queryResults = querySetResults.get(qid);
             ArrayList<Document> queryDocuments = new ArrayList<>();
             for (ScoredDocument sd : queryResults) {
-                String fileName = String.format("%s%s%s%s%s.html",
-                        docDir, File.separator, qid, File.separator, sd.documentName);
+                String fileName = Utility.getDocFileName(docDir, qid, sd.documentName);
                 String html = Utility.readFileToString(new File(fileName));
                 queryDocuments.add(new Document(sd, html));
             }

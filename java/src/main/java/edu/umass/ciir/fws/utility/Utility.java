@@ -47,4 +47,26 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         return true;
     }
 
+    public static String getCandidateListFileName(String clistDir, String qid, String suffix) {
+        return String.format("%s%s%s.%s", clistDir, File.separator, qid, suffix);
+    }
+
+    public static String getParsedDocFileName(String parseDir, String qid, String docName) {
+        return String.format("%s%s%s%s%s.parse",
+                parseDir, File.separator, qid, File.separator, docName);
+    }
+
+    public static String getParsedDocDirName(String parseDir, String qid) {
+        return String.format("%s%s%s", parseDir, File.separator, qid);
+    }
+
+    public static String getDocFileName(String docDir, String qid, String docName) {
+        return String.format("%s%s%s%s%s.html",
+                docDir, File.separator, qid, File.separator, docName);
+    }
+
+    public static String getDocDirName(String docDir, String qid) {
+        return String.format("%s%s%s", docDir, File.separator, qid);
+    }
+
 }

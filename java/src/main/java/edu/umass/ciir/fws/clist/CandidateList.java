@@ -14,7 +14,8 @@ import edu.umass.ciir.fws.utility.TextProcessing;
  */
 public class CandidateList extends edu.umass.ciir.fws.types.CandidateList {
 
-    String[] items; // candidate list items
+    public String[] items; // candidate list items
+    public final static int MAX_TERM_SIZE = 10; // maxium number of word in an candidate item/a facet term
 
     public CandidateList(String qid, long docRank, String listType, String[] items) {
         this.qid = qid;
@@ -22,6 +23,14 @@ public class CandidateList extends edu.umass.ciir.fws.types.CandidateList {
         this.listType = listType;
         this.items = items;
         this.itemList = TextProcessing.join(items, "|");
+    }
+
+    CandidateList(String qid, long docRank, String listType, String itemList, String[] items) {
+        this.qid = qid;
+        this.docRank = docRank;
+        this.listType = listType;
+        this.itemList = itemList;
+        this.items = items;
     }
 
     public boolean valid() {

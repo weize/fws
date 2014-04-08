@@ -42,8 +42,8 @@ public class TestFn extends AppFunction {
         output.println("in test");
         output.println();
         
-        //testPrintHTML(p, output);
-        testNlp(output);
+        testPrintHTML(p, output);
+        //testNlp(output);
         //testTokenizer(p, output);
     }
 
@@ -59,6 +59,9 @@ public class TestFn extends AppFunction {
             output.println(sd.documentName);
             
             Document document = retrieval.getDocument(sd.documentName, new Document.DocumentComponents(true, true, true));
+            for(String term : document.terms) {
+                output.println(term);
+            }
             for (String key : document.metadata.keySet()) {
                 output.println(key + "\t" + document.metadata.get(key));
             }

@@ -74,7 +74,7 @@ public class CandidateListCleaner extends StandardStep<CandidateList, CandidateL
         
         // number of words
         int length = item.split("\\s+").length;
-        if (length > 10) {
+        if (length > edu.umass.ciir.fws.clist.CandidateList.MAX_TERM_SIZE) {
             return false;
         }
         

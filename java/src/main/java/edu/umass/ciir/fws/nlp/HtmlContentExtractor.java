@@ -11,9 +11,11 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
+import org.jsoup.select.Elements;
 
 /**
  * Extract text content from HTML.
+ *
  * @author wkong
  */
 public class HtmlContentExtractor {
@@ -28,11 +30,11 @@ public class HtmlContentExtractor {
         "pre", "section", "select", "summary", "table", "textarea", "tfoot",
         "thead"
     };
-    
+
     final static String[] spaceTags = {
         "audio", "button", "canvas", "caption", "th", "td",
         "img", "input", "embed", "figure", "keygen", "map", "object",
-        "progress", "q", "video","span"};
+        "progress", "q", "video", "span"};
 
     public static String extract(String filename) throws IOException {
         File input = new File(filename);
@@ -51,6 +53,19 @@ public class HtmlContentExtractor {
         // remove extra spacing
         text2 = text2.replaceAll("[\\s&&[^\\n]]+", " ");
         return text2;
+    }
+
+    /**
+     * Extract the title.
+     * @param html
+     * @return 
+     */
+    public static String extractTitle(String html) {
+        Document doc = Jsoup.parse(html, "UTF-8");
+        Elements elems = doc.getElementsByTag("title");
+        StringBuilder title = new StringBuilder();
+        getNodeText(elems.get(0), title);
+        return title.toString();
     }
 
     private static void getNodeText(Node node, StringBuilder text) {

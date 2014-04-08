@@ -43,11 +43,10 @@ public class TopDocumentsWriter implements Processor<Query> {
     @Override
     public void process(Query query) throws IOException {
         List<Document> docs = querySetDocuments.get(query.id);
-        String dirName = String.format("%s%s%s", docDir, File.separator, query.id);
+        String dirName = Utility.getDocDirName(docDir, query.id);
         Utility.createDirectory(dirName);
         for (Document doc : docs) {
-            String fileName = String.format("%s%s%s.html",
-                    dirName, File.separator, doc.name);
+            String fileName = Utility.getDocFileName(docDir, query.id, doc.name);
             Utility.copyStringToFile(doc.html, new File(fileName));
         }
         logger.info(String.format("written down %d documents for query %s", docs.size(), query.id));

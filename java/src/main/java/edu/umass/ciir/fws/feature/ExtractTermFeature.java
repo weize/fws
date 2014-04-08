@@ -29,7 +29,7 @@ import org.lemurproject.galago.tupleflow.types.FileName;
  */
 public class ExtractTermFeature extends AppFunction {
 
-    private static final String name = "crawl-top-documents";
+    private static final String name = "extract-term-feature";
 
     @Override
     public String getName() {
@@ -44,11 +44,11 @@ public class ExtractTermFeature extends AppFunction {
 
     @Override
     public void run(Parameters p, PrintStream output) throws Exception {
-        assert (p.isString("queryFile")) : "missing input file, --input";
-        assert (p.isString("index")) : "missing --index";
-        assert (p.isString("rankedListFile")) : "missing --rankedListFile";
-        assert (p.isString("topNum")) : "missing --topNum";
-        assert (p.isString("docDir")) : "missing --docDir";
+//        assert (p.isString("queryFile")) : "missing input file, --input";
+//        assert (p.isString("index")) : "missing --index";
+//        assert (p.isString("rankedListFile")) : "missing --rankedListFile";
+//        assert (p.isString("topNum")) : "missing --topNum";
+//        assert (p.isString("docDir")) : "missing --docDir";
 
         Job job = createJob(p);
         AppFunction.runTupleFlowJob(job, p, output);
@@ -94,7 +94,7 @@ public class ExtractTermFeature extends AppFunction {
         stage.addInput("praseQueries", new Query.IdOrder());
 
         stage.add(new InputStep("praseQueries"));
-        stage.add(new Step(TopDocumentsWriter.class, parameters));
+        stage.add(new Step(TermFeaturesExtractor.class, parameters));
         return stage;
     }
 }

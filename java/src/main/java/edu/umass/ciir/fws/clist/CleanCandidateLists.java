@@ -85,12 +85,13 @@ public class CleanCandidateLists extends AppFunction {
     private Stage getProcessStage(Parameters parameters) {
         Stage stage = new Stage("process");
 
-        parameters.set("suffix", "clean.clist");
         stage.addInput("praseQueries", new Query.IdOrder());
         
         stage.add(new InputStep("praseQueries"));
+        parameters.set("suffix", "clist"); // reader from *.clist
         stage.add(new Step(CandidateListParser.class, parameters));
         stage.add(new Step(CandidateListCleaner.class, parameters));
+        parameters.set("suffix", "clean.clist"); // write to *.clean.clist
         stage.add(new Step(CandidateListWriter.class, parameters));
 
         return stage;
