@@ -1,8 +1,7 @@
-package edu.umass.ciir.fws.clist;
+package edu.umass.ciir.fws.nlp;
 
-import edu.umass.ciir.fws.query.QueryFileParser;
-import edu.umass.ciir.fws.types.CandidateList;
 import edu.umass.ciir.fws.types.Query;
+import edu.umass.ciir.fws.types.QueryDocumentName;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -17,17 +16,15 @@ import org.lemurproject.galago.tupleflow.execution.Job;
 import org.lemurproject.galago.tupleflow.execution.OutputStep;
 import org.lemurproject.galago.tupleflow.execution.Stage;
 import org.lemurproject.galago.tupleflow.execution.Step;
-import org.lemurproject.galago.tupleflow.types.FileName;
 
 /**
- * Extract candidate lists.
- * Extract raw (not cleaned/filtered) candidate lists based on HTML and textual pattern.
- * Tupleflow jobs splits by queries.
+ * Tupleflow application for parsing documents.
+ *
  * @author wkong
  */
-public class ExtractCandidateLists extends AppFunction {
+public class NlpParseDocuments extends AppFunction {
 
-    private static final String name = "extract-candidate-lists";
+    private static final String name = "parse-documents";
 
     @Override
     public String getName() {
@@ -43,12 +40,11 @@ public class ExtractCandidateLists extends AppFunction {
     @Override
     public void run(Parameters p, PrintStream output) throws Exception {
         assert (p.isString("queryFile")) : "missing input file, --input";
-        assert (p.isString("parseDir")) : "missing input file, --parseDir";
-        assert (p.isString("docDir")) : "missing input file, --docDir";
-        assert (p.isString("clistDir")) : "missing input file, --docDir";
         assert (p.isString("rankedListFile")) : "missing --rankedListFile";
         assert (p.isString("topNum")) : "missing --topNum";
-        
+        assert (p.isString("parseDir")) : "missing --parseDir";
+        assert (p.isString("docDir")) : "missing --docDir";
+
         Job job = createJob(p);
         AppFunction.runTupleFlowJob(job, p, output);
 
@@ -59,16 +55,16 @@ public class ExtractCandidateLists extends AppFunction {
 
         job.add(getSplitStage(parameters));
         job.add(getProcessStage(parameters));
-        
+
         job.connect("split", "process", ConnectionAssignmentType.Each);
-        
+
         return job;
     }
 
     private Stage getSplitStage(Parameters parameter) {
         Stage stage = new Stage("split");
 
-        stage.addOutput("praseQueries", new Query.IdOrder());
+        stage.addOutput("queryDocNames", new QueryDocumentName.QidDocNameOrder());
 
         List<String> inputFiles = parameter.getAsList("queryFile");
 
@@ -79,10 +75,9 @@ public class ExtractCandidateLists extends AppFunction {
         }
 
         stage.add(new Step(FileSource.class, p));
-        stage.add(Utility.getSorter(new FileName.FilenameOrder()));
-        stage.add(new Step(QueryFileParser.class));
-        stage.add(Utility.getSorter(new Query.IdOrder()));
-        stage.add(new OutputStep("praseQueries"));
+        stage.add(new Step(QueryFileDocumentsParser.class, parameter));
+        stage.add(Utility.getSorter(new QueryDocumentName.QidDocNameOrder()));
+        stage.add(new OutputStep("queryDocNames"));
 
         return stage;
     }
@@ -90,13 +85,10 @@ public class ExtractCandidateLists extends AppFunction {
     private Stage getProcessStage(Parameters parameters) {
         Stage stage = new Stage("process");
 
-        parameters.set("suffix", "clist");
-        stage.addInput("praseQueries", new Query.IdOrder());
-        
-        stage.add(new InputStep("praseQueries"));
-        stage.add(new Step(CandidateListExtractor.class, parameters));
-        stage.add(new Step(CandidateListWriter.class, parameters));
+        stage.addInput("queryDocNames", new QueryDocumentName.QidDocNameOrder());
 
+        stage.add(new InputStep("queryDocNames"));
+        stage.add(new Step(DocumentNlpParser.class, parameters));
         return stage;
     }
 }

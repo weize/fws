@@ -21,6 +21,8 @@ import org.lemurproject.galago.tupleflow.TupleFlowParameters;
 import org.lemurproject.galago.tupleflow.execution.Verified;
 
 /**
+ * Tupleflow parser that reads candidate lists from file for each query, and
+ * also contains some utility functions for candidate lists
  *
  * @author wkong
  */
@@ -50,16 +52,15 @@ public class CandidateListParser extends StandardStep<Query, CandidateList> {
             processor.process(new CandidateList(qid, docRank, listType, itemList));
         }
     }
-    
-    
-    public static String [] splitItemList(String itemList) {
+
+    public static String[] splitItemList(String itemList) {
         return itemList.split("\\|");
     }
-    
-    public static String joinItemList(String [] items) {
+
+    public static String joinItemList(String[] items) {
         return Utility.join(items, "|");
     }
-    
+
     public static String joinItemList(List<String> items) {
         return Utility.join(items, "|");
     }

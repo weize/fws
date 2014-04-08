@@ -21,7 +21,7 @@ import org.lemurproject.galago.tupleflow.TupleFlowParameters;
 import org.lemurproject.galago.tupleflow.execution.Verified;
 
 /**
- *
+ * Clean and filter raw candidate lists extracted.
  * @author wkong
  */
 @Verified
@@ -74,7 +74,7 @@ public class CandidateListCleaner extends StandardStep<CandidateList, CandidateL
         
         // number of words
         int length = item.split("\\s+").length;
-        if (length > 20) {
+        if (length > 10) {
             return false;
         }
         

@@ -15,7 +15,9 @@ import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
 /**
- * Will be used in CandidateListExtractor (Tupleflow App)
+ * Candidate list extract based on HTML pattern. Takes in a document and output
+ * a list of candidate lists based on HTML pattern.
+ *
  * @author wkong
  */
 public class CandidateListHtmlExtractor {
@@ -191,7 +193,7 @@ public class CandidateListHtmlExtractor {
             }
         }
 
-        // row
+        // row-wise
         int maxw = 0;
         for (ArrayList<String> row : table) {
             String type = HtmlTag.TR;
@@ -201,7 +203,7 @@ public class CandidateListHtmlExtractor {
             }
         }
 
-        // col
+        // col-wise
         for (int i = 0; i < maxw; i++) {
             String type = HtmlTag.TD;
             ArrayList<String> items = new ArrayList<String>();

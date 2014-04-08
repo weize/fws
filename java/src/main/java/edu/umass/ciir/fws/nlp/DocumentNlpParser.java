@@ -16,7 +16,7 @@ import org.lemurproject.galago.tupleflow.TupleFlowParameters;
 import org.lemurproject.galago.tupleflow.execution.Verified;
 
 /**
- * Parse document using Stanford core nlp parser.
+ * Parse document using StanfordCoreNLPParser.
  *
  * @author wkong
  */
@@ -42,20 +42,17 @@ public class DocumentNlpParser implements Processor<QueryDocumentName> {
 
         String outputFileName = String.format("%s%s%s.parse", dirName,
                 File.separator, queryDocName.docName);
-        
-        // do not overwrite
-        if(new File(outputFileName).exists()) {
+
+        // Do not parse again if the parse file already exists
+        if (new File(outputFileName).exists()) {
             System.err.println(String.format("Warning: file exists ", outputFileName));
             return;
         }
-       
-        
+
         String docDir = parameters.getString("docDir");
         String inputFileName = String.format("%s%s%s%s%s.html", docDir, File.separator,
                 queryDocName.qid, File.separator, queryDocName.docName);
         String content = HtmlContentExtractor.extract(inputFileName);
-
-        
 
         System.err.println("processing  " + inputFileName);
         stanfordParser.parse(content, outputFileName);

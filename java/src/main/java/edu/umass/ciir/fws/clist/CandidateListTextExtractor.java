@@ -13,7 +13,8 @@ import java.util.HashSet;
 import java.util.List;
 
 /**
- *
+ * Candidate list extract based on textual pattern. Takes in a document and output
+ * a list of candidate lists based on HTML pattern.
  * @author wkong
  */
 public class CandidateListTextExtractor {

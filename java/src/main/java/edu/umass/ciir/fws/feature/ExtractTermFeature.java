@@ -1,7 +1,10 @@
-package edu.umass.ciir.fws.nlp;
+package edu.umass.ciir.fws.feature;
 
+import edu.umass.ciir.fws.crawl.*;
+import edu.umass.ciir.fws.clist.*;
+import edu.umass.ciir.fws.query.QueryFileParser;
+import edu.umass.ciir.fws.types.CandidateList;
 import edu.umass.ciir.fws.types.Query;
-import edu.umass.ciir.fws.types.QueryDocumentName;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -16,17 +19,19 @@ import org.lemurproject.galago.tupleflow.execution.Job;
 import org.lemurproject.galago.tupleflow.execution.OutputStep;
 import org.lemurproject.galago.tupleflow.execution.Stage;
 import org.lemurproject.galago.tupleflow.execution.Step;
+import org.lemurproject.galago.tupleflow.types.FileName;
 
 /**
- * *
+ * Tupleflow application that crawls top ranked documents for each query. Read
+ * from index and write HTML files to document directory.
  *
  * @author wkong
  */
-public class ParseDocuments extends AppFunction {
+public class ExtractTermFeature extends AppFunction {
 
-    private static final String name = "parse-documents";
+    private static final String name = "crawl-top-documents";
 
-        @Override
+    @Override
     public String getName() {
         return name;
     }
@@ -40,10 +45,11 @@ public class ParseDocuments extends AppFunction {
     @Override
     public void run(Parameters p, PrintStream output) throws Exception {
         assert (p.isString("queryFile")) : "missing input file, --input";
+        assert (p.isString("index")) : "missing --index";
         assert (p.isString("rankedListFile")) : "missing --rankedListFile";
         assert (p.isString("topNum")) : "missing --topNum";
-        assert (p.isString("parseDir")) : "missing --parseDir";
-        
+        assert (p.isString("docDir")) : "missing --docDir";
+
         Job job = createJob(p);
         AppFunction.runTupleFlowJob(job, p, output);
 
@@ -54,16 +60,16 @@ public class ParseDocuments extends AppFunction {
 
         job.add(getSplitStage(parameters));
         job.add(getProcessStage(parameters));
-        
+
         job.connect("split", "process", ConnectionAssignmentType.Each);
-        
+
         return job;
     }
 
     private Stage getSplitStage(Parameters parameter) {
         Stage stage = new Stage("split");
 
-        stage.addOutput("queryDocNames", new QueryDocumentName.QidDocNameOrder());
+        stage.addOutput("praseQueries", new Query.IdOrder());
 
         List<String> inputFiles = parameter.getAsList("queryFile");
 
@@ -72,11 +78,12 @@ public class ParseDocuments extends AppFunction {
         for (String input : inputFiles) {
             p.getList("input").add(new File(input).getAbsolutePath());
         }
-        
+
         stage.add(new Step(FileSource.class, p));
-        stage.add(new Step(QueryFileDocumentsParser.class, parameter));
-        stage.add(Utility.getSorter(new QueryDocumentName.QidDocNameOrder()));
-        stage.add(new OutputStep("queryDocNames"));
+        stage.add(Utility.getSorter(new FileName.FilenameOrder()));
+        stage.add(new Step(QueryFileParser.class));
+        stage.add(Utility.getSorter(new Query.IdOrder()));
+        stage.add(new OutputStep("praseQueries"));
 
         return stage;
     }
@@ -84,10 +91,10 @@ public class ParseDocuments extends AppFunction {
     private Stage getProcessStage(Parameters parameters) {
         Stage stage = new Stage("process");
 
-        stage.addInput("queryDocNames", new QueryDocumentName.QidDocNameOrder());
-        
-        stage.add(new InputStep("queryDocNames"));
-        stage.add(new Step(DocumentNlpParser.class, parameters));
+        stage.addInput("praseQueries", new Query.IdOrder());
+
+        stage.add(new InputStep("praseQueries"));
+        stage.add(new Step(TopDocumentsWriter.class, parameters));
         return stage;
     }
 }

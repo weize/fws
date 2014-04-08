@@ -13,7 +13,7 @@ import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 
 /**
- *
+ * Extract text content from HTML.
  * @author wkong
  */
 public class HtmlContentExtractor {
@@ -95,10 +95,6 @@ public class HtmlContentExtractor {
             }
         }
         return false;
-    }
-
-    public void run(String filename) throws IOException {
-        System.out.println(extract(filename));
     }
 
     private static boolean needNewLineTag(String tagName) {

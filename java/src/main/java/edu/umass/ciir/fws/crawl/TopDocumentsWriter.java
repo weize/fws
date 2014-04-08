@@ -18,6 +18,8 @@ import org.lemurproject.galago.tupleflow.TupleFlowParameters;
 import org.lemurproject.galago.tupleflow.execution.Verified;
 
 /**
+ * From index, fetch HTML content for top ranked documents and save into files,
+ * for each query.
  *
  * @author wkong
  */
@@ -53,6 +55,6 @@ public class TopDocumentsWriter implements Processor<Query> {
 
     @Override
     public void close() throws IOException {
-        
+
     }
 }

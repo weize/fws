@@ -19,7 +19,7 @@ import org.lemurproject.galago.tupleflow.Parameters;
 import org.lemurproject.galago.tupleflow.Utility;
 
 /**
- * Top ranked documents for each queries.
+ * Represents retrieved documents for each queries.
  *
  * @author wkong
  */
@@ -44,6 +44,7 @@ public class QuerySetDocuments {
     }
 
     private void loadQuerySetDocuments(Parameters parameters) throws Exception {
+        querySetDocuments.clear();
         loadDocsFromIndex = parameters.get("loadDocsFromIndex", false);
         long topNum = parameters.getLong("topNum");
         querySetResults = loadQuerySetResults(rankedListFile, topNum);
@@ -64,7 +65,7 @@ public class QuerySetDocuments {
     }
 
     /**
-     * load top documents as ScoredDocument
+     * Load top documents as ScoredDocument
      *
      * @param rankedListFile
      * @param topNum
@@ -96,6 +97,10 @@ public class QuerySetDocuments {
         return querySetResults;
     }
 
+    /**
+     * Load from index.
+     * @throws Exception 
+     */
     private void loadQuerySetDocumentFromIndex() throws Exception {
         for (String qid : querySetResults.keySet()) {
             List<ScoredDocument> queryResults = querySetResults.get(qid);
@@ -108,6 +113,10 @@ public class QuerySetDocuments {
         }
     }
 
+    /**
+     * Load from files.
+     * @throws Exception 
+     */
     private void loadQuerySetDocumentFromFiles( ) throws Exception {
         for (String qid : querySetResults.keySet()) {
             List<ScoredDocument> queryResults = querySetResults.get(qid);

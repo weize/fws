@@ -25,8 +25,7 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 import org.lemurproject.galago.tupleflow.types.FileName;
 
 /**
- * Parse query file and fetch top ranked documents for all queries.
- * Documents emitted are distinct.
+ * Parses and emits top ranked documents for each queries.
  * @author wkong
  */
 @Verified

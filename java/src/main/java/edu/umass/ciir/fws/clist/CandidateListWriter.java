@@ -16,7 +16,7 @@ import org.lemurproject.galago.tupleflow.TupleFlowParameters;
 import org.lemurproject.galago.tupleflow.execution.Verified;
 
 /**
- *
+ * Tupleflow writer that write candidate lists for each query into files.
  * @author wkong
  */
 @Verified

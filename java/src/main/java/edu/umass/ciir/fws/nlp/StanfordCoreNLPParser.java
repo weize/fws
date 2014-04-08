@@ -21,6 +21,10 @@ import java.io.*;
 import java.util.*;
 
 /**
+ * Use StanfordCoreNLP parser to parse text. It first splits document
+ * content into sentences, because StanfordCoreNLP parser can not take all
+ * sentences in a document because of memory issues. Then, it pass each sentence
+ * to StanfordCoreNLP parser for parsing (and other annotation)
  *
  * @author wkong
  */
@@ -46,10 +50,11 @@ public class StanfordCoreNLPParser {
     }
 
     /**
-     * *
+     * Parse the given text and write down parsing results in the given file.
      *
      * @param text
      * @param outputFileName
+     * @throws IOException
      */
     public void parse(String text, String outputFileName) throws IOException {
         // Need to first split sentence
@@ -66,6 +71,12 @@ public class StanfordCoreNLPParser {
 
     }
 
+    /**
+     * Parsing each sentence.
+     *
+     * @param text
+     * @throws IOException
+     */
     private void prasePerSentence(String text) throws IOException {
         Annotation annotationSplit = new Annotation(text);
         try {
@@ -138,7 +149,7 @@ public class StanfordCoreNLPParser {
     }
 
     /**
-     * Split text into sentence Need to do this first, otherwise parser will
+     * Split text into sentences. Need to do this first, otherwise parser will
      * take all text to do parsing which will case memory issue
      *
      * @param text
@@ -154,6 +165,9 @@ public class StanfordCoreNLPParser {
         for (CoreMap sentence : sentences) {
             String senText = sentence.get(CoreAnnotations.TextAnnotation.class).trim();
             List<CoreLabel> tokens = sentence.get(CoreAnnotations.TokensAnnotation.class);
+
+            // limits for the number of tokens in a sentence: 300
+            // Longer sentence are ignored, because of memory issues
             if (tokens.size() <= 300) {
                 if (senText.length() > 0) {
                     sentencesText.add(senText);

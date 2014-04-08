@@ -20,7 +20,8 @@ import org.lemurproject.galago.tupleflow.Utility;
 import org.lemurproject.galago.tupleflow.execution.Verified;
 
 /**
- *
+ * Candidate lists extractor that will be called by Tupleflow jobs to extract
+ * candidate lists. 
  * @author wkong
  */
 @Verified
@@ -63,7 +64,7 @@ public class CandidateListExtractor extends StandardStep<Query, CandidateList> {
         String parseFileName = String.format("%s%s%s%s%s.parse",
                 parseDir, File.separator, query.id, File.separator, doc.name);
         String parseFileContent = Utility.readFileToString(new File(parseFileName));
-        
+
         List<edu.umass.ciir.fws.clist.CandidateList> lists
                 = cListTextExtractor.extract(doc, query, parseFileContent);
         for (edu.umass.ciir.fws.clist.CandidateList list : lists) {

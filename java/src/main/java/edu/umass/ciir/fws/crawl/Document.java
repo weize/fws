@@ -14,7 +14,7 @@ import org.lemurproject.galago.core.retrieval.Retrieval;
 import org.lemurproject.galago.core.retrieval.ScoredDocument;
 
 /**
- *
+ * Represents a document.
  * @author wkong
  */
 public class Document {

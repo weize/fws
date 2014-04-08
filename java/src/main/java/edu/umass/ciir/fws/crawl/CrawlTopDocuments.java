@@ -20,9 +20,10 @@ import org.lemurproject.galago.tupleflow.execution.Stage;
 import org.lemurproject.galago.tupleflow.execution.Step;
 import org.lemurproject.galago.tupleflow.types.FileName;
 
-/***
- * Crawl top ranked documents for each query.
- * Read from index and write html files to docDi
+/**
+ * Tupleflow application that crawls top ranked documents for each query. Read
+ * from index and write HTML files to document directory.
+ *
  * @author wkong
  */
 public class CrawlTopDocuments extends AppFunction {
@@ -47,7 +48,7 @@ public class CrawlTopDocuments extends AppFunction {
         assert (p.isString("rankedListFile")) : "missing --rankedListFile";
         assert (p.isString("topNum")) : "missing --topNum";
         assert (p.isString("docDir")) : "missing --docDir";
-        
+
         Job job = createJob(p);
         AppFunction.runTupleFlowJob(job, p, output);
 
@@ -58,9 +59,9 @@ public class CrawlTopDocuments extends AppFunction {
 
         job.add(getSplitStage(parameters));
         job.add(getProcessStage(parameters));
-        
+
         job.connect("split", "process", ConnectionAssignmentType.Each);
-        
+
         return job;
     }
 
@@ -90,7 +91,7 @@ public class CrawlTopDocuments extends AppFunction {
         Stage stage = new Stage("process");
 
         stage.addInput("praseQueries", new Query.IdOrder());
-        
+
         stage.add(new InputStep("praseQueries"));
         stage.add(new Step(TopDocumentsWriter.class, parameters));
         return stage;
