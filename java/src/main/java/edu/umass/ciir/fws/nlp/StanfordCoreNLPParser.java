@@ -62,7 +62,7 @@ public class StanfordCoreNLPParser {
         String[] sentences = splitSentences(text);
         for (String sen : sentences) {
             // only parse potential setences (sentences that contains "and" or "or"
-            writer.write("\nsentence:\n" + sen + "\n\n");
+            // writer.write("\nsentence:\n" + sen + "\n\n");
             if (containAndOr(sen)) {
                 prasePerSentence(sen);
             }
