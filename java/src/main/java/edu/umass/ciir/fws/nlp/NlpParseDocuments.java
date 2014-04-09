@@ -1,6 +1,5 @@
 package edu.umass.ciir.fws.nlp;
 
-import edu.umass.ciir.fws.types.Query;
 import edu.umass.ciir.fws.types.QueryDocumentName;
 import java.io.File;
 import java.io.PrintStream;

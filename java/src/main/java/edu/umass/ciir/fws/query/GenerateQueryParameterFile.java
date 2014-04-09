@@ -2,7 +2,6 @@ package edu.umass.ciir.fws.query;
 
 import edu.umass.ciir.fws.types.Query;
 import edu.umass.ciir.fws.utility.Utility;
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.PrintStream;
 import java.util.ArrayList;

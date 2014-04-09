@@ -1,9 +1,6 @@
 package edu.umass.ciir.fws.feature;
 
-import edu.umass.ciir.fws.crawl.*;
-import edu.umass.ciir.fws.clist.*;
 import edu.umass.ciir.fws.query.QueryFileParser;
-import edu.umass.ciir.fws.types.CandidateList;
 import edu.umass.ciir.fws.types.Query;
 import java.io.File;
 import java.io.PrintStream;
