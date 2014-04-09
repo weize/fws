@@ -37,7 +37,7 @@ public class CandidateListTextExtractor {
         this.document = document;
 
         String[] lines = parseFileContent.split("\n");
-        for (int i = 0; i < lines.length; i += 7) {
+        for (int i = 0; i + 6 < lines.length; i += 7) {
             parseTreeText = lines[i];
             senText = lines[i + 1];
             if (AndOrSen(senText)) {
@@ -142,6 +142,7 @@ public class CandidateListTextExtractor {
                 StringBuilder textBuilder = new StringBuilder();
                 NodeText(children[i], textBuilder, used);
                 String text = cleanText(textBuilder.toString());
+                text = handleSinleQuote(text);
                 if (text.length() != 0) {
                     items.add(text);
                 }
@@ -316,6 +317,18 @@ public class CandidateListTextExtractor {
             return (pos1.charAt(0) == pos2.charAt(0)) && (pos1.charAt(1) == pos2.charAt(1));
         }
 
+    }
+
+    /**
+     * Stanford core nlp handles single quotes differently to Galago
+     * (a) Stanford: they're -> [they, re],
+     * (b) Galago: they're -> [theyre]
+     * This function will convert (a) to (b)
+     * @param text
+     * @return 
+     */
+    private String handleSinleQuote(String text) {
+        return text.replaceAll("\\s+'([\\p{Alnum}])", "'$1");
     }
 
     class Node {

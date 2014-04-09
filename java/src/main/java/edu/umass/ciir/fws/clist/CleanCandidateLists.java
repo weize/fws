@@ -88,11 +88,14 @@ public class CleanCandidateLists extends AppFunction {
         stage.addInput("praseQueries", new Query.IdOrder());
         
         stage.add(new InputStep("praseQueries"));
-        parameters.set("suffix", "clist"); // reader from *.clist
-        stage.add(new Step(CandidateListParser.class, parameters));
-        stage.add(new Step(CandidateListCleaner.class, parameters));
-        parameters.set("suffix", "clean.clist"); // write to *.clean.clist
-        stage.add(new Step(CandidateListWriter.class, parameters));
+        Parameters p1 = parameters.clone();
+        p1.set("suffix", "clist"); // reader from *.clist
+        stage.add(new Step(CandidateListParser.class, p1));
+        stage.add(new Step(CandidateListCleaner.class, p1));
+        
+        Parameters p2 = parameters.clone();
+        p2.set("suffix", "clean.clist"); // write to *.clean.clist
+        stage.add(new Step(CandidateListWriter.class, p2));
 
         return stage;
     }

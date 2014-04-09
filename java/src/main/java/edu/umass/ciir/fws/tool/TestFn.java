@@ -41,10 +41,12 @@ public class TestFn extends AppFunction {
     public void run(Parameters p, PrintStream output) throws Exception {
         output.println("in test");
         output.println();
-        
-        testPrintHTML(p, output);
+
+        //testPrintHTML(p, output);
         //testNlp(output);
         //testTokenizer(p, output);
+        testReplace(p, output);
+
     }
 
     private void testPrintHTML(Parameters p, PrintStream output) throws Exception {
@@ -57,9 +59,9 @@ public class TestFn extends AppFunction {
 
         for (ScoredDocument sd : results) { // print results
             output.println(sd.documentName);
-            
+
             Document document = retrieval.getDocument(sd.documentName, new Document.DocumentComponents(true, true, true));
-            for(String term : document.terms) {
+            for (String term : document.terms) {
                 output.println(term);
             }
             for (String key : document.metadata.keySet()) {
@@ -71,9 +73,9 @@ public class TestFn extends AppFunction {
     }
 
     private void testTokenizer(Parameters p, PrintStream output) {
-        String text = "He's great!";
-        String [] tokens = TextProcessing.tokenize(text);
-        for(String token : tokens) {
+        String text = "Horses are very durable, and they'll lie through their teeth about how they're feeling";
+        String[] tokens = TextProcessing.tokenize(text);
+        for (String token : tokens) {
             output.println(token);
         }
     }
@@ -84,7 +86,15 @@ public class TestFn extends AppFunction {
         String htmlFile = "../exp/doc/51/clueweb09-en0000-02-14693.html";
         String text = HtmlContentExtractor.extract(htmlFile);
         Utility.copyStringToFile(text, new File("test.content"));
-        
-        stanfordParser.parse(text, "test.parse");       
+
+        stanfordParser.parse(text, "test.parse");
     }
+
+    private void testReplace(Parameters p, PrintStream output) {
+        String text = "They   're hi's efe '' efe '6efe";
+        output.println(text);
+        text = text.replaceAll("\\s+'([\\p{Alnum}])", "'$1");
+        output.println(text);
+    }
+
 }
