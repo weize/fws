@@ -33,6 +33,7 @@ public class CandidateListExtractor extends StandardStep<Query, CandidateList> {
     CandidateListHtmlExtractor cListHtmlExtractor;
     CandidateListTextExtractor cListTextExtractor;
     String parseDir;
+    String docDir;
 
     public CandidateListExtractor(TupleFlowParameters parameters) throws Exception {
         Parameters p = parameters.getJSON();
@@ -40,14 +41,22 @@ public class CandidateListExtractor extends StandardStep<Query, CandidateList> {
         cListHtmlExtractor = new CandidateListHtmlExtractor();
         cListTextExtractor = new CandidateListTextExtractor();
         parseDir = p.getString("parseDir");
+        docDir = p.getString("docDir");
     }
 
     @Override
     public void process(Query query) throws IOException {
         List<Document> documents = querySetDocuments.get(query.id);
         for (Document doc : documents) {
+            String docFileName = Utility.getDocFileName(docDir, query.id, doc.name);
+            System.err.println("Processing " + docFileName);
             extractHtml(query, doc);
+            System.err.println("Done processing " + docFileName);
+            
+            String pasedDocFileName = Utility.getParsedDocFileName(parseDir, query.id, doc.name);
+            System.err.println("Processing " + pasedDocFileName);
             extractText(query, doc);
+            System.err.println("Done processing " + pasedDocFileName);
 
         }
     }
