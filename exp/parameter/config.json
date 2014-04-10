@@ -6,5 +6,7 @@
 	"clistDir" : "../exp/clist",
 	"docDir" : "../exp/doc",
 	"parseDir" : "../exp/parse",
+	"parseCorpusDir" : "../data/parse",
+	"docNameFile" : "../data/doc-name/doc-name",
 	"topNum" : 100
 }
