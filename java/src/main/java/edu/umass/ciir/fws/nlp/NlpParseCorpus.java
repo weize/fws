@@ -1,5 +1,6 @@
 package edu.umass.ciir.fws.nlp;
 
+import edu.umass.ciir.fws.types.DocumentName;
 import edu.umass.ciir.fws.types.QueryDocumentName;
 import java.io.File;
 import java.io.PrintStream;
@@ -17,13 +18,13 @@ import org.lemurproject.galago.tupleflow.execution.Stage;
 import org.lemurproject.galago.tupleflow.execution.Step;
 
 /**
- * Tupleflow application for parsing documents of each query
+ * Tupleflow application for parsing documents in the corpus.
  *
  * @author wkong
  */
-public class NlpParseDocuments extends AppFunction {
+public class NlpParseCorpus extends AppFunction {
 
-    private static final String name = "parse-documents";
+    private static final String name = "parse-corpus";
 
     @Override
     public String getName() {
@@ -38,12 +39,10 @@ public class NlpParseDocuments extends AppFunction {
 
     @Override
     public void run(Parameters p, PrintStream output) throws Exception {
-        assert (p.isString("queryFile")) : "missing input file, --input";
-        assert (p.isString("rankedListFile")) : "missing --rankedListFile";
-        assert (p.isString("topNum")) : "missing --topNum";
-        assert (p.isString("parseDir")) : "missing --parseDir";
-        assert (p.isString("docDir")) : "missing --docDir";
-
+        assert (p.isString("docNameFile")) : "missing input file, --docNameFile";
+        assert (p.isString("parseCorpusDir")) : "missing --parseCorpusDir";
+        assert (p.isString("index")) : "missing --index";
+        
         Job job = createJob(p);
         AppFunction.runTupleFlowJob(job, p, output);
 
@@ -63,9 +62,9 @@ public class NlpParseDocuments extends AppFunction {
     private Stage getSplitStage(Parameters parameter) {
         Stage stage = new Stage("split");
 
-        stage.addOutput("queryDocNames", new QueryDocumentName.QidDocNameOrder());
+        stage.addOutput("docNames", new DocumentName.NameOrder());
 
-        List<String> inputFiles = parameter.getAsList("queryFile");
+        List<String> inputFiles = parameter.getAsList("docNameFile");
 
         Parameters p = new Parameters();
         p.set("input", new ArrayList());
@@ -74,9 +73,9 @@ public class NlpParseDocuments extends AppFunction {
         }
 
         stage.add(new Step(FileSource.class, p));
-        stage.add(new Step(QueryFileDocumentsParser.class, parameter));
-        stage.add(Utility.getSorter(new QueryDocumentName.QidDocNameOrder()));
-        stage.add(new OutputStep("queryDocNames"));
+        stage.add(new Step(DocumentNameFileParser.class));
+        stage.add(Utility.getSorter(new DocumentName.NameOrder()));
+        stage.add(new OutputStep("docNames"));
 
         return stage;
     }
@@ -84,10 +83,10 @@ public class NlpParseDocuments extends AppFunction {
     private Stage getProcessStage(Parameters parameters) {
         Stage stage = new Stage("process");
 
-        stage.addInput("queryDocNames", new QueryDocumentName.QidDocNameOrder());
+        stage.addInput("docNames", new DocumentName.NameOrder());
 
-        stage.add(new InputStep("queryDocNames"));
-        stage.add(new Step(DocumentNLPParser.class, parameters));
+        stage.add(new InputStep("docNames"));
+        stage.add(new Step(DocumentCorpusNLPParser.class, parameters));
         return stage;
     }
 }

@@ -22,7 +22,7 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
  */
 @Verified
 @InputClass(className = "edu.umass.ciir.fws.types.QueryDocumentName")
-public class DocumentNlpParser implements Processor<QueryDocumentName> {
+public class DocumentNLPParser implements Processor<QueryDocumentName> {
 
     Logger logger;
     Parameters parameters;
@@ -30,9 +30,9 @@ public class DocumentNlpParser implements Processor<QueryDocumentName> {
     String parseDir;
     String docDir;
 
-    public DocumentNlpParser(TupleFlowParameters parameters) throws IOException {
+    public DocumentNLPParser(TupleFlowParameters parameters) throws IOException {
         this.parameters = parameters.getJSON();
-        logger = Logger.getLogger(DocumentNlpParser.class.toString());
+        logger = Logger.getLogger(DocumentNLPParser.class.toString());
         stanfordParser = new StanfordCoreNLPParser();
         parseDir = this.parameters.getString("parseDir");
         docDir = this.parameters.getString("docDir");
@@ -55,7 +55,7 @@ public class DocumentNlpParser implements Processor<QueryDocumentName> {
 
         String inputFileName = Utility.getDocFileName(
                 docDir, queryDocName.qid, queryDocName.docName);
-        String content = HtmlContentExtractor.extract(inputFileName);
+        String content = HtmlContentExtractor.extractFromFile(inputFileName);
 
         System.err.println("processing  " + inputFileName);
         stanfordParser.parse(content, outputFileName);

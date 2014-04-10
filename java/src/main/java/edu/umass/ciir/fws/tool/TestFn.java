@@ -84,7 +84,7 @@ public class TestFn extends AppFunction {
         output.println("In test nlp!");
         StanfordCoreNLPParser stanfordParser = new StanfordCoreNLPParser();
         String htmlFile = "../exp/doc/51/clueweb09-en0000-02-14693.html";
-        String text = HtmlContentExtractor.extract(htmlFile);
+        String text = HtmlContentExtractor.extractFromFile(htmlFile);
         Utility.copyStringToFile(text, new File("test.content"));
 
         stanfordParser.parse(text, "test.parse");

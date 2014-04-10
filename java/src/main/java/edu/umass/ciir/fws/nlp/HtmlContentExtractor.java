@@ -36,10 +36,18 @@ public class HtmlContentExtractor {
         "img", "input", "embed", "figure", "keygen", "map", "object",
         "progress", "q", "video", "span"};
 
-    public static String extract(String filename) throws IOException {
+    public static String extractFromFile(String filename) throws IOException {
         File input = new File(filename);
         Document doc = Jsoup.parse(input, "UTF-8");
+        return extract(doc);
+    }
 
+    public static String extractFromContent(String content) {
+        Document doc = Jsoup.parse(content, "UTF-8");
+        return extract(doc);
+    }
+
+    private static String extract(Document doc) {
         StringBuilder text = new StringBuilder();
         Node node = doc;
 
@@ -48,7 +56,7 @@ public class HtmlContentExtractor {
         text2 = text.toString().trim().replaceAll("\\p{Z}", " ");
 
         // remove empty lines, and trim all lines
-        text2 = text2.toString().replaceAll("\\s*\\n\\s*", "\n");
+        text2 = text2.replaceAll("\\s*\\n\\s*", "\n");
 
         // remove extra spacing
         text2 = text2.replaceAll("[\\s&&[^\\n]]+", " ");
@@ -57,8 +65,9 @@ public class HtmlContentExtractor {
 
     /**
      * Extract the title.
+     *
      * @param html
-     * @return 
+     * @return
      */
     public static String extractTitle(String html) {
         Document doc = Jsoup.parse(html, "UTF-8");
@@ -121,4 +130,5 @@ public class HtmlContentExtractor {
         }
         return false;
     }
+
 }
