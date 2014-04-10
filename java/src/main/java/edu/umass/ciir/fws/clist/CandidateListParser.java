@@ -22,7 +22,7 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 
 /**
  * Tupleflow parser that reads candidate lists from file for each query, and
- * also contains some utility functions for candidate lists
+ * also contains some utility functions for candidate lists.
  *
  * @author wkong
  */
