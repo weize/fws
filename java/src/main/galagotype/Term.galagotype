@@ -1,0 +1,7 @@
+package edu.umass.ciir.fws.types;
+
+type Term {
+	String term;
+	
+	order: +term;
+}

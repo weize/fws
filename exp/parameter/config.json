@@ -8,5 +8,6 @@
 	"parseDir" : "../exp/parse",
 	"parseCorpusDir" : "../data/parse",
 	"docNameFile" : "../data/doc-name/doc-name",
+	"clueDfFile" : "../data/df/clueDf.gz",
 	"topNum" : 100
 }

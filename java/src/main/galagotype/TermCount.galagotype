@@ -1,0 +1,8 @@
+package edu.umass.ciir.fws.types;
+
+type TermCount {
+	String term;
+        long count;
+	
+	order: +term;
+}
