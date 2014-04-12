@@ -6,23 +6,21 @@ package edu.umass.ciir.fws.feature;
 
 import edu.umass.ciir.fws.clist.CandidateList;
 import edu.umass.ciir.fws.clist.CandidateListParser;
-import edu.umass.ciir.fws.clist.CandidateListTextExtractor;
 import edu.umass.ciir.fws.crawl.*;
 import edu.umass.ciir.fws.types.Query;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.TreeMap;
 import java.util.logging.Logger;
-import org.lemurproject.galago.core.retrieval.Retrieval;
-import org.lemurproject.galago.core.retrieval.RetrievalFactory;
 import org.lemurproject.galago.tupleflow.InputClass;
 import org.lemurproject.galago.tupleflow.Parameters;
 import org.lemurproject.galago.tupleflow.Processor;
@@ -41,6 +39,7 @@ public class TermFeaturesExtractor implements Processor<Query> {
     final static double LOG2BASE = Math.log(2);
     final static int MAX_TERM_SIZE = CandidateList.MAX_TERM_SIZE;
     String clistDir;
+    String featureDir;
 
     QuerySetDocuments querySetDocuments;
     List<CandidateList> clists;
@@ -49,7 +48,7 @@ public class TermFeaturesExtractor implements Processor<Query> {
     Logger logger;
 
     Query query;
-    HashMap<String, TermFeatures> termFeatures;
+    TreeMap<String, TermFeatures> termFeatures;
     HashMap<String, Double> clueDfs; // clue web document frequency
     double clueCdf;
 
@@ -61,11 +60,12 @@ public class TermFeaturesExtractor implements Processor<Query> {
     public TermFeaturesExtractor(TupleFlowParameters parameters) throws Exception {
         Parameters p = parameters.getJSON();
         clistDir = p.getString("clistDir");
+        featureDir = p.getString("featureDir");
         String clueDfFile = p.getString("clueDfFile");
         String clistDfFile = p.getString("clistDfFile");
-        clueCdf = p.getDouble("clueCdf");
+        clueCdf = p.getLong("clueCdf");
 
-        termFeatures = new HashMap<>();
+        termFeatures = new TreeMap<>();
         clueDfs = new HashMap<>();
         clistDfs = new HashMap<>();
 
@@ -80,11 +80,12 @@ public class TermFeaturesExtractor implements Processor<Query> {
     public void process(Query query) throws IOException {
         this.query = query;
 
+        System.err.println(String.format("processing query %s", query.id));
         loadCandidateLists();
         initializeTermFeatures();
         setCurrentDocumentList();
 
-        extractTermLength();
+        extractTermLength(); // feature: length of the feature term
 
         // features based on documents
         extractDocFeaturesInContentField();
@@ -96,6 +97,9 @@ public class TermFeaturesExtractor implements Processor<Query> {
         extractListFeatures(true);
 
         extractClueWebIDF();
+        extractCandidateListIDF();
+
+        output();
 
     }
 
@@ -170,7 +174,7 @@ public class TermFeaturesExtractor implements Processor<Query> {
     private void extractDocFeaturesInContentField() {
         for (Document doc : docs) {
             doc.ngramMap = new HashMap<>();
-            buildTermMapFomText(doc.ngramMap, doc.terms);
+            buildNgramMapFomText(doc.ngramMap, doc.terms);
         }
 
         extractTfDfSfFromNgramMap(TermFeatures._contentTf, TermFeatures._contentDf,
@@ -181,7 +185,7 @@ public class TermFeaturesExtractor implements Processor<Query> {
         for (Document doc : docs) {
             doc.ngramMap = new HashMap<>();
             List<String> terms = Arrays.asList(doc.title.split("\\s+"));
-            buildTermMapFomText(doc.ngramMap, terms);
+            buildNgramMapFomText(doc.ngramMap, terms);
         }
 
         extractTfDfSfFromNgramMap(TermFeatures._titleTf, TermFeatures._titleDf,
@@ -195,7 +199,7 @@ public class TermFeaturesExtractor implements Processor<Query> {
      * @param termMap
      * @param terms
      */
-    private void buildTermMapFomText(HashMap<String, Integer> ngramMap, List<String> terms) {
+    private void buildNgramMapFomText(HashMap<String, Integer> ngramMap, List<String> terms) {
         ngramMap.clear();
         for (int len = 1; len <= MAX_TERM_SIZE; len++) {
             for (int i = 0; i + len <= terms.size(); i++) {
@@ -348,10 +352,6 @@ public class TermFeaturesExtractor implements Processor<Query> {
     private double idf(double df, double colSize) {
         return Math.log((colSize - df + 0.5) / (df + 0.5)) / LOG2BASE;
     }
-    
-     private double idfSmall(double df, double colSize) {
-        return Math.log((colSize) / (df)) / LOG2BASE;
-    }
 
     final static int _listDFQueryIdx = 0;
     final static int _listDFQueryHlIdx = 1;
@@ -360,7 +360,7 @@ public class TermFeaturesExtractor implements Processor<Query> {
     final static int _listDFListIdx = 4;
     final static int _listDFListHlIdx = 5;
 
-    private void extractlistGIDF() {
+    private void extractCandidateListIDF() {
         long[] ones = new long[6];
         for (int i = 0; i < ones.length; i++) {
             ones[i] = 1;
@@ -372,12 +372,12 @@ public class TermFeaturesExtractor implements Processor<Query> {
             // assume the frequency is 1 if the term is not found in the candidate list document frequency file.
             long[] dfs = clistDfs.containsKey(term) ? this.clistDfs.get(term) : ones;
 
-            double listQueryIDF = idfSmall(dfs[_listDFQueryIdx], clistCdfs[_listDFQueryIdx]);
-            double listQueryHlIDF = idfSmall(dfs[_listDFQueryHlIdx], clistCdfs[_listDFQueryHlIdx]);
-            double listDocIDF = idfSmall(dfs[_listDFDocIdx], clistCdfs[_listDFDocIdx]);
-            double listDocHlIDF = idfSmall(dfs[_listDFDocHlIdx], clistCdfs[_listDFDocHlIdx]);
-            double listListIDF = idfSmall(dfs[_listDFListIdx], clistCdfs[_listDFListIdx]);
-            double listListHlIDF = idfSmall(dfs[_listDFListHlIdx], clistCdfs[_listDFListHlIdx]);
+            double listQueryIDF = idf(dfs[_listDFQueryIdx], clistCdfs[_listDFQueryIdx]);
+            double listQueryHlIDF = idf(dfs[_listDFQueryHlIdx], clistCdfs[_listDFQueryHlIdx]);
+            double listDocIDF = idf(dfs[_listDFDocIdx], clistCdfs[_listDFDocIdx]);
+            double listDocHlIDF = idf(dfs[_listDFDocHlIdx], clistCdfs[_listDFDocHlIdx]);
+            double listListIDF = idf(dfs[_listDFListIdx], clistCdfs[_listDFListIdx]);
+            double listListHlIDF = idf(dfs[_listDFListHlIdx], clistCdfs[_listDFListHlIdx]);
 
             termFeature.setFeature(listQueryIDF, TermFeatures._listQueryIDF);
             termFeature.setFeature(listQueryHlIDF, TermFeatures._listQueryHlIDF);
@@ -409,5 +409,16 @@ public class TermFeaturesExtractor implements Processor<Query> {
 
         }
 
+    }
+
+    private void output() throws IOException {
+        String fileName = Utility.getTermFeatureFileName(featureDir, query.id);
+        Writer writer = Utility.getWriter(fileName);
+        for (String term : termFeatures.keySet()) {
+            writer.write(termFeatures.get(term).toString());
+            writer.write("\n");
+        }
+        writer.close();
+        System.err.println(String.format("Written in %s", fileName));
     }
 }

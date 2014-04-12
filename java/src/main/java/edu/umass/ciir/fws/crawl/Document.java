@@ -36,6 +36,7 @@ public class Document {
         title = TextProcessing.clean(HtmlContentExtractor.extractTitle(document.text));
         
     }
+    
     Document(ScoredDocument sd, String text) {
         rank = sd.rank;
         name = sd.documentName;

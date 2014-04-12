@@ -41,11 +41,15 @@ public class ExtractTermFeature extends AppFunction {
 
     @Override
     public void run(Parameters p, PrintStream output) throws Exception {
-//        assert (p.isString("queryFile")) : "missing input file, --input";
-//        assert (p.isString("index")) : "missing --index";
-//        assert (p.isString("rankedListFile")) : "missing --rankedListFile";
-//        assert (p.isString("topNum")) : "missing --topNum";
-//        assert (p.isString("docDir")) : "missing --docDir";
+        assert (p.isString("queryFile")) : "missing input file, --input";
+        assert (p.isString("index")) : "missing --index";
+        assert (p.isString("rankedListFile")) : "missing --rankedListFile";
+        assert (p.isString("topNum")) : "missing --topNum";
+        assert (p.isString("clistDir")) : "missing --clistDir";
+        assert (p.isString("clueDfFile")) : "missing --clueDfFile";
+        assert (p.isString("clueCdf")) : "missing --clueCdf";
+        assert (p.isString("clistDfFile")) : "missing --clistDfFile";
+        assert (p.isString("termFeatures")) : "missing --termFeatures";
 
         Job job = createJob(p);
         AppFunction.runTupleFlowJob(job, p, output);
