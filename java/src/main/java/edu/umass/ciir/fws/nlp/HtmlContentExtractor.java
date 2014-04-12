@@ -73,7 +73,9 @@ public class HtmlContentExtractor {
         Document doc = Jsoup.parse(html, "UTF-8");
         Elements elems = doc.getElementsByTag("title");
         StringBuilder title = new StringBuilder();
-        getNodeText(elems.get(0), title);
+        if (elems.size() > 0) {
+            getNodeText(elems.get(0), title);
+        }
         return title.toString();
     }
 
