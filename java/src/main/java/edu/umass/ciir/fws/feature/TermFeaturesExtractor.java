@@ -287,8 +287,7 @@ public class TermFeaturesExtractor implements Processor<Query> {
         HashMap<Long, ArrayList<CandidateList>> docidListsMap = new HashMap<>();
         for (CandidateList clist : this.clists) {
             // filter text candidate lists if specified
-            if (filterTextCandidateList && clist.listType.equalsIgnoreCase(
-                    CandidateListTextExtractor.type)) {
+            if (filterTextCandidateList && clist.isTextType()) {
                 continue;
             }
 

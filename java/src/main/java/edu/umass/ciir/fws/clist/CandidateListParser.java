@@ -56,9 +56,10 @@ public class CandidateListParser extends StandardStep<Query, edu.umass.ciir.fws.
 
     /**
      * Load candidate lists from a file.
+     *
      * @param fileName
      * @return
-     * @throws IOException 
+     * @throws IOException
      */
     public static List<CandidateList> loadCandidateList(String fileName) throws IOException {
         ArrayList<CandidateList> clist = new ArrayList<>();
@@ -69,7 +70,7 @@ public class CandidateListParser extends StandardStep<Query, edu.umass.ciir.fws.
             long docRank = Long.parseLong(fields[1]);
             String listType = fields[2];
             String itemList = fields[3];
-            String [] items = splitItemList(itemList);
+            String[] items = splitItemList(itemList);
             clist.add(new CandidateList(qid, docRank, listType, itemList, items));
         }
         return clist;
@@ -85,5 +86,14 @@ public class CandidateListParser extends StandardStep<Query, edu.umass.ciir.fws.
 
     public static String joinItemList(List<String> items) {
         return Utility.join(items, "|");
+    }
+
+    /**
+     * if the candidate list is extracted based on html patterns.
+     * @param candidateList
+     * @return 
+     */
+    public static boolean isHtmlCandidateList(edu.umass.ciir.fws.types.CandidateList candidateList) {
+        return !candidateList.listType.equals(CandidateListTextExtractor.type);
     }
 }

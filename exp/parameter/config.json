@@ -9,5 +9,6 @@
 	"parseCorpusDir" : "../data/parse",
 	"docNameFile" : "../data/doc-name/doc-name",
 	"clueDfFile" : "../data/df/clueDf.gz",
+	"clistDfFile" : "../data/df/clistDf.gz",
 	"topNum" : 100
 }

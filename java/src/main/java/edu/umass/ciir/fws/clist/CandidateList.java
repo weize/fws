@@ -41,4 +41,17 @@ public class CandidateList extends edu.umass.ciir.fws.types.CandidateList {
         }
     }
 
+    /**
+     * if the candidate list is html type (extracted based on html patterns).
+     *
+     * @return
+     */
+    public boolean isHtmlType() {
+        return !isTextType();
+    }
+
+    public boolean isTextType() {
+        return listType.equals(CandidateListTextExtractor.type);
+    }
+
 }
