@@ -9,7 +9,7 @@
 	"parseCorpusDir" : "../data/parse",
 	"docNameFile" : "../data/doc-name/doc-name",
 	"clueDfFile" : "../data/df/clueDf.gz",
-	"clueCdf" : 81798,
+	"clueCdf" : 33836981,
 	"clistDfFile" : "../data/df/clistDf.gz",
 	"featureDir" : "../exp/feature",
 	"topNum" : 100
