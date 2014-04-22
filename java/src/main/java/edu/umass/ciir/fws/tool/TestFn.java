@@ -45,8 +45,43 @@ public class TestFn extends AppFunction {
         //testPrintHTML(p, output);
         //testNlp(output);
         //testTokenizer(p, output);
-        testReplace(p, output);
+        //testReplace(p, output);
+        testPrintTermsInDoc(p, output);
 
+    }
+
+    private void testPrintTermsInDoc(Parameters p, PrintStream output) throws Exception {
+        Retrieval retrieval = RetrievalFactory.instance(p);
+
+        String docName = "clueweb09-en0000-03-02441";
+        Document document = retrieval.getDocument(docName, new Document.DocumentComponents(true, true, true));
+
+        output.println(docName);
+
+        output.println("================meta================");
+        for (String key : document.metadata.keySet()) {
+            output.println(key + "\t" + document.metadata.get(key));
+        }
+        
+        output.println("\n\n================terms================");
+        for (String term : document.terms) {
+            output.println(term);
+        }
+        
+        String[] tokens = TextProcessing.tokenize("The Hidden Advanced Aircraft of Bush's Black Opera...");
+        
+        output.println("\n\n================terms2================");
+        for (String term : tokens) {
+            output.println(term);
+        }
+        
+        String[] tokens2 = TextProcessing.tokenize(document.text);
+        
+        output.println("\n\n================terms3================");
+        for (String term : tokens2) {
+            output.println(term);
+        }
+        
     }
 
     private void testPrintHTML(Parameters p, PrintStream output) throws Exception {

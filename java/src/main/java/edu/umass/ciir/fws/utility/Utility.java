@@ -102,7 +102,11 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
     }
 
     public static String getTermFeatureFileName(String featureDir, String qid) {
-        return String.format("%s%s%s.tfeature", featureDir, File.separator, qid);
+        return String.format("%s%s%s.t.feature", featureDir, File.separator, qid);
+    }
+
+    public static String getQdFacetFeatureFileName(String qdFeatureDir, String qid) {
+        return String.format("%s%s%s.f.feature", qdFeatureDir, File.separator, qid);
     }
 
 }

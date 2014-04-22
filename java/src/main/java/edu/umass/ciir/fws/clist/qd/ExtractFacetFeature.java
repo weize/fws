@@ -1,5 +1,6 @@
-package edu.umass.ciir.fws.feature;
+package edu.umass.ciir.fws.clist.qd;
 
+import edu.umass.ciir.fws.feature.*;
 import edu.umass.ciir.fws.query.QueryFileParser;
 import edu.umass.ciir.fws.types.Query;
 import java.io.File;
@@ -19,14 +20,14 @@ import org.lemurproject.galago.tupleflow.execution.Step;
 import org.lemurproject.galago.tupleflow.types.FileName;
 
 /**
- * Tupleflow application that extract facet term features.
+ * Tupleflow application that extract facet features for QD.
  *
  *
  * @author wkong
  */
-public class ExtractTermFeature extends AppFunction {
+public class ExtractFacetFeature extends AppFunction {
 
-    private static final String name = "extract-term-feature";
+    private static final String name = "extract-facet-feature";
 
     @Override
     public String getName() {
@@ -49,7 +50,7 @@ public class ExtractTermFeature extends AppFunction {
         assert (p.isString("clueDfFile")) : "missing --clueDfFile";
         assert (p.isString("clueCdf")) : "missing --clueCdf";
         assert (p.isString("clistDfFile")) : "missing --clistDfFile";
-        assert (p.isString("featureDir")) : "missing --featureDir";
+        assert (p.isString("qdFeatureDir")) : "missing --qdFeatureDir";
 
         Job job = createJob(p);
         AppFunction.runTupleFlowJob(job, p, output);
@@ -95,7 +96,7 @@ public class ExtractTermFeature extends AppFunction {
         stage.addInput("praseQueries", new Query.IdOrder());
 
         stage.add(new InputStep("praseQueries"));
-        stage.add(new Step(TermFeaturesExtractor.class, parameters));
+        stage.add(new Step(FacetFeaturesExtractor.class, parameters));
         return stage;
     }
 }

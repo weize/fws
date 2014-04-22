@@ -4,6 +4,8 @@
  */
 package edu.umass.ciir.fws.crawl;
 
+import edu.emory.mathcs.backport.java.util.Arrays;
+import edu.emory.mathcs.backport.java.util.Collections;
 import edu.umass.ciir.fws.nlp.HtmlContentExtractor;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import java.util.HashMap;
@@ -31,18 +33,22 @@ public class Document {
         name = sd.documentName;
         html = document.text;
         this.url = document.metadata.get("url");
-        this.terms = document.terms;
+        //this.terms = document.terms; 
+        // galago tokenzier is inconsistent when processing original html and the text content of it,
+        // for single quote. "&apos;" will be a split point in galago tokenizer, but "\'" is not.
+        // So I re-tokenize by the html's content.
+        this.terms = Arrays.asList(TextProcessing.tokenize(HtmlContentExtractor.extractFromContent(document.text)));
         site = getSiteUrl(url);
         title = TextProcessing.clean(HtmlContentExtractor.extractTitle(document.text));
-        
+
     }
-    
+
     Document(ScoredDocument sd, String text) {
         rank = sd.rank;
         name = sd.documentName;
         html = text;
     }
-    
+
     public static String getSiteUrl(String url) {
         url = url.replaceAll("^https?://", "");
         url = url.replaceAll("/.*?$", "");

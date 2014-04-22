@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 import org.lemurproject.galago.tupleflow.InputClass;
@@ -37,7 +38,7 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 public class TermFeaturesExtractor implements Processor<Query> {
 
     final static double LOG2BASE = Math.log(2);
-    final static int MAX_TERM_SIZE = CandidateList.MAX_TERM_SIZE;
+    final static int MAX_TERM_SIZE = CandidateList.MAX_TERM_SIZE; // used to build map for ngram->count
     String clistDir;
     String featureDir;
 
@@ -49,7 +50,7 @@ public class TermFeaturesExtractor implements Processor<Query> {
 
     Query query;
     TreeMap<String, TermFeatures> termFeatures;
-    HashMap<String, Double> clueDfs; // clue web document frequency
+    CluewebDocFreqMap clueDfs; // clue web document frequency
     double clueCdf;
 
     // Candidate list document frequency in a gloabl candidate list set.
@@ -66,11 +67,10 @@ public class TermFeaturesExtractor implements Processor<Query> {
         clueCdf = p.getLong("clueCdf");
 
         termFeatures = new TreeMap<>();
-        clueDfs = new HashMap<>();
+        clueDfs = new CluewebDocFreqMap(clueDfFile); // load clueWebDocFreqs
         clistDfs = new HashMap<>();
 
         loadDocuments(p);
-        loadClueWebDocFreqs(clueDfFile);
         loadCandidateListDocFreqs(clistDfFile);
 
         logger = Logger.getLogger(TermFeaturesExtractor.class.toString());
@@ -128,19 +128,6 @@ public class TermFeaturesExtractor implements Processor<Query> {
         }
     }
 
-    private void loadClueWebDocFreqs(String fileName) throws IOException {
-        clueDfs.clear();
-        BufferedReader reader = Utility.getReader(fileName);
-        String line;
-        while ((line = reader.readLine()) != null) {
-            // <term> \t <df>
-            String[] elems = line.split("\t");
-            double df = Double.parseDouble(elems[1]);
-            clueDfs.put(elems[0], df);
-        }
-        reader.close();
-    }
-
     private void loadDocuments(Parameters p) throws Exception {
         p.set("loadDocsFromIndex", true);
         querySetDocuments = new QuerySetDocuments(p);
@@ -174,7 +161,7 @@ public class TermFeaturesExtractor implements Processor<Query> {
     private void extractDocFeaturesInContentField() {
         for (Document doc : docs) {
             doc.ngramMap = new HashMap<>();
-            buildNgramMapFomText(doc.ngramMap, doc.terms);
+            buildNgramMapFomText(doc.ngramMap, doc.terms, termFeatures);
         }
 
         extractTfDfSfFromNgramMap(TermFeatures._contentTf, TermFeatures._contentDf,
@@ -185,7 +172,7 @@ public class TermFeaturesExtractor implements Processor<Query> {
         for (Document doc : docs) {
             doc.ngramMap = new HashMap<>();
             List<String> terms = Arrays.asList(doc.title.split("\\s+"));
-            buildNgramMapFomText(doc.ngramMap, terms);
+            buildNgramMapFomText(doc.ngramMap, terms, termFeatures);
         }
 
         extractTfDfSfFromNgramMap(TermFeatures._titleTf, TermFeatures._titleDf,
@@ -194,17 +181,18 @@ public class TermFeaturesExtractor implements Processor<Query> {
 
     /**
      * build ngram->tf map for a unit (document content, title, ) to make
-     * counting more efficient
+     * counting more efficient. Only keep ngrams in map.
      *
-     * @param termMap
+     * @param ngramMap
      * @param terms
+     * @param map
      */
-    private void buildNgramMapFomText(HashMap<String, Integer> ngramMap, List<String> terms) {
+    public static void buildNgramMapFomText(HashMap<String, Integer> ngramMap, List<String> terms, Map map) {
         ngramMap.clear();
         for (int len = 1; len <= MAX_TERM_SIZE; len++) {
             for (int i = 0; i + len <= terms.size(); i++) {
                 String ngram = TextProcessing.join(terms.subList(i, i + len), " ");
-                if (termFeatures.containsKey(ngram)) { // only keeps facet terms
+                if (map.containsKey(ngram)) { // only keeps terms in the map
                     if (ngramMap.containsKey(ngram)) {
                         int freq = ngramMap.get(ngram) + 1;
                         ngramMap.put(ngram, freq);
@@ -266,7 +254,7 @@ public class TermFeaturesExtractor implements Processor<Query> {
         return Math.log(a + 1) / LOG2BASE;
     }
 
-    private double getDocWeight(long rank) {
+    public static double getDocWeight(long rank) {
         return 1.0 / Math.sqrt((double) rank);
     }
 
@@ -340,7 +328,7 @@ public class TermFeaturesExtractor implements Processor<Query> {
     private void extractClueWebIDF() {
         for (String term : termFeatures.keySet()) {
             TermFeatures termFeature = termFeatures.get(term);
-            double clueDf = clueDfs.containsKey(term) ? clueDfs.get(term) : 1.0;
+            double clueDf = clueDfs.getDf(term);
             double contentTF = (Double) termFeature.getFeature(TermFeatures._contentTf);
             double clueIdf = idf(clueDf, clueCdf);
             double contentTFClueIDF = contentTF * clueIdf;
@@ -349,7 +337,7 @@ public class TermFeaturesExtractor implements Processor<Query> {
         }
     }
 
-    private double idf(double df, double colSize) {
+    public static double idf(double df, double colSize) {
         return Math.log((colSize - df + 0.5) / (df + 0.5)) / LOG2BASE;
     }
 

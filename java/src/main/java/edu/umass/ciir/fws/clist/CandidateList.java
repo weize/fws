@@ -17,6 +17,10 @@ public class CandidateList extends edu.umass.ciir.fws.types.CandidateList {
     public String[] items; // candidate list items
     public final static int MAX_TERM_SIZE = 10; // maxium number of word in an candidate item/a facet term
 
+    public CandidateList() {
+        
+    }
+    
     public CandidateList(String qid, long docRank, String listType, String[] items) {
         this.qid = qid;
         this.docRank = docRank;
@@ -52,6 +56,11 @@ public class CandidateList extends edu.umass.ciir.fws.types.CandidateList {
 
     public boolean isTextType() {
         return listType.equals(CandidateListTextExtractor.type);
+    }
+    
+    @Override
+    public String toString() {
+        return String.format("%s\t%s\t%s\t%s", qid, docRank, listType, itemList);
     }
 
 }
