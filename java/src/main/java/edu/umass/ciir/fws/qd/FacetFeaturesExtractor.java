@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.umass.ciir.fws.clist.qd;
+package edu.umass.ciir.fws.qd;
 
 import edu.umass.ciir.fws.clist.CandidateList;
 import edu.umass.ciir.fws.clist.CandidateListParser;
@@ -56,8 +56,8 @@ public class FacetFeaturesExtractor implements Processor<Query> {
     QuerySetDocuments querySetDocuments;
     List<Document> docs;
     List<FacetFeatures> facetFeatures;
-    //AspectHtmlListFeature[] listfs;
     Query query;
+    long topNum;
 
     String clistDir;
     String qdFeatureDir;
@@ -69,6 +69,7 @@ public class FacetFeaturesExtractor implements Processor<Query> {
         qdFeatureDir = p.getString("qdFeatureDir");
         String clueDfFile = p.getString("clueDfFile");
         clueCdf = p.getLong("clueCdf");
+        topNum = p.getLong("topNum");
         termFeatures = new HashMap<>();
         clueDfs = new CluewebDocFreqMap(clueDfFile);
 
@@ -102,7 +103,7 @@ public class FacetFeaturesExtractor implements Processor<Query> {
 
     private void loadCandidateListsToFacetFeatures() throws IOException {
         String clistFileName = Utility.getCandidateListFileName(clistDir, query.id, "clean.clist");
-        List<CandidateList> clists = CandidateListParser.loadCandidateList(clistFileName);
+        List<CandidateList> clists = CandidateListParser.loadCandidateList(clistFileName, topNum);
         this.facetFeatures = new ArrayList<>();
         for (CandidateList clist : clists) {
             facetFeatures.add(new FacetFeatures(clist));

@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.umass.ciir.fws.clist.qd;
+package edu.umass.ciir.fws.qd;
 
 import edu.umass.ciir.fws.clist.CandidateList;
 import edu.umass.ciir.fws.utility.TextProcessing;

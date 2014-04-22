@@ -47,6 +47,7 @@ public class TermFeaturesExtractor implements Processor<Query> {
     List<Document> docs;
     BufferedWriter writer;
     Logger logger;
+    long topNum; // top number of documents used.
 
     Query query;
     TreeMap<String, TermFeatures> termFeatures;
@@ -65,6 +66,7 @@ public class TermFeaturesExtractor implements Processor<Query> {
         String clueDfFile = p.getString("clueDfFile");
         String clistDfFile = p.getString("clistDfFile");
         clueCdf = p.getLong("clueCdf");
+        topNum = p.getLong("topNum");
 
         termFeatures = new TreeMap<>();
         clueDfs = new CluewebDocFreqMap(clueDfFile); // load clueWebDocFreqs
@@ -110,7 +112,7 @@ public class TermFeaturesExtractor implements Processor<Query> {
 
     private void loadCandidateLists() throws IOException {
         String clistFileName = Utility.getCandidateListFileName(clistDir, query.id, "clean.clist");
-        clists = CandidateListParser.loadCandidateList(clistFileName);
+        clists = CandidateListParser.loadCandidateList(clistFileName, topNum);
     }
 
     /**

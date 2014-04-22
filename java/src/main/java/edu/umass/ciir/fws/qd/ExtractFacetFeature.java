@@ -1,4 +1,4 @@
-package edu.umass.ciir.fws.clist.qd;
+package edu.umass.ciir.fws.qd;
 
 import edu.umass.ciir.fws.feature.*;
 import edu.umass.ciir.fws.query.QueryFileParser;
