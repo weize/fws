@@ -12,5 +12,6 @@
 	"clueCdf" : 33836981,
 	"clistDfFile" : "../data/df/clistDf.gz",
 	"featureDir" : "../exp/feature",
+	"qdFeatureDir" : "../exp/qd/feature",
 	"topNum" : 100
 }
