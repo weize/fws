@@ -4,6 +4,7 @@
  */
 package edu.umass.ciir.fws.tool;
 
+import edu.emory.mathcs.backport.java.util.Arrays;
 import edu.umass.ciir.fws.nlp.HtmlContentExtractor;
 import edu.umass.ciir.fws.nlp.StanfordCoreNLPParser;
 import edu.umass.ciir.fws.utility.TextProcessing;
@@ -53,7 +54,7 @@ public class TestFn extends AppFunction {
     private void testPrintTermsInDoc(Parameters p, PrintStream output) throws Exception {
         Retrieval retrieval = RetrievalFactory.instance(p);
 
-        String docName = "clueweb09-en0000-03-02441";
+        String docName = "clueweb09-en0000-01-04160";
         Document document = retrieval.getDocument(docName, new Document.DocumentComponents(true, true, true));
 
         output.println(docName);
@@ -68,17 +69,8 @@ public class TestFn extends AppFunction {
             output.println(term);
         }
         
-        String[] tokens = TextProcessing.tokenize("The Hidden Advanced Aircraft of Bush's Black Opera...");
-        
         output.println("\n\n================terms2================");
-        for (String term : tokens) {
-            output.println(term);
-        }
-        
-        String[] tokens2 = TextProcessing.tokenize(document.text);
-        
-        output.println("\n\n================terms3================");
-        for (String term : tokens2) {
+        for (String term : TextProcessing.tokenize(HtmlContentExtractor.extractFromContent(document.text))) {
             output.println(term);
         }
         

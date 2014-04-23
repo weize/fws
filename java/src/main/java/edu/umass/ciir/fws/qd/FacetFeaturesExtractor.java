@@ -202,7 +202,7 @@ public class FacetFeaturesExtractor implements Processor<Query> {
             ff.setFeature(sdoc, FacetFeatures._WDF);
             ff.setFeature(sidf, FacetFeatures._cluIDF);
             ff.setFeature(sdoc * sidf, FacetFeatures._qdScore);
-            ff.setFeature(TextProcessing.join(ff.sites, "|"), FacetFeatures._sites);
+            ff.setFeature(FacetFeatures.joinSitesToString(ff.sites), FacetFeatures._sites);
         }
     }
 

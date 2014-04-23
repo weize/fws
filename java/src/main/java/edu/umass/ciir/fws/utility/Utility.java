@@ -109,4 +109,8 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         return String.format("%s%s%s.f.feature", qdFeatureDir, File.separator, qid);
     }
 
+    public static String getQdFacetClusterFileName(String clusterDir, String qid) {
+        return String.format("%s%s%s.cluster", clusterDir, File.separator, qid);
+    }
+
 }

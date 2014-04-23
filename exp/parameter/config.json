@@ -7,12 +7,15 @@
 	"docDir" : "../exp/doc",
 	"parseDir" : "../exp/parse",
 	"parseCorpusDir" : "../data/parse",
-	"docNameFile" : "../data/doc-name/doc-name",
+	"docNameFile" : "../data/doc-name/docname.query-200-sdm",
 	"clueDfFile" : "../data/df/clueDf.gz",
 	"clueCdf" : 33836981,
 	"clistDfFile" : "../data/df/clistDf.gz",
 	"clistDfOldFile" : "../data/df/clistDf.gz",
 	"featureDir" : "../exp/feature",
 	"qdFeatureDir" : "../exp/qd/feature",
+	"qdClusterDir" : "../exp/qd/cluster",
+	"qdDistanceMax" : 0.6,
+	"qdWebsiteCountMin" : 3,
 	"topNum" : 100
 }
