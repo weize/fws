@@ -17,7 +17,7 @@ import java.util.HashMap;
  */
 public class CluewebDocFreqMap {
     
-    HashMap<String, Double> termDf; // term -> docFreq
+    HashMap<String, Long> termDf; // term -> docFreq
     
     public CluewebDocFreqMap(String clueDfFile) throws IOException {
         termDf = new HashMap<>();
@@ -32,13 +32,17 @@ public class CluewebDocFreqMap {
         while ((line = reader.readLine()) != null) {
             // <term> \t <df>
             String[] elems = line.split("\t");
-            double df = Double.parseDouble(elems[1]);
+            long df = Long.parseLong(elems[1]);
             termDf.put(elems[0], df);
         }
         reader.close();
     }
     
-    public double getDf(String term) {
-        return termDf.containsKey(term) ? termDf.get(term) : 1.0;
+    public long getDf(String term) {
+        return termDf.containsKey(term) ? termDf.get(term) : 1;
+    }
+    
+    public boolean contains(String term) {
+        return termDf.containsKey(term);
     }
 }
