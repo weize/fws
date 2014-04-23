@@ -13,5 +13,8 @@
 	"clistDfFile" : "../data/df/clistDf.gz",
 	"featureDir" : "../exp/feature",
 	"qdFeatureDir" : "../exp/qd/feature",
+	"qdClusterDir" : "../exp/qd/cluster",
+	"qdDistanceMax" : 0.6,
+	"qdWebsiteCountMin" : 3,
 	"topNum" : 100
 }
