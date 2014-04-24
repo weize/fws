@@ -5,6 +5,7 @@
 package edu.umass.ciir.fws.tool;
 
 import edu.emory.mathcs.backport.java.util.Arrays;
+import edu.stanford.nlp.pipeline.PTBTokenizerAnnotator;
 import edu.umass.ciir.fws.nlp.HtmlContentExtractor;
 import edu.umass.ciir.fws.nlp.StanfordCoreNLPParser;
 import edu.umass.ciir.fws.utility.TextProcessing;
@@ -44,17 +45,17 @@ public class TestFn extends AppFunction {
         output.println();
 
         //testPrintHTML(p, output);
-        //testNlp(output);
+        testNlp(output);
         //testTokenizer(p, output);
         //testReplace(p, output);
-        testPrintTermsInDoc(p, output);
+        //testPrintTermsInDoc(p, output);
 
     }
 
     private void testPrintTermsInDoc(Parameters p, PrintStream output) throws Exception {
         Retrieval retrieval = RetrievalFactory.instance(p);
 
-        String docName = "clueweb09-en0000-01-04160";
+        String docName = "clueweb09-en0000-02-34845";
         Document document = retrieval.getDocument(docName, new Document.DocumentComponents(true, true, true));
 
         output.println(docName);
@@ -63,17 +64,17 @@ public class TestFn extends AppFunction {
         for (String key : document.metadata.keySet()) {
             output.println(key + "\t" + document.metadata.get(key));
         }
-        
+
         output.println("\n\n================terms================");
         for (String term : document.terms) {
             output.println(term);
         }
-        
+
         output.println("\n\n================terms2================");
         for (String term : TextProcessing.tokenize(HtmlContentExtractor.extractFromContent(document.text))) {
             output.println(term);
         }
-        
+
     }
 
     private void testPrintHTML(Parameters p, PrintStream output) throws Exception {
@@ -100,8 +101,11 @@ public class TestFn extends AppFunction {
     }
 
     private void testTokenizer(Parameters p, PrintStream output) {
-        String text = "Horses are very durable, and they'll lie through their teeth about how they're feeling";
-        String[] tokens = TextProcessing.tokenize(text);
+        String text = "U.S.A and U.S. are the © abbrevation_for United States of American.\n"
+                + "edu.umass.ciir.fws and edu.umass.cirr.galago are package pathes.\n"
+                + "Mom's and dad's computers are34343 234 updated.\n"
+                + "We are learning Español and 日本語\n";
+        List<String> tokens = TextProcessing.tokenize(text);
         for (String token : tokens) {
             output.println(token);
         }
@@ -109,11 +113,19 @@ public class TestFn extends AppFunction {
 
     private void testNlp(PrintStream output) throws IOException {
         output.println("In test nlp!");
+//        PTBTokenizerAnnotator tokenizer;
+//        tokenizer = new PTBTokenizerAnnotator();
+//        tokenizer.
         StanfordCoreNLPParser stanfordParser = new StanfordCoreNLPParser();
-        String htmlFile = "../exp/doc/51/clueweb09-en0000-02-14693.html";
-        String text = HtmlContentExtractor.extractFromFile(htmlFile);
-        Utility.copyStringToFile(text, new File("test.content"));
-
+//        String htmlFile = "../exp/doc/51/clueweb09-en0000-02-14693.html";
+//        String text = HtmlContentExtractor.extractFromFile(htmlFile);
+//        Utility.copyStringToFile(text, new File("test.content"));
+        String text = "U.S.A and U.S. are the abbrevation for United States of American.\n"
+                + "edu.umass.ciir.fws and edu.umass.cirr.galago are package pathes.\n"
+                + "Mom's and dad's computers are updated.\n"
+                + "We are learning Español and 日本語.\n"
+                + "A and B say \'this is good!\'\n"
+                + "we 'ths is a bad case, and we know' fefe.\n";
         stanfordParser.parse(text, "test.parse");
     }
 

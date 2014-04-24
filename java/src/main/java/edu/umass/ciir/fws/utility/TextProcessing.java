@@ -4,6 +4,7 @@
  */
 package edu.umass.ciir.fws.utility;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,16 +29,22 @@ public class TextProcessing {
         return count;
     }
 
-    public static String[] tokenize(String text) {
+    public static List<String> tokenize(String text) {
         TagTokenizer tokenizer = new TagTokenizer();
         Document document = new Document();
         document.text = text;
         tokenizer.tokenize(document);
-        return document.terms.toArray(new String[0]);
+        ArrayList<String> tokens = new ArrayList<>();
+        for (String token : document.terms) {
+            if (token.matches("^[\\p{L}\\p{N}]+$")) {
+                tokens.add(token);
+            }
+        }
+        return tokens;
     }
 
     public static String clean(String text) {
-        String[] tokens = tokenize(text);
+        List<String> tokens = tokenize(text);
         return join(tokens, " ");
     }
 

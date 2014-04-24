@@ -328,7 +328,7 @@ public class CandidateListTextExtractor {
      * @return 
      */
     private String handleSinleQuote(String text) {
-        return text.replaceAll("\\s+'([\\p{Alnum}])", "'$1");
+        return text.replaceAll("\\s+'([\\p{L}\\p{N}])", "'$1");
     }
 
     class Node {

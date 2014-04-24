@@ -37,7 +37,7 @@ public class Document {
         // galago tokenzier is inconsistent when processing original html and the text content of it,
         // for single quote. "&apos;" will be a split point in galago tokenizer, but "\'" is not.
         // So I re-tokenize by the html's content.
-        this.terms = Arrays.asList(TextProcessing.tokenize(HtmlContentExtractor.extractFromContent(document.text)));
+        this.terms = TextProcessing.tokenize(HtmlContentExtractor.extractFromContent(document.text));
         site = getSiteUrl(url);
         title = TextProcessing.clean(HtmlContentExtractor.extractTitle(document.text));
 
