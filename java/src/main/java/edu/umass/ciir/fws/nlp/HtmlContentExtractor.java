@@ -14,7 +14,8 @@ import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
 /**
- * Extract text content from HTML.
+ * Extract text content from HTML. Tries to preserve the original formatting of
+ * the text, i.g. new lines, spaces.
  *
  * @author wkong
  */
@@ -35,7 +36,7 @@ public class HtmlContentExtractor {
         "audio", "button", "canvas", "caption", "th", "td",
         "img", "input", "embed", "figure", "keygen", "map", "object",
         "progress", "q", "video", "span"};
-    
+
     final static String[] skippingTags = {"script", "noscript", "noframes", "rp"};
 
     public static String extractFromFile(String filename) throws IOException {
@@ -50,19 +51,19 @@ public class HtmlContentExtractor {
     }
 
     private static String extract(Document doc) {
-        StringBuilder text = new StringBuilder();
+        StringBuilder textBuilder = new StringBuilder();
         Node node = doc;
 
-        getNodeText(node, text);
-        String text2;
-        text2 = text.toString().trim().replaceAll("\\p{Z}", " ");
+        getNodeText(node, textBuilder);
+        String text = textBuilder.toString().trim().replaceAll("\\p{Z}", " ");
+        text = text.replaceAll("\u0092", "\'"); // correct invalid RIGHT SINGLE QUOTATION MARK 
 
         // remove empty lines, and trim all lines
-        text2 = text2.replaceAll("\\s*\\n\\s*", "\n");
+        text = text.replaceAll("\\s*\\n\\s*", "\n");
 
         // remove extra spacing
-        text2 = text2.replaceAll("[\\s&&[^\\n]]+", " ");
-        return text2;
+        text = text.replaceAll("[\\s&&[^\\n]]+", " ");
+        return text;
     }
 
     /**
@@ -82,39 +83,28 @@ public class HtmlContentExtractor {
     }
 
     public static void getNodeText(Node node, StringBuilder text) {
-
         if (node instanceof Element) {
             Element elementNode = (Element) node;
             if (isSkippingTag(elementNode.tagName())) {
-                return;
+                return; // skip tags such as <script>
+            } else if (needNewLineTag(elementNode.tagName())) {
+                text.append("\n");
+            } else if (needSpaceTag(elementNode.tagName())) {
+                text.append(" ");
             }
-        }
-
-        if (node instanceof TextNode) {
+        } else if (node instanceof TextNode) {
             TextNode textNode = (TextNode) node;
             text.append(textNode.getWholeText().replaceAll("\n", " "));
             return;
         }
-        
-        if (node instanceof Element) {
-            Element elementNode = (Element) node;
-            if (needNewLineTag(elementNode.tagName())) {
-                text.append("\n");
-            }
 
-            if (needSpaceTag(elementNode.tagName())) {
-                text.append(" ");
-            }
+        for (Node childNode : node.childNodes()) {
+            getNodeText(childNode, text);
         }
 
-        for (Node node2 : node.childNodes()) {
-            getNodeText(node2, text);
-        }
-
-        
     }
 
-    private static boolean inTagNameSet(String tagName, String [] tagSet) {
+    private static boolean inTagNameSet(String tagName, String[] tagSet) {
         tagName = tagName.toLowerCase();
         for (String tag : tagSet) {
             if (tagName.equals(tag)) {
@@ -123,7 +113,7 @@ public class HtmlContentExtractor {
         }
         return false;
     }
-    
+
     public static boolean needSpaceTag(String tagName) {
         return inTagNameSet(tagName, spaceTags);
     }
@@ -131,9 +121,8 @@ public class HtmlContentExtractor {
     public static boolean needNewLineTag(String tagName) {
         return inTagNameSet(tagName, newLineTags);
     }
-    
-     public static boolean isSkippingTag(String tagName) {
+
+    public static boolean isSkippingTag(String tagName) {
         return inTagNameSet(tagName, skippingTags);
     }
-
 }

@@ -4,17 +4,15 @@
  */
 package edu.umass.ciir.fws.tool;
 
-import edu.umass.ciir.fws.clist.CandidateList;
 import edu.umass.ciir.fws.clist.CandidateListHtmlExtractor;
 import edu.umass.ciir.fws.nlp.HtmlContentExtractor;
-import static edu.umass.ciir.fws.nlp.HtmlContentExtractor.getNodeText;
-import static edu.umass.ciir.fws.nlp.HtmlContentExtractor.needNewLineTag;
-import static edu.umass.ciir.fws.nlp.HtmlContentExtractor.needSpaceTag;
 import edu.umass.ciir.fws.nlp.StanfordCoreNLPParser;
 import edu.umass.ciir.fws.types.Query;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.TextTokenizer;
-import static java.awt.SystemColor.text;
+import edu.umass.ciir.fws.utility.Utility;
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
@@ -25,8 +23,6 @@ import org.jsoup.nodes.TextNode;
 import org.lemurproject.galago.core.parse.Document;
 import org.lemurproject.galago.core.retrieval.Retrieval;
 import org.lemurproject.galago.core.retrieval.RetrievalFactory;
-import org.lemurproject.galago.core.retrieval.ScoredDocument;
-import org.lemurproject.galago.core.retrieval.query.StructuredQuery;
 import org.lemurproject.galago.core.tools.AppFunction;
 import org.lemurproject.galago.tupleflow.Parameters;
 
@@ -55,15 +51,15 @@ public class TestFn extends AppFunction {
         //testNlp(output);
         //testTokenizer(p, output);
         //testReplace(p, output);
-        testPrintTermsInDoc(p, output);
+        //testPrintTermsInDoc(p, output);
         //testHtml(p, output);
         //testCandidateListHtmlExtractor(p, output);
+        testHtmlContentExtractor(p, output);
 
     }
 
     private void testPrintTermsInDoc(Parameters p, PrintStream output) throws Exception {
         Retrieval retrieval = RetrievalFactory.instance(p);
-
         String docName = "clueweb09-en0000-03-33030";
         Document document = retrieval.getDocument(docName, new Document.DocumentComponents(true, true, true));
 
@@ -192,7 +188,7 @@ public class TestFn extends AppFunction {
                 }
             }
         }
-        
+
         output.println("=====================travel==================");
         StringBuilder textBuilder = new StringBuilder();
         travel(doc, textBuilder);
@@ -224,7 +220,25 @@ public class TestFn extends AppFunction {
         Document document = retrieval.getDocument(docName, new Document.DocumentComponents(true, true, true));
         Query q = new Query("1", "test");
         //List<CandidateList> clists = new CandidateListHtmlExtractor().extract(document, q);
+
+    }
+
+    private void testHtmlContentExtractor(Parameters p, PrintStream output) throws Exception {
+        String htmlFileName = "test.html";
+//        Retrieval retrieval = RetrievalFactory.instance(p);
+//        String docName = "clueweb09-en0000-03-33030";
+//        Document document = retrieval.getDocument(docName, new Document.DocumentComponents(true, true, true));
+//        BufferedWriter writer = Utility.getWriter("test.html");
+//        writer.write(document.text);
+//        writer.close();
         
+        BufferedWriter writer = Utility.getWriter("test.txt");
+        org.jsoup.nodes.Document doc = Jsoup.parse(new File(htmlFileName), "UTF-8");
+        String html = Utility.readFileToString(new File(htmlFileName));
+        String content = HtmlContentExtractor.extractFromContent(html);
+        //writer.write(doc.text());
+        writer.write(content);
+        writer.close();        
     }
 
 }
