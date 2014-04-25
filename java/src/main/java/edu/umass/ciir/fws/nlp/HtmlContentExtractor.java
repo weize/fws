@@ -35,6 +35,8 @@ public class HtmlContentExtractor {
         "audio", "button", "canvas", "caption", "th", "td",
         "img", "input", "embed", "figure", "keygen", "map", "object",
         "progress", "q", "video", "span"};
+    
+    final static String[] skippingTags = {"script", "noscript", "noframes", "rp"};
 
     public static String extractFromFile(String filename) throws IOException {
         File input = new File(filename);
@@ -79,13 +81,11 @@ public class HtmlContentExtractor {
         return title.toString();
     }
 
-    private static void getNodeText(Node node, StringBuilder text) {
+    public static void getNodeText(Node node, StringBuilder text) {
 
         if (node instanceof Element) {
             Element elementNode = (Element) node;
-            String tagname = elementNode.tagName().toLowerCase();
-            if (tagname.equals("script") || tagname.equals("noscript")
-                    || tagname.equals("noframes") || tagname.equals("rp")) {
+            if (isSkippingTag(elementNode.tagName())) {
                 return;
             }
         }
@@ -95,11 +95,7 @@ public class HtmlContentExtractor {
             text.append(textNode.getWholeText().replaceAll("\n", " "));
             return;
         }
-
-        for (Node node2 : node.childNodes()) {
-            getNodeText(node2, text);
-        }
-
+        
         if (node instanceof Element) {
             Element elementNode = (Element) node;
             if (needNewLineTag(elementNode.tagName())) {
@@ -109,28 +105,35 @@ public class HtmlContentExtractor {
             if (needSpaceTag(elementNode.tagName())) {
                 text.append(" ");
             }
-
         }
+
+        for (Node node2 : node.childNodes()) {
+            getNodeText(node2, text);
+        }
+
+        
     }
 
-    private static boolean needSpaceTag(String tagName) {
+    private static boolean inTagNameSet(String tagName, String [] tagSet) {
         tagName = tagName.toLowerCase();
-        for (String tag : spaceTags) {
+        for (String tag : tagSet) {
             if (tagName.equals(tag)) {
                 return true;
             }
         }
         return false;
     }
+    
+    public static boolean needSpaceTag(String tagName) {
+        return inTagNameSet(tagName, spaceTags);
+    }
 
-    private static boolean needNewLineTag(String tagName) {
-        tagName = tagName.toLowerCase();
-        for (String tag : newLineTags) {
-            if (tagName.equals(tag)) {
-                return true;
-            }
-        }
-        return false;
+    public static boolean needNewLineTag(String tagName) {
+        return inTagNameSet(tagName, newLineTags);
+    }
+    
+     public static boolean isSkippingTag(String tagName) {
+        return inTagNameSet(tagName, skippingTags);
     }
 
 }

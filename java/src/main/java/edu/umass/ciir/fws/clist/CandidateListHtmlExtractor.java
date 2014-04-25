@@ -5,6 +5,7 @@
 package edu.umass.ciir.fws.clist;
 
 import edu.umass.ciir.fws.crawl.Document;
+import edu.umass.ciir.fws.nlp.HtmlContentExtractor;
 import edu.umass.ciir.fws.types.Query;
 import java.util.ArrayList;
 import java.util.List;
@@ -105,12 +106,19 @@ public class CandidateListHtmlExtractor {
     }
 
     /**
-     * get text for li element, which may contain nested ol, ul elements
+     * Get text for list element, which may contain nested ol, ul elements. Only
+     * get the first level text. e.g.
+     * <li> A</li>
+     * <li> 1</li>
+     * <li> 2</li>
+     * <li> B</li>
+     * <li> C</li>
+     * we'll extract {A, B, C}.
      *
      * @param root
      * @return
      */
-    private String getHeadingText(Element root) {
+    public static String getHeadingText(Element root) {
         StringBuilder text = new StringBuilder();
         Node node = root;
         int depth = 0;
@@ -120,16 +128,28 @@ public class CandidateListHtmlExtractor {
          * node
          */
         while (node != null) {
-
             if (node instanceof TextNode) {
                 TextNode textNode = (TextNode) node;
-                text.append(' ');
                 text.append(textNode.text());
             } else if (node instanceof Element) {
                 Element element = (Element) node;
                 if (HtmlTag.isListTag(element)) {
                     break;
                 }
+
+                if (HtmlContentExtractor.needNewLineTag(element.tagName())) {
+                    text.append("\n");
+                }
+
+                if (HtmlContentExtractor.needSpaceTag(element.tagName())) {
+                    text.append(" ");
+                }
+                
+                if (HtmlContentExtractor.isSkippingTag(element.tagName())) {
+                    node = node.nextSibling();
+                    continue;
+                }
+
             }
 
             if (node.childNodes().size() > 0) {

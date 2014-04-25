@@ -4,12 +4,9 @@
  */
 package edu.umass.ciir.fws.utility;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.lemurproject.galago.core.parse.Document;
-import org.lemurproject.galago.core.parse.TagTokenizer;
 
 /**
  *
@@ -30,17 +27,7 @@ public class TextProcessing {
     }
 
     public static List<String> tokenize(String text) {
-        TagTokenizer tokenizer = new TagTokenizer();
-        Document document = new Document();
-        document.text = text;
-        tokenizer.tokenize(document);
-        ArrayList<String> tokens = new ArrayList<>();
-        for (String token : document.terms) {
-            if (token.matches("^[\\p{L}\\p{N}]+$")) {
-                tokens.add(token);
-            }
-        }
-        return tokens;
+        return new TextTokenizer().tokenize(text);
     }
 
     public static String clean(String text) {

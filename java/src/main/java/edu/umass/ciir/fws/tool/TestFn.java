@@ -4,24 +4,31 @@
  */
 package edu.umass.ciir.fws.tool;
 
-import edu.emory.mathcs.backport.java.util.Arrays;
-import edu.stanford.nlp.pipeline.PTBTokenizerAnnotator;
+import edu.umass.ciir.fws.clist.CandidateList;
+import edu.umass.ciir.fws.clist.CandidateListHtmlExtractor;
 import edu.umass.ciir.fws.nlp.HtmlContentExtractor;
+import static edu.umass.ciir.fws.nlp.HtmlContentExtractor.getNodeText;
+import static edu.umass.ciir.fws.nlp.HtmlContentExtractor.needNewLineTag;
+import static edu.umass.ciir.fws.nlp.HtmlContentExtractor.needSpaceTag;
 import edu.umass.ciir.fws.nlp.StanfordCoreNLPParser;
+import edu.umass.ciir.fws.types.Query;
 import edu.umass.ciir.fws.utility.TextProcessing;
-import java.io.File;
+import edu.umass.ciir.fws.utility.TextTokenizer;
+import static java.awt.SystemColor.text;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.nodes.TextNode;
 import org.lemurproject.galago.core.parse.Document;
 import org.lemurproject.galago.core.retrieval.Retrieval;
 import org.lemurproject.galago.core.retrieval.RetrievalFactory;
 import org.lemurproject.galago.core.retrieval.ScoredDocument;
-import org.lemurproject.galago.core.retrieval.query.Node;
 import org.lemurproject.galago.core.retrieval.query.StructuredQuery;
 import org.lemurproject.galago.core.tools.AppFunction;
 import org.lemurproject.galago.tupleflow.Parameters;
-import org.lemurproject.galago.tupleflow.Utility;
 
 /**
  *
@@ -45,17 +52,19 @@ public class TestFn extends AppFunction {
         output.println();
 
         //testPrintHTML(p, output);
-        testNlp(output);
+        //testNlp(output);
         //testTokenizer(p, output);
         //testReplace(p, output);
-        //testPrintTermsInDoc(p, output);
+        testPrintTermsInDoc(p, output);
+        //testHtml(p, output);
+        //testCandidateListHtmlExtractor(p, output);
 
     }
 
     private void testPrintTermsInDoc(Parameters p, PrintStream output) throws Exception {
         Retrieval retrieval = RetrievalFactory.instance(p);
 
-        String docName = "clueweb09-en0000-02-34845";
+        String docName = "clueweb09-en0000-03-33030";
         Document document = retrieval.getDocument(docName, new Document.DocumentComponents(true, true, true));
 
         output.println(docName);
@@ -64,48 +73,61 @@ public class TestFn extends AppFunction {
         for (String key : document.metadata.keySet()) {
             output.println(key + "\t" + document.metadata.get(key));
         }
+//
+//        output.println("\n\n================terms================");
+//        for (String term : document.terms) {
+//            output.println(term);
+//        }
 
-        output.println("\n\n================terms================");
-        for (String term : document.terms) {
-            output.println(term);
-        }
-
+        output.println("\n\n================content================");
+        String content = HtmlContentExtractor.extractFromContent(document.text);
+        output.println(content);
         output.println("\n\n================terms2================");
-        for (String term : TextProcessing.tokenize(HtmlContentExtractor.extractFromContent(document.text))) {
+        for (String term : TextProcessing.tokenize(HtmlContentExtractor.extractFromContent(content))) {
             output.println(term);
         }
 
     }
 
     private void testPrintHTML(Parameters p, PrintStream output) throws Exception {
-        Retrieval retrieval = RetrievalFactory.instance(p);
-        String query = "#sdm( horse hooves )";
-        Node root = StructuredQuery.parse(query);       // turn the query string into a query tree
-        Node transformed = retrieval.transformQuery(root, p);  // apply traversals
-
-        List<ScoredDocument> results = retrieval.executeQuery(transformed, p).scoredDocuments;
-
-        for (ScoredDocument sd : results) { // print results
-            output.println(sd.documentName);
-
-            Document document = retrieval.getDocument(sd.documentName, new Document.DocumentComponents(true, true, true));
-            for (String term : document.terms) {
-                output.println(term);
-            }
-            for (String key : document.metadata.keySet()) {
-                output.println(key + "\t" + document.metadata.get(key));
-            }
-            output.println(document.text);
-            break;
-        }
+//        Retrieval retrieval = RetrievalFactory.instance(p);
+//        String query = "#sdm( horse hooves )";
+//        Node root = StructuredQuery.parse(query);       // turn the query string into a query tree
+//        Node transformed = retrieval.transformQuery(root, p);  // apply traversals
+//
+//        List<ScoredDocument> results = retrieval.executeQuery(transformed, p).scoredDocuments;
+//
+//        for (ScoredDocument sd : results) { // print results
+//            output.println(sd.documentName);
+//
+//            Document document = retrieval.getDocument(sd.documentName, new Document.DocumentComponents(true, true, true));
+//            for (String term : document.terms) {
+//                output.println(term);
+//            }
+//            for (String key : document.metadata.keySet()) {
+//                output.println(key + "\t" + document.metadata.get(key));
+//            }
+//            output.println(document.text);
+//            break;
+//        }
     }
 
     private void testTokenizer(Parameters p, PrintStream output) {
-        String text = "U.S.A and U.S. are the © abbrevation_for United States of American.\n"
+        String text = "U.S.A <tag> and U.S. are efe©egfe the© f©fefe abbrevation_for United States of American.\n"
                 + "edu.umass.ciir.fws and edu.umass.cirr.galago are package pathes.\n"
                 + "Mom's and dad's computers are34343 234 updated.\n"
-                + "We are learning Español and 日本語\n";
+                + "We are learning ““ “fef Español and 日本語\n"
+                + "We’ve d‘one!\n"
+                + "that`efe `` efe\n";
+
+        output.println("================term1===========\n");
         List<String> tokens = TextProcessing.tokenize(text);
+        for (String token : tokens) {
+            output.println(token);
+        }
+
+        output.println("\n\n================term2===========\n");
+        tokens = new TextTokenizer().tokenize(text);
         for (String token : tokens) {
             output.println(token);
         }
@@ -123,9 +145,14 @@ public class TestFn extends AppFunction {
         String text = "U.S.A and U.S. are the abbrevation for United States of American.\n"
                 + "edu.umass.ciir.fws and edu.umass.cirr.galago are package pathes.\n"
                 + "Mom's and dad's computers are updated.\n"
+                + "Mom’s and dad’s computers are updated.\n"
+                + "Mom`s and dad`s computers are updated.\n"
                 + "We are learning Español and 日本語.\n"
-                + "A and B say \'this is good!\'\n"
-                + "we 'ths is a bad case, and we know' fefe.\n";
+                + "A and B say “this is good!“\n"
+                + "A and B say ‘this is good!’\n"
+                + "we 'ths is a bad case, and we know' fefe.\n"
+                + "and efe©egfe efe ©egfe.\n"
+                + "We say \"efe©egfe and ©gfe\".\n";
         stanfordParser.parse(text, "test.parse");
     }
 
@@ -134,6 +161,70 @@ public class TestFn extends AppFunction {
         output.println(text);
         text = text.replaceAll("\\s+'([\\p{Alnum}])", "'$1");
         output.println(text);
+    }
+
+    private void testHtml(Parameters p, PrintStream output) {
+        String html = "<html><head></head><body><table><tr>\n"
+                + "<td>a\n"
+                + "<script>scriptcontent </script>"
+                + "<noscript>noscriptcontent </noscript>"
+                + "<noframes>noframecontent </noframes>"
+                + "<rp>rpcontent </rp>"
+                + "<a>fefefe</a>"
+                + "<ul>\n"
+                + "<li>Coffee</li>\n"
+                + "<li>Milk</li>\n"
+                + "</ul></td>"
+                + "<td>b</td>"
+                + "</tr></table></body></html>";
+
+        org.jsoup.nodes.Document doc = Jsoup.parse(html, "UTF-8");
+        output.println("=====================html==================");
+        output.println(doc.toString());
+        output.println("=====================content==================");
+        String content = HtmlContentExtractor.extractFromContent(html);
+        output.println(content);
+        output.println("=====================list==================");
+        for (Element tr : doc.getElementsByTag("tr")) {
+            for (Element td : tr.children()) {
+                if (td.tagName().equalsIgnoreCase("td")) {
+                    output.println(CandidateListHtmlExtractor.getHeadingText(td));
+                }
+            }
+        }
+        
+        output.println("=====================travel==================");
+        StringBuilder textBuilder = new StringBuilder();
+        travel(doc, textBuilder);
+        output.println(textBuilder.toString());
+
+    }
+
+    private void travel(Node node, StringBuilder text) {
+        if (node instanceof TextNode) {
+            TextNode textNode = (TextNode) node;
+            text.append("@text:" + textNode.getWholeText());
+        }
+
+        if (node instanceof Element) {
+            Element elementNode = (Element) node;
+            text.append("@" + elementNode.tagName());
+        }
+
+        for (Node node2 : node.childNodes()) {
+            travel(node2, text);
+        }
+
+    }
+
+    private void testCandidateListHtmlExtractor(Parameters p, PrintStream output) throws IOException, Exception {
+        Retrieval retrieval = RetrievalFactory.instance(p);
+
+        String docName = "clueweb09-en0000-03-33663";
+        Document document = retrieval.getDocument(docName, new Document.DocumentComponents(true, true, true));
+        Query q = new Query("1", "test");
+        //List<CandidateList> clists = new CandidateListHtmlExtractor().extract(document, q);
+        
     }
 
 }

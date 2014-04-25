@@ -250,8 +250,10 @@ public class CandidateListTextExtractor {
         text = text.replace('|', ' ');
         text = text.replaceAll("-LRB-", "(");
         text = text.replaceAll("-RRB-", ")");
-        text = text.replaceAll("-LCB-", "(");
-        text = text.replaceAll("-RCB-", ")");
+        text = text.replaceAll("-LCB-", "{");
+        text = text.replaceAll("-RCB-", "}");
+        text = text.replaceAll("-LSB-", "[");
+        text = text.replaceAll("-RSB-", "]");
         text = text.replaceAll("\\s+", " ");
 
         return text.trim();
