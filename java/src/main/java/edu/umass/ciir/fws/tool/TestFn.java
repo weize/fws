@@ -25,6 +25,7 @@ import org.lemurproject.galago.core.retrieval.Retrieval;
 import org.lemurproject.galago.core.retrieval.RetrievalFactory;
 import org.lemurproject.galago.core.tools.AppFunction;
 import org.lemurproject.galago.tupleflow.Parameters;
+import org.lemurproject.galago.core.parse.TagTokenizer;
 
 /**
  *
@@ -49,12 +50,12 @@ public class TestFn extends AppFunction {
 
         //testPrintHTML(p, output);
         //testNlp(output);
-        //testTokenizer(p, output);
+        testTokenizer(p, output);
         //testReplace(p, output);
         //testPrintTermsInDoc(p, output);
         //testHtml(p, output);
         //testCandidateListHtmlExtractor(p, output);
-        testHtmlContentExtractor(p, output);
+        //testHtmlContentExtractor(p, output);
 
     }
 
@@ -109,13 +110,15 @@ public class TestFn extends AppFunction {
     }
 
     private void testTokenizer(Parameters p, PrintStream output) {
-        String text = "U.S.A <tag> and U.S. are efe©egfe the© f©fefe abbrevation_for United States of American.\n"
-                + "edu.umass.ciir.fws and edu.umass.cirr.galago are package pathes.\n"
-                + "Mom's and dad's computers are34343 234 updated.\n"
-                + "We are learning ““ “fef Español and 日本語\n"
-                + "We’ve d‘one!\n"
-                + "that`efe `` efe\n";
+//        String text = "U.S.A <tag> and U.S. are efe©egfe the© f©fefe abbrevation_for United States of American.\n"
+//                + "edu.umass.ciir.fws and edu.umass.cirr.galago are package pathes.\n"
+//                + "Mom's and dad's computers are34343 234 updated.\n"
+//                + "We are learning ““ “fef Español and 日本語\n"
+//                + "We’ve d‘one!\n"
+//                + "that`efe `` efe\n"
+//                + "17.1 h\n";
 
+        String text = "17.1 h";
         output.println("================term1===========\n");
         List<String> tokens = TextProcessing.tokenize(text);
         for (String token : tokens) {
@@ -123,8 +126,11 @@ public class TestFn extends AppFunction {
         }
 
         output.println("\n\n================term2===========\n");
-        tokens = new TextTokenizer().tokenize(text);
-        for (String token : tokens) {
+        TagTokenizer tokenizer = new TagTokenizer();
+        Document doc = new Document();
+        doc.text = text;
+        tokenizer.tokenize(doc);
+        for (String token : doc.terms) {
             output.println(token);
         }
     }
@@ -231,14 +237,14 @@ public class TestFn extends AppFunction {
 //        BufferedWriter writer = Utility.getWriter("test.html");
 //        writer.write(document.text);
 //        writer.close();
-        
+
         BufferedWriter writer = Utility.getWriter("test.txt");
         org.jsoup.nodes.Document doc = Jsoup.parse(new File(htmlFileName), "UTF-8");
         String html = Utility.readFileToString(new File(htmlFileName));
         String content = HtmlContentExtractor.extractFromContent(html);
         //writer.write(doc.text());
         writer.write(content);
-        writer.close();        
+        writer.close();
     }
 
 }

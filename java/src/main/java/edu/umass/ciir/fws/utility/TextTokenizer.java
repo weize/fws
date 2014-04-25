@@ -251,7 +251,7 @@ public class TextTokenizer {
                     }
                 }
 
-                if (token.length() - s > 1) {
+                if (token.length() - s >= 1) {
                     String subtoken = token.substring(s);
                     addToken(subtoken, start + s, end);
                 }
