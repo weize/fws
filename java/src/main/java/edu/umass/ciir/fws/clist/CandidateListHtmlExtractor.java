@@ -144,7 +144,7 @@ public class CandidateListHtmlExtractor {
                 if (HtmlContentExtractor.needSpaceTag(element.tagName())) {
                     text.append(" ");
                 }
-                
+
                 if (HtmlContentExtractor.isSkippingTag(element.tagName())) {
                     node = node.nextSibling();
                     continue;
@@ -178,6 +178,7 @@ public class CandidateListHtmlExtractor {
      */
     private String cleanText(String text) {
         text = text.replace('\u00a0', ' ');
+        text = text.replace('\u0092', '\'');
         text = text.replace('|', ' ');
         text = text.replaceAll("\\s+", " ");
         return text.trim();
