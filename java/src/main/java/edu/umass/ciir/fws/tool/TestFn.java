@@ -5,11 +5,12 @@
 package edu.umass.ciir.fws.tool;
 
 import edu.umass.ciir.fws.clist.CandidateListHtmlExtractor;
+import edu.umass.ciir.fws.clist.CandidateListTextExtractor;
+import edu.umass.ciir.fws.clist.CandidateListTextExtractor.ParseTree;
 import edu.umass.ciir.fws.nlp.HtmlContentExtractor;
 import edu.umass.ciir.fws.nlp.StanfordCoreNLPParser;
 import edu.umass.ciir.fws.types.Query;
 import edu.umass.ciir.fws.utility.TextProcessing;
-import edu.umass.ciir.fws.utility.TextTokenizer;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -49,13 +50,14 @@ public class TestFn extends AppFunction {
         output.println();
 
         //testPrintHTML(p, output);
-        testNlp(output);
+        //testNlp(output);
         //testTokenizer(p, output);
         //testReplace(p, output);
         //testPrintTermsInDoc(p, output);
         //testHtml(p, output);
         //testCandidateListHtmlExtractor(p, output);
         //testHtmlContentExtractor(p, output);
+        testCandidateListTextExtractor(p, output);
 
     }
 
@@ -239,6 +241,19 @@ public class TestFn extends AppFunction {
         //writer.write(doc.text());
         writer.write(content);
         writer.close();
+    }
+
+    private void testCandidateListTextExtractor(Parameters p, PrintStream output) throws Exception {
+        String senText = "Mom's and dad's computers are updated.";
+        String treeText = "(ROOT (S (NP (NP (NP (NN Mom) (POS 's)) (CC and) (NP (NN dad) (POS 's))) (NP (NNS computers))) (VP (VBP are) (VP (VBN updated))) (. .)))";
+        String beginText = "0\t3\t6\t10\t13\t16\t26\t30\t37";
+        String endText = "3\t5\t9\t13\t15\t25\t29\t37\t38";
+
+        ParseTree tree = new ParseTree(senText, treeText, beginText, endText);
+        tree.build();
+        tree.printTree();
+      
+
     }
 
 }

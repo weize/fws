@@ -99,21 +99,21 @@ public class StanfordCoreNLPParser {
 
             List<CoreLabel> tokens = sentence.get(CoreAnnotations.TokensAnnotation.class);
 
-            // tokens
-            for (int i = 0; i < tokens.size() - 1; i++) {
-                String word = tokens.get(i).get(CoreAnnotations.TextAnnotation.class);
-                writer.write(word + "\t");
-            }
-            writer.write(tokens.get(tokens.size() - 1).get(CoreAnnotations.TextAnnotation.class));
-            writer.write("\n");
-
-            // pos tags
-            for (int i = 0; i < tokens.size() - 1; i++) {
-                String pos = tokens.get(i).get(CoreAnnotations.PartOfSpeechAnnotation.class);
-                writer.write(pos + "\t");
-            }
-            writer.write(tokens.get(tokens.size() - 1).get(CoreAnnotations.PartOfSpeechAnnotation.class));
-            writer.write("\n");
+//            // tokens
+//            for (int i = 0; i < tokens.size() - 1; i++) {
+//                String word = tokens.get(i).get(CoreAnnotations.TextAnnotation.class);
+//                writer.write(word + "\t");
+//            }
+//            writer.write(tokens.get(tokens.size() - 1).get(CoreAnnotations.TextAnnotation.class));
+//            writer.write("\n");
+//
+//            // pos tags
+//            for (int i = 0; i < tokens.size() - 1; i++) {
+//                String pos = tokens.get(i).get(CoreAnnotations.PartOfSpeechAnnotation.class);
+//                writer.write(pos + "\t");
+//            }
+//            writer.write(tokens.get(tokens.size() - 1).get(CoreAnnotations.PartOfSpeechAnnotation.class));
+//            writer.write("\n");
 
             // begin positions in the original sentence of each tokens
             for (int i = 0; i < tokens.size() - 1; i++) {

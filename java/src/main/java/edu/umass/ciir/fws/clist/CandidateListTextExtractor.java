@@ -23,8 +23,7 @@ public class CandidateListTextExtractor {
     public final static String type = "tx"; // text
 
     ArrayList<CandidateList> clists; // store the extracted lists
-    String parseTreeText;
-    String senText;
+    ParseTree tree;
     Query query;
     Document document;
 
@@ -38,12 +37,16 @@ public class CandidateListTextExtractor {
         this.document = document;
 
         String[] lines = parseFileContent.split("\n");
-        for (int i = 0; i + 6 < lines.length; i += 7) {
-            parseTreeText = lines[i];
-            senText = lines[i + 1];
+        for (int i = 0; i + 4 < lines.length; i += 5) {
+            String senText = lines[i];
+            String treeText = lines[i + 1];
+            String beginText = lines[i + 2];
+            String endText = lines[i + 3];
+
+            tree = new ParseTree(senText, treeText, beginText, endText);
             if (containsAndOr(senText)) {
                 try {
-                    extractList(parseTreeText);
+                    //extractList();
                 } catch (Exception ex) {
                     System.err.println(ex);
                 }
@@ -353,7 +356,7 @@ public class CandidateListTextExtractor {
         Node[] children;
     }
 
-    class ParseTree {
+    public static class ParseTree {
 
         class Node {
 
@@ -362,6 +365,7 @@ public class CandidateListTextExtractor {
 
             boolean isLeaf;
             Node father;
+            Node[] children;
 
         }
 
@@ -389,25 +393,48 @@ public class CandidateListTextExtractor {
             root = buildNode();
         }
 
+        public void printTree() {
+            printNode(root);
+        }
+
+        private void printNode(Node node) {
+            if (node.isLeaf) {
+                System.out.print(String.format("(%s %s)", node.pos, getNodeText(node)));
+            } else {
+                System.out.print('(' + node.pos);
+                for (Node child : node.children) {
+                    System.out.print(' ');
+                    printNode(child);
+                }
+                System.out.print(')');
+            }
+        }
+
+        private String getNodeText(Node node) {
+            int i = node.tokenIndex;
+            return senText.substring(begins[i], ends[i]);
+        }
+
         private Node buildNode() throws Exception {
             if (curChar() != '(') {
                 throw new Exception("Node not starts with '('");
             }
-            position++;
+            position++; // skip beginning '('
 
             Node cur = new Node();
-            
-            // get part of speech for this node
-            getPartOfSpeech(cur);
-            position++;
 
-            // get content of the node (text or children)
+            // process part-of-speech for this node
+            getPartOfSpeech(cur);
+            position++; // skip a space after the pos tag
+
+            // process content of the node (text or children)
             if (curChar() != '(') { // this is a text node
                 buildTextNode(cur);
-                position++;
             } else { // children
                 buildChildrenNodes(cur);
             }
+
+            position++; // skip ending ')' for cur node
 
             return cur;
         }
@@ -417,7 +444,18 @@ public class CandidateListTextExtractor {
             while (true) {
                 Node child = buildNode();
                 child.father = node;
-                children.add(node); 
+                children.add(child);
+
+                char c = curChar();
+                if (c == ')') { // ending ')' for cur node
+                    node.children = children.toArray(new Node[0]);
+                    node.isLeaf = false;
+                    break;
+                } else if (c == ' ') { // space between children
+                    position++;
+                } else {
+                    throw new Exception("Nodes not seperated with space");
+                }
             }
         }
 
