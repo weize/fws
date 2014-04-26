@@ -56,7 +56,7 @@ public class HtmlContentExtractor {
 
         getNodeText(node, textBuilder);
         String text = textBuilder.toString().trim().replaceAll("\\p{Z}", " ");
-        text = text.replace('\u0092', '\''); // correct invalid RIGHT SINGLE QUOTATION MARK 
+        text = text.replace('\u0092', '\u2019'); // correct invalid RIGHT SINGLE QUOTATION MARK 
 
         // remove empty lines, and trim all lines
         text = text.replaceAll("\\s*\\n\\s*", "\n");

@@ -255,7 +255,7 @@ public class TestFn extends AppFunction {
 //        tree.printTree();
 
         CandidateListTextExtractor extractor = new CandidateListTextExtractor();
-        String content = Utility.readFileToString(new File("../exp/parse/51/clueweb09-en0000-01-07201.parse"));
+        String content = Utility.readFileToString(new File("test.parse"));
         List<CandidateList> clists = extractor.extract(new edu.umass.ciir.fws.crawl.Document(), new Query("a", "b"), content);
         for (CandidateList clist : clists) {
             output.println(clist);

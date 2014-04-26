@@ -140,7 +140,7 @@ public class TextTokenizer {
             }
             boolean isAsciiUppercase = (c >= 'A' && c <= 'Z');
             boolean isPeriod = (c == '.');
-            boolean isApostrophe = (c == '\'' || c == '’');
+            boolean isApostrophe = isApostrophe(c);
 
             if ((isAsciiUppercase || isApostrophe) && status == StringStatus.Clean) {
                 status = StringStatus.NeedsSimpleFix;
@@ -153,6 +153,10 @@ public class TextTokenizer {
         }
 
         return status;
+    }
+
+    public static boolean isApostrophe(char c) {
+        return (c == '\'' || c == '’');
     }
 
     /**
@@ -169,7 +173,7 @@ public class TextTokenizer {
         for (int i = 0; i < chars.length; i++) {
             char c = chars[i];
             boolean isAsciiUppercase = (c >= 'A' && c <= 'Z');
-            boolean isApostrophe = (c == '\'' || c == '’');
+            boolean isApostrophe = isApostrophe(c);
 
             if (isAsciiUppercase) {
                 chars[j] = (char) (chars[i] + 'a' - 'A');
