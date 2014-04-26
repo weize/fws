@@ -49,8 +49,8 @@ public class TestFn extends AppFunction {
         output.println();
 
         //testPrintHTML(p, output);
-        //testNlp(output);
-        testTokenizer(p, output);
+        testNlp(output);
+        //testTokenizer(p, output);
         //testReplace(p, output);
         //testPrintTermsInDoc(p, output);
         //testHtml(p, output);
@@ -137,13 +137,7 @@ public class TestFn extends AppFunction {
 
     private void testNlp(PrintStream output) throws IOException {
         output.println("In test nlp!");
-//        PTBTokenizerAnnotator tokenizer;
-//        tokenizer = new PTBTokenizerAnnotator();
-//        tokenizer.
         StanfordCoreNLPParser stanfordParser = new StanfordCoreNLPParser();
-//        String htmlFile = "../exp/doc/51/clueweb09-en0000-02-14693.html";
-//        String text = HtmlContentExtractor.extractFromFile(htmlFile);
-//        Utility.copyStringToFile(text, new File("test.content"));
         String text = "U.S.A and U.S. are the abbrevation for United States of American.\n"
                 + "edu.umass.ciir.fws and edu.umass.cirr.galago are package pathes.\n"
                 + "Mom's and dad's computers are updated.\n"

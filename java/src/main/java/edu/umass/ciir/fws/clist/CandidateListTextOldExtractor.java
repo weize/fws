@@ -18,7 +18,7 @@ import java.util.List;
  *
  * @author wkong
  */
-public class CandidateListTextExtractor {
+public class CandidateListTextOldExtractor {
 
     public final static String type = "tx"; // text
 
@@ -28,7 +28,7 @@ public class CandidateListTextExtractor {
     Query query;
     Document document;
 
-    public CandidateListTextExtractor() {
+    public CandidateListTextOldExtractor() {
         clists = new ArrayList<>();
     }
 
@@ -190,23 +190,13 @@ public class CandidateListTextExtractor {
         }
     }
 
-    /**
-     * Build parse tree from text.
-     *
-     * @param parseTreeText
-     * @param start start position of this part of the parse tree
-     * @return
-     * @throws Exception
-     */
     private Node buildTreeNode(String parseTreeText, int start) throws Exception {
-        int i = start + 1;
-
+        int i = start + 1; // parseTreeText[start] should be (
         if (parseTreeText.charAt(start) != '(') {
             throw new Exception(
                     String.format("Qid %s\t document %s\n%s\nNode not starting with \"(\"",
                             query.id, document.name, parseTreeText));
         }
-
         Node cur = new Node();
         int wordEnd = firstBoundary(parseTreeText, i);
         String pos = parseTreeText.substring(i, wordEnd);
@@ -351,118 +341,6 @@ public class CandidateListTextExtractor {
         boolean isLeaf = false;
         Node father;
         Node[] children;
-    }
-
-    class ParseTree {
-
-        class Node {
-
-            String pos; // part of speach
-            int tokenIndex; // index of the token. This corponds with begins and ends arrays in the parse tree.
-
-            boolean isLeaf;
-            Node father;
-
-        }
-
-        String senText; // original sentence
-        String treeText; // parse tree text, e.g. (ROOT (S (S (VP (VBN Born) (S (NP (N ...
-        int[] begins; // begin postions of each tokens
-        int[] ends; // end positions of each tokens;
-        Node root; // root node of the prase tree
-
-        int position;
-        int tokenIndex;
-
-        public ParseTree(String senText, String treeText, String beginText, String endText) {
-            this.senText = senText;
-            this.treeText = treeText;
-            this.begins = readIntArray(beginText);
-            this.ends = readIntArray(endText);
-        }
-
-        // build parse tree
-        public void build() throws Exception {
-            position = 0;
-            tokenIndex = 0;
-
-            root = buildNode();
-        }
-
-        private Node buildNode() throws Exception {
-            if (curChar() != '(') {
-                throw new Exception("Node not starts with '('");
-            }
-            position++;
-
-            Node cur = new Node();
-            
-            // get part of speech for this node
-            getPartOfSpeech(cur);
-            position++;
-
-            // get content of the node (text or children)
-            if (curChar() != '(') { // this is a text node
-                buildTextNode(cur);
-                position++;
-            } else { // children
-                buildChildrenNodes(cur);
-            }
-
-            return cur;
-        }
-
-        private void buildChildrenNodes(Node node) throws Exception {
-            ArrayList<Node> children = new ArrayList<>();
-            while (true) {
-                Node child = buildNode();
-                child.father = node;
-                children.add(node); 
-            }
-        }
-
-        private void buildTextNode(Node node) {
-            // process but ignore the text, since we will use the text in the original sentence.
-            fetchNextToken();
-            node.tokenIndex = tokenIndex++; // corrpsonds to begins and ends array
-            node.isLeaf = true;
-        }
-
-        private void getPartOfSpeech(Node node) {
-            node.pos = fetchNextToken();
-        }
-
-        /**
-         * Start from current position to fetch the token in the parse tree.
-         * This will increase position to the next char of the token.
-         *
-         * @return
-         */
-        private String fetchNextToken() {
-            int begin = position;
-            while (position < treeText.length()) {
-                char c = curChar();
-                if (c == ' ' || c == '(' || c == ')') {
-                    break;
-                }
-                position++;
-            }
-
-            return treeText.substring(begin, position);
-        }
-
-        private char curChar() {
-            return treeText.charAt(position);
-        }
-
-        private int[] readIntArray(String text) {
-            String[] strings = text.split("\t");
-            int[] ints = new int[strings.length];
-            for (int i = 0; i < ints.length; i++) {
-                ints[i] = Integer.parseInt(strings[i]);
-            }
-            return ints;
-        }
     }
 
     private int firstBoundary(String text, int start) {

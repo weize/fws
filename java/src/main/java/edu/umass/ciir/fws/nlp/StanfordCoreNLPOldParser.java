@@ -9,32 +9,35 @@ import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import edu.stanford.nlp.semgraph.SemanticGraph;
+import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations;
+import edu.stanford.nlp.semgraph.SemanticGraphEdge;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations;
 import edu.stanford.nlp.util.CoreMap;
 import edu.umass.ciir.fws.clist.CandidateListTextExtractor;
+import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.*;
 import java.util.*;
 
 /**
- * Use StanfordCoreNLP parser to parse text. It first splits document content
- * into sentences, because StanfordCoreNLP parser can not take all sentences in
- * a document because of memory issues. Then, it pass each sentence to
- * StanfordCoreNLP parser for parsing (and other annotation). Outputs positions
- * of the tokens in the original sentence.
+ * Use StanfordCoreNLP parser to parse text. It first splits document
+ * content into sentences, because StanfordCoreNLP parser can not take all
+ * sentences in a document because of memory issues. Then, it pass each sentence
+ * to StanfordCoreNLP parser for parsing (and other annotation)
  *
  * @author wkong
  */
-public class StanfordCoreNLPParser {
+public class StanfordCoreNLPOldParser {
 
     StanfordCoreNLP pipeline;
     StanfordCoreNLP pipelineSsplit;
     BufferedWriter writer;
 
-    public StanfordCoreNLPParser() {
+    public StanfordCoreNLPOldParser() {
         Properties props = new Properties();
-        props.put("annotators", "tokenize, ssplit, pos, parse");
+        props.put("annotators", "tokenize, ssplit, pos, lemma, ner, parse");
         props.put("pos.maxlen", 50);
         props.put("parse.maxlen", 50);
         props.put("ssplit.isOneSentence", true);
@@ -89,17 +92,14 @@ public class StanfordCoreNLPParser {
         List<CoreMap> sentences = annotationSplit.get(CoreAnnotations.SentencesAnnotation.class);
 
         for (CoreMap sentence : sentences) {
-            // original sentence
-            String text = sentence.get(CoreAnnotations.TextAnnotation.class).replace('\n', ' ');
-            writer.write(text + "\n");
-
-            // parse tree
             Tree tree = sentence.get(TreeCoreAnnotations.TreeAnnotation.class);
-            writer.write(tree.toString() + "\n");
+            writer.write(tree.toString());
+            writer.write("\n");
+
+            SemanticGraph dependencies = sentence.get(SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation.class);
 
             List<CoreLabel> tokens = sentence.get(CoreAnnotations.TokensAnnotation.class);
 
-            // tokens
             for (int i = 0; i < tokens.size() - 1; i++) {
                 String word = tokens.get(i).get(CoreAnnotations.TextAnnotation.class);
                 writer.write(word + "\t");
@@ -107,7 +107,6 @@ public class StanfordCoreNLPParser {
             writer.write(tokens.get(tokens.size() - 1).get(CoreAnnotations.TextAnnotation.class));
             writer.write("\n");
 
-            // pos tags
             for (int i = 0; i < tokens.size() - 1; i++) {
                 String pos = tokens.get(i).get(CoreAnnotations.PartOfSpeechAnnotation.class);
                 writer.write(pos + "\t");
@@ -115,53 +114,36 @@ public class StanfordCoreNLPParser {
             writer.write(tokens.get(tokens.size() - 1).get(CoreAnnotations.PartOfSpeechAnnotation.class));
             writer.write("\n");
 
-            // begin positions in the original sentence of each tokens
             for (int i = 0; i < tokens.size() - 1; i++) {
-                writer.write(tokens.get(i).beginPosition() + "\t");
+                String ne = tokens.get(i).get(CoreAnnotations.NamedEntityTagAnnotation.class);
+                writer.write(ne + "\t");
             }
-            writer.write(tokens.get(tokens.size() - 1).beginPosition() + "\n");
+            writer.write(tokens.get(tokens.size() - 1).get(CoreAnnotations.NamedEntityTagAnnotation.class));
+            writer.write("\n");
 
-            // end positions in the original sentence of each tokens
-            for (int i = 0; i < tokens.size() - 1; i++) {
-                writer.write(tokens.get(i).endPosition() + "\t");
+            Integer[] sources = new Integer[tokens.size()];
+            String[] rels = new String[tokens.size()];
+            for (SemanticGraphEdge edge : dependencies.edgeListSorted()) {
+                String rel = edge.getRelation().toString();
+                rel = rel.replaceAll("\\s+", "");
+                int source = edge.getSource().index() - 1;
+                int target = edge.getTarget().index() - 1;
+                sources[target] = source;
+                rels[target] = rel;
             }
-            writer.write(tokens.get(tokens.size() - 1).endPosition() + "\n");
 
-//            // Named entity
-//            for (int i = 0; i < tokens.size() - 1; i++) {
-//                String ne = tokens.get(i).get(CoreAnnotations.NamedEntityTagAnnotation.class);
-//                writer.write(ne + "\t");
-//            }
-//            writer.write(tokens.get(tokens.size() - 1).get(CoreAnnotations.NamedEntityTagAnnotation.class));
-//            writer.write("\n");
-//
-//            
-//            SemanticGraph dependencies = sentence.get(SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation.class);
-//            Integer[] sources = new Integer[tokens.size()];
-//            String[] rels = new String[tokens.size()];
-//            for (SemanticGraphEdge edge : dependencies.edgeListSorted()) {
-//                String rel = edge.getRelation().toString();
-//                rel = rel.replaceAll("\\s+", "");
-//                int source = edge.getSource().index() - 1;
-//                int target = edge.getTarget().index() - 1;
-//                sources[target] = source;
-//                rels[target] = rel;
-//            }
-//
-//            for (int i = 0; i < sources.length; i++) {
-//                if (rels[i] == null) {
-//                    rels[i] = "__";
-//                    sources[i] = -1;
-//                }
-//            }
-//
-//            // heads
-//            writer.write(TextProcessing.join(sources, "\t"));
-//            writer.write("\n");
-//
-//            // dependency relations
-//            writer.write(TextProcessing.join(rels, "\t"));
-//            writer.write("\n");
+            for (int i = 0; i < sources.length; i++) {
+                if (rels[i] == null) {
+                    rels[i] = "__";
+                    sources[i] = -1;
+                }
+            }
+
+            writer.write(TextProcessing.join(sources, "\t"));
+            writer.write("\n");
+
+            writer.write(TextProcessing.join(rels, "\t"));
+            writer.write("\n");
             writer.write("\n");
         }
 
