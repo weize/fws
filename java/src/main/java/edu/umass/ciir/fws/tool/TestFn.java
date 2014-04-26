@@ -9,6 +9,7 @@ import edu.umass.ciir.fws.clist.CandidateListTextExtractor;
 import edu.umass.ciir.fws.clist.CandidateListTextExtractor.ParseTree;
 import edu.umass.ciir.fws.nlp.HtmlContentExtractor;
 import edu.umass.ciir.fws.nlp.StanfordCoreNLPParser;
+import edu.umass.ciir.fws.clist.CandidateList;
 import edu.umass.ciir.fws.types.Query;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
@@ -244,15 +245,21 @@ public class TestFn extends AppFunction {
     }
 
     private void testCandidateListTextExtractor(Parameters p, PrintStream output) throws Exception {
-        String senText = "Mom's and dad's computers are updated.";
-        String treeText = "(ROOT (S (NP (NP (NP (NN Mom) (POS 's)) (CC and) (NP (NN dad) (POS 's))) (NP (NNS computers))) (VP (VBP are) (VP (VBN updated))) (. .)))";
-        String beginText = "0\t3\t6\t10\t13\t16\t26\t30\t37";
-        String endText = "3\t5\t9\t13\t15\t25\t29\t37\t38";
+//        String senText = "Mom's and dad's computers are updated.";
+//        String treeText = "(ROOT (S (NP (NP (NP (NN Mom) (POS 's)) (CC and) (NP (NN dad) (POS 's))) (NP (NNS computers))) (VP (VBP are) (VP (VBN updated))) (. .)))";
+//        String beginText = "0\t3\t6\t10\t13\t16\t26\t30\t37";
+//        String endText = "3\t5\t9\t13\t15\t25\t29\t37\t38";
+//
+//        ParseTree tree = new ParseTree(senText, treeText, beginText, endText);
+//
+//        tree.printTree();
 
-        ParseTree tree = new ParseTree(senText, treeText, beginText, endText);
-        tree.build();
-        tree.printTree();
-      
+        CandidateListTextExtractor extractor = new CandidateListTextExtractor();
+        String content = Utility.readFileToString(new File("../exp/parse/51/clueweb09-en0000-01-07201.parse"));
+        List<CandidateList> clists = extractor.extract(new edu.umass.ciir.fws.crawl.Document(), new Query("a", "b"), content);
+        for (CandidateList clist : clists) {
+            output.println(clist);
+        }
 
     }
 

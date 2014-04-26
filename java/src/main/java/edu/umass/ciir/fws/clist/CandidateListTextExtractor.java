@@ -23,9 +23,9 @@ public class CandidateListTextExtractor {
     public final static String type = "tx"; // text
 
     ArrayList<CandidateList> clists; // store the extracted lists
-    ParseTree tree;
     Query query;
     Document document;
+    ParseTree tree;
 
     public CandidateListTextExtractor() {
         clists = new ArrayList<>();
@@ -37,17 +37,20 @@ public class CandidateListTextExtractor {
         this.document = document;
 
         String[] lines = parseFileContent.split("\n");
-        for (int i = 0; i + 4 < lines.length; i += 5) {
+
+        for (int i = 0; i + 3 < lines.length; i += 5) {
             String senText = lines[i];
             String treeText = lines[i + 1];
             String beginText = lines[i + 2];
             String endText = lines[i + 3];
-
-            tree = new ParseTree(senText, treeText, beginText, endText);
             if (containsAndOr(senText)) {
                 try {
-                    //extractList();
+                    // build parse tree
+                    tree = new ParseTree(senText, treeText, beginText, endText);
+                    extractCandidateListsFromParseTree();
+
                 } catch (Exception ex) {
+                    ex.printStackTrace();
                     System.err.println(ex);
                 }
             }
@@ -55,18 +58,90 @@ public class CandidateListTextExtractor {
         return this.clists;
     }
 
-    private void extractList(String parseTreeText) throws Exception {
-        Node root;
-
-        try {
-            root = buildTreeNode(parseTreeText, 0);
-        } catch (Exception e) {
-            System.err.println(e);
-            return;
+    private void findAndOrNodes(Node node, ArrayList<Node> andOrNodes) {
+        if (node.isLeaf) {
+            if (isAndOrNode(node)) {
+                andOrNodes.add(node);
+            }
+        } else {
+            for (Node child : node.children) {
+                findAndOrNodes(child, andOrNodes);
+            }
         }
-        ArrayList<Node> andOrNodes = new ArrayList<>();
-        findAndOrNodes(root, andOrNodes);
+    }
+
+    private boolean isAndOrNode(Node node) {
+        if (node.isLeaf) {
+            String text = TextProcessing.clean(tree.getNodeText(node));
+            if (text.equals("and") || text.equals("or")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean containsAndOr(String text) {
+        return TextProcessing.clean(text).matches(".*\\b(and|or)\\b.*");
+    }
+
+    private boolean isDelimiterNode(Node node) {
+        if (this.isAndOrNode(node)) {
+            return true;
+        } else if (node.pos.equals(",")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private String findKeyphrasePOSNearAndOrNode(Node[] children, int andOrNodeIdx) {
+        for (int i = 1; andOrNodeIdx + i < children.length || andOrNodeIdx - i >= 0; i++) {
+            if (andOrNodeIdx + i < children.length) {
+                Node node = children[andOrNodeIdx + i];
+                if (!isDelimiterNode(node)) {
+                    return node.pos;
+                }
+            }
+
+            if (andOrNodeIdx - i >= 0) {
+                Node node = children[andOrNodeIdx - i];
+                if (!isDelimiterNode(node)) {
+                    return node.pos;
+                }
+            }
+        }
+        return "X";
+    }
+
+    private int findNodeInArray(Node[] nodes, Node cur) {
+
+        for (int i = 0; i < nodes.length; i++) {
+            if (nodes[i].equals(cur)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private boolean POSEquivalent(String pos1, String pos2) {
+        //System.out.println(pos1 + "|" + pos2);
+        if (pos1.length() <= 1 || pos2.length() <= 1) {
+            if (pos1.length() == 1 && pos2.length() == 1) {
+                return pos1.charAt(0) == pos2.charAt(0);
+            } else {
+                return false;
+            }
+        } else {
+            return (pos1.charAt(0) == pos2.charAt(0)) && (pos1.charAt(1) == pos2.charAt(1));
+        }
+
+    }
+
+    private void extractCandidateListsFromParseTree() {
         ArrayList<String> items = new ArrayList<>(); // candidate list items
+
+        ArrayList<Node> andOrNodes = new ArrayList<>();
+        findAndOrNodes(tree.root, andOrNodes);
 
         HashSet<Node> used = new HashSet<>();
         for (Node cur : andOrNodes) {
@@ -74,15 +149,12 @@ public class CandidateListTextExtractor {
             if (used.contains(father)) {
                 continue;
             }
+
             used.add(father);
             Node[] children = father.children;
 
             // find andOrNode index
             int andOrNodeIdx = findNodeInArray(children, cur);
-
-            if (andOrNodeIdx == -1) {
-                throw new Exception("Cannot find andOrNode node while processing:\n" + parseTreeText);
-            }
 
             // find POS
             String pos = findKeyphrasePOSNearAndOrNode(children, andOrNodeIdx);
@@ -143,9 +215,7 @@ public class CandidateListTextExtractor {
                 if (this.isDelimiterNode(children[i])) {
                     continue;
                 }
-                StringBuilder textBuilder = new StringBuilder();
-                NodeText(children[i], textBuilder, used);
-                String text = cleanText(textBuilder.toString());
+                String text = tree.getNodeText(children[i]);
                 if (text.length() != 0) {
                     items.add(text);
                 }
@@ -160,214 +230,17 @@ public class CandidateListTextExtractor {
 
     }
 
-    private void findAndOrNodes(Node cur, ArrayList<Node> andOrNodes) {
-        if (cur.isLeaf) {
-            if (isAndOrNode(cur)) {
-                andOrNodes.add(cur);
-            }
-        } else {
-            for (Node node : cur.children) {
-                findAndOrNodes(node, andOrNodes);
-            }
-        }
-    }
+    public static class Node {
 
-    private boolean isAndOrNode(Node cur) {
-        if (!cur.isLeaf) {
-            return false;
-        }
+        String pos; // part of speach
+        int tokenIndex; // index of the token. This corponds with begins and ends arrays in the parse tree.
 
-        if (cur.text.equalsIgnoreCase("and") || cur.text.equalsIgnoreCase("or")) {
-            return true;
-        }
-        return false;
-    }
-
-    private void NodeText(Node cur, StringBuilder text, HashSet<Node> used) {
-        if (cur.isLeaf) {
-            text.append(cur.text).append(" ");
-        } else {
-            for (Node node : cur.children) {
-                NodeText(node, text, used);
-            }
-        }
-    }
-
-    /**
-     * Build parse tree from text.
-     *
-     * @param parseTreeText
-     * @param start start position of this part of the parse tree
-     * @return
-     * @throws Exception
-     */
-    private Node buildTreeNode(String parseTreeText, int start) throws Exception {
-        int i = start + 1;
-
-        if (parseTreeText.charAt(start) != '(') {
-            throw new Exception(
-                    String.format("Qid %s\t document %s\n%s\nNode not starting with \"(\"",
-                            query.id, document.name, parseTreeText));
-        }
-
-        Node cur = new Node();
-        int wordEnd = firstBoundary(parseTreeText, i);
-        String pos = parseTreeText.substring(i, wordEnd);
-        cur.pos = pos;
-        cur.start = start;
-
-        i = wordEnd + 1;
-
-        // text node
-        if (parseTreeText.charAt(i) != '(') {
-            // no chirdren, text node
-            wordEnd = firstBoundary(parseTreeText, i);
-            String text = parseTreeText.substring(i, wordEnd);
-            cur.text = text;
-            cur.isLeaf = true;
-            cur.end = wordEnd;
-            return cur;
-        }
-
-        // find chird
-        ArrayList<Node> children = new ArrayList<Node>();
-        while (true) {
-            Node child = buildTreeNode(parseTreeText, i);
-            child.father = cur;
-            children.add(child);
-            i = child.end + 1;
-
-            // end
-            if (parseTreeText.charAt(i) == ')') {
-                cur.end = i;
-                cur.children = children.toArray(new Node[0]);
-                cur.isLeaf = false;
-                break;
-            }
-
-            if (parseTreeText.charAt(i) != ' ') {
-                throw new Exception(
-                        String.format("Qid %s\t document %s\n%s\nNodes not seperated with space",
-                                query.id, document.name, parseTreeText));
-            }
-
-            i++; // parseTreeText.charAt(i) should be a space
-        }
-
-        return cur;
-
-    }
-
-    private String cleanText(String text) {
-        text = text.replace('\u00a0', ' ');
-        text = text.replace('|', ' ');
-        text = text.replaceAll("-LRB-", "(");
-        text = text.replaceAll("-RRB-", ")");
-        text = text.replaceAll("-LCB-", "{");
-        text = text.replaceAll("-RCB-", "}");
-        text = text.replaceAll("-LSB-", "[");
-        text = text.replaceAll("-RSB-", "]");
-        text = fixTokenizingDifference(text);
-        text = text.replaceAll("\\s+", " ");
-
-        return text.trim();
-    }
-
-    public static boolean containsAndOr(String text) {
-        return TextProcessing.clean(text).matches(".*\\b(and|or)\\b.*");
-    }
-
-    private boolean isDelimiterNode(Node node) {
-        if (this.isAndOrNode(node)) {
-            return true;
-        } else if (node.pos.equals(",")) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    private String findKeyphrasePOSNearAndOrNode(Node[] children, int andOrNodeIdx) {
-        for (int i = 1; andOrNodeIdx + i < children.length || andOrNodeIdx - i >= 0; i++) {
-            if (andOrNodeIdx + i < children.length) {
-                Node node = children[andOrNodeIdx + i];
-                if (!isDelimiterNode(node)) {
-                    return node.pos;
-                }
-            }
-
-            if (andOrNodeIdx - i >= 0) {
-                Node node = children[andOrNodeIdx - i];
-                if (!isDelimiterNode(node)) {
-                    return node.pos;
-                }
-            }
-        }
-        return "X";
-    }
-
-    private int findNodeInArray(Node[] nodes, Node cur) {
-
-        for (int i = 0; i < nodes.length; i++) {
-            if (nodes[i].equals(cur)) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    private boolean POSEquivalent(String pos1, String pos2) {
-        //System.out.println(pos1 + "|" + pos2);
-        if (pos1.length() <= 1 || pos2.length() <= 1) {
-            if (pos1.length() == 1 && pos2.length() == 1) {
-                return pos1.charAt(0) == pos2.charAt(0);
-            } else {
-                return false;
-            }
-        } else {
-            return (pos1.charAt(0) == pos2.charAt(0)) && (pos1.charAt(1) == pos2.charAt(1));
-        }
-
-    }
-
-    /**
-     *
-     * @param text
-     * @return
-     */
-    private String fixTokenizingDifference(String text) {
-        /**
-         * Stanford core nlp handles single quotes differently to Galago (a)
-         * Stanford: they're -> [they, re], (b) Galago: they're -> [theyre] This
-         * function will convert (a) to (b)
-         */
-        text = text.replaceAll("\\s+'([\\p{L}\\p{N}])", "'$1");
-        return text;
-    }
-
-    class Node {
-
-        String pos;
-        String text;
-        int start;
-        int end;
-        boolean isLeaf = false;
+        boolean isLeaf;
         Node father;
         Node[] children;
     }
 
     public static class ParseTree {
-
-        class Node {
-
-            String pos; // part of speach
-            int tokenIndex; // index of the token. This corponds with begins and ends arrays in the parse tree.
-
-            boolean isLeaf;
-            Node father;
-            Node[] children;
-
-        }
 
         String senText; // original sentence
         String treeText; // parse tree text, e.g. (ROOT (S (S (VP (VBN Born) (S (NP (N ...
@@ -378,15 +251,16 @@ public class CandidateListTextExtractor {
         int position;
         int tokenIndex;
 
-        public ParseTree(String senText, String treeText, String beginText, String endText) {
+        public ParseTree(String senText, String treeText, String beginText, String endText) throws Exception {
             this.senText = senText;
             this.treeText = treeText;
             this.begins = readIntArray(beginText);
             this.ends = readIntArray(endText);
+            build();
         }
 
         // build parse tree
-        public void build() throws Exception {
+        private void build() throws Exception {
             position = 0;
             tokenIndex = 0;
 
@@ -411,8 +285,8 @@ public class CandidateListTextExtractor {
         }
 
         private String getNodeText(Node node) {
-            int i = node.tokenIndex;
-            return senText.substring(begins[i], ends[i]);
+            int[] range = findTextNodeRange(node);
+            return senText.substring(range[0], range[1]);
         }
 
         private Node buildNode() throws Exception {
@@ -501,14 +375,32 @@ public class CandidateListTextExtractor {
             }
             return ints;
         }
-    }
 
-    private int firstBoundary(String text, int start) {
-        int i = start;
-        while (text.charAt(i) != ' ' && text.charAt(i) != '(' && text.charAt(i) != ')') {
-            i++;
+        /**
+         * Find the begin and end indices (in the original text) of the text
+         * represented by the node.
+         *
+         * @param node
+         * @return
+         */
+        private int[] findTextNodeRange(Node node) {
+            if (node.isLeaf) {
+                return new int[]{begins[node.tokenIndex], ends[node.tokenIndex]};
+            } else {
+                int min = this.senText.length();
+                int max = -1;
+                for (Node child : node.children) {
+                    int[] range = findTextNodeRange(child);
+                    if (range[0] < min) {
+                        min = range[0];
+                    }
+                    if (range[1] > max) {
+                        max = range[1];
+                    }
+                }
+                return new int[]{min, max};
+            }
+
         }
-        return i;
     }
-
 }

@@ -49,6 +49,10 @@ public class Document {
         html = text;
     }
 
+    public Document() {
+
+    }
+
     public static String getSiteUrl(String url) {
         url = url.replaceAll("^https?://", "");
         url = url.replaceAll("/.*?$", "");
