@@ -9,13 +9,18 @@ import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
+import org.lemurproject.galago.core.retrieval.Retrieval;
+import org.lemurproject.galago.core.retrieval.RetrievalFactory;
+import org.lemurproject.galago.core.retrieval.ScoredDocument;
 import org.lemurproject.galago.tupleflow.InputClass;
 import org.lemurproject.galago.tupleflow.Parameters;
 import org.lemurproject.galago.tupleflow.Processor;
 import org.lemurproject.galago.tupleflow.TupleFlowParameters;
 import org.lemurproject.galago.tupleflow.execution.Verified;
+import org.lemurproject.galago.core.parse.Document;
 
 /**
  * From index, fetch HTML content for top ranked documents and save into files,
@@ -28,32 +33,41 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 public class TopDocumentsWriter implements Processor<Query> {
 
     QuerySetDocuments querySetDocuments;
+    Retrieval retrieval;
+    HashMap<String, List<ScoredDocument>> querySetResults;
     String docDir;
+    String rankedListFile;
+    long topNum;
     BufferedWriter writer;
     Logger logger;
 
     public TopDocumentsWriter(TupleFlowParameters parameters) throws Exception {
         Parameters p = parameters.getJSON();
         docDir = p.getString("docDir");
-        p.set("loadDocsFromIndex", true);
-        querySetDocuments = new QuerySetDocuments(p);
+        rankedListFile = p.getString("rankedListFile");
+        topNum = p.getLong("topNum");
+        querySetResults = QuerySetDocuments.loadQuerySetResults(rankedListFile, topNum);
+        retrieval = RetrievalFactory.instance(p);
         logger = Logger.getLogger(TopDocumentsWriter.class.toString());
     }
 
     @Override
     public void process(Query query) throws IOException {
-        List<Document> docs = querySetDocuments.get(query.id);
+        List<ScoredDocument> docs = querySetResults.get(query.id);
         String dirName = Utility.getDocDirName(docDir, query.id);
         Utility.createDirectory(dirName);
-        for (Document doc : docs) {
+        for (ScoredDocument sd : docs) {
+            Document doc = retrieval.getDocument(sd.documentName, new Document.DocumentComponents(true, false, false));
             String fileName = Utility.getDocFileName(docDir, query.id, doc.name);
-            Utility.copyStringToFile(doc.html, new File(fileName));
+            Utility.copyStringToFile(doc.text, new File(fileName));
+            System.err.println(String.format("written in %s", fileName));
+            
         }
         logger.info(String.format("written down %d documents for query %s", docs.size(), query.id));
     }
 
     @Override
     public void close() throws IOException {
-
+        retrieval.close();
     }
 }
