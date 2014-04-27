@@ -17,6 +17,7 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 
 /**
  * Tupleflow writer that write candidate lists for each query into files.
+ *
  * @author wkong
  */
 @Verified
@@ -27,6 +28,7 @@ public class CandidateListWriter implements Processor<CandidateList> {
     CandidateList last = null;
     BufferedWriter writer;
     String suffix;
+    String fileName;
 
     public CandidateListWriter(TupleFlowParameters parameters) throws IOException {
         Parameters p = parameters.getJSON();
@@ -40,7 +42,7 @@ public class CandidateListWriter implements Processor<CandidateList> {
             last = cList;
             createFile(cList.qid);
         } else if (!last.qid.equals(cList.qid)) {
-            writer.close();
+            closeFile();
             createFile(cList.qid);
         }
 
@@ -52,13 +54,18 @@ public class CandidateListWriter implements Processor<CandidateList> {
     @Override
     public void close() throws IOException {
         if (last != null) {
-            writer.close();
+            closeFile();
         }
     }
 
     private void createFile(String qid) throws IOException {
-        String file = Utility.getCandidateListFileName(clistDir, qid, suffix);
-        writer = Utility.getWriter(file);
+        fileName = Utility.getCandidateListFileName(clistDir, qid, suffix);
+        writer = Utility.getWriter(fileName);
+    }
+
+    private void closeFile() throws IOException {
+        writer.close();
+        System.err.println("Written in " + fileName);
     }
 
 }
