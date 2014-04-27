@@ -54,7 +54,7 @@ public class DocumentNLPParser implements Processor<QueryDocumentName> {
         }
 
         String inputFileName = Utility.getDocFileName(
-                docDir, queryDocName.qid, queryDocName.docName);
+                docDir, queryDocName.qid, queryDocName.docName, "html");
         String content = HtmlContentExtractor.extractFromFile(inputFileName);
 
         System.err.println("processing  " + inputFileName);

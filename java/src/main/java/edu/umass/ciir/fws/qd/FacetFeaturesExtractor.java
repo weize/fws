@@ -7,11 +7,10 @@ package edu.umass.ciir.fws.qd;
 import edu.umass.ciir.fws.clist.CandidateList;
 import edu.umass.ciir.fws.clist.CandidateListParser;
 import edu.umass.ciir.fws.crawl.Document;
-import edu.umass.ciir.fws.crawl.QuerySetDocuments;
+import edu.umass.ciir.fws.crawl.QuerySetResults;
 import edu.umass.ciir.fws.feature.CluewebDocFreqMap;
 import edu.umass.ciir.fws.feature.TermFeaturesExtractor;
 import edu.umass.ciir.fws.types.Query;
-import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.IOException;
 import java.io.Writer;
@@ -53,11 +52,13 @@ public class FacetFeaturesExtractor implements Processor<Query> {
 
     HashMap<String, TermFeatures> termFeatures;
     CluewebDocFreqMap clueDfs;
-    QuerySetDocuments querySetDocuments;
+    QuerySetResults querySetResults;
     List<Document> docs;
     List<FacetFeatures> facetFeatures;
     Query query;
     long topNum;
+    String rankedListFile;
+    String docDir;
 
     String clistDir;
     String qdFeatureDir;
@@ -70,10 +71,12 @@ public class FacetFeaturesExtractor implements Processor<Query> {
         String clueDfFile = p.getString("clueDfFile");
         clueCdf = p.getLong("clueCdf");
         topNum = p.getLong("topNum");
+        rankedListFile = p.getString("rankedListFile");
+        docDir = p.getString("docDir");
         termFeatures = new HashMap<>();
         clueDfs = new CluewebDocFreqMap(clueDfFile);
 
-        loadDocuments(p);
+        loadQuerySetResults();
 
     }
 
@@ -96,9 +99,8 @@ public class FacetFeaturesExtractor implements Processor<Query> {
         output();
     }
 
-    private void loadDocuments(Parameters p) throws Exception {
-        p.set("loadDocsFromIndex", true);
-        querySetDocuments = new QuerySetDocuments(p);
+    private void loadQuerySetResults() throws Exception {
+        querySetResults = new QuerySetResults(rankedListFile, topNum);
     }
 
     private void loadCandidateListsToFacetFeatures() throws IOException {
@@ -121,8 +123,8 @@ public class FacetFeaturesExtractor implements Processor<Query> {
         }
     }
 
-    private void loadDocuments() {
-        docs = querySetDocuments.get(query.id);
+    private void loadDocuments() throws IOException {
+        docs = Document.loadDocumentsFromFiles(querySetResults.get(query.id), docDir, query.id);
         for (Document doc : docs) {
             doc.ngramMap = new HashMap<>();
             TermFeaturesExtractor.buildNgramMapFomText(doc.ngramMap, doc.terms, termFeatures);
@@ -133,7 +135,7 @@ public class FacetFeaturesExtractor implements Processor<Query> {
      * Extract wdf, idf and sites for terms.
      */
     private void extractTermFeatures() {
-        HashSet<String> sites = new HashSet<String>();
+        HashSet<String> sites = new HashSet<>();
         for (String term : termFeatures.keySet()) {
             TermFeatures termFeature = termFeatures.get(term);
             double clueDf = clueDfs.getDf(term);
@@ -158,8 +160,8 @@ public class FacetFeaturesExtractor implements Processor<Query> {
     }
 
     private void extractFacetFeatures() {
-        ArrayList<String> joinSites = new ArrayList<String>();
-        HashSet<String> curSites = new HashSet<String>();
+        ArrayList<String> joinSites = new ArrayList<>();
+        HashSet<String> curSites = new HashSet<>();
 
         for (FacetFeatures ff : facetFeatures) {
             // set len 

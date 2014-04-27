@@ -4,17 +4,21 @@
  */
 package edu.umass.ciir.fws.tool;
 
+import edu.stanford.nlp.io.EncodingPrintWriter;
+import edu.umass.ciir.fws.clist.CandidateList;
 import edu.umass.ciir.fws.clist.CandidateListHtmlExtractor;
 import edu.umass.ciir.fws.clist.CandidateListTextExtractor;
 import edu.umass.ciir.fws.clist.CandidateListTextExtractor.ParseTree;
 import edu.umass.ciir.fws.nlp.HtmlContentExtractor;
 import edu.umass.ciir.fws.nlp.StanfordCoreNLPParser;
-import edu.umass.ciir.fws.clist.CandidateList;
 import edu.umass.ciir.fws.types.Query;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
@@ -23,11 +27,11 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 import org.lemurproject.galago.core.parse.Document;
+import org.lemurproject.galago.core.parse.TagTokenizer;
 import org.lemurproject.galago.core.retrieval.Retrieval;
 import org.lemurproject.galago.core.retrieval.RetrievalFactory;
 import org.lemurproject.galago.core.tools.AppFunction;
 import org.lemurproject.galago.tupleflow.Parameters;
-import org.lemurproject.galago.core.parse.TagTokenizer;
 
 /**
  *
@@ -58,7 +62,8 @@ public class TestFn extends AppFunction {
         //testHtml(p, output);
         //testCandidateListHtmlExtractor(p, output);
         //testHtmlContentExtractor(p, output);
-        testCandidateListTextExtractor(p, output);
+        //testCandidateListTextExtractor(p, output);
+        testDocument(p, output);
 
     }
 
@@ -261,6 +266,17 @@ public class TestFn extends AppFunction {
             output.println(clist);
         }
 
+    }
+
+    private void testDocument(Parameters p, PrintStream output) throws Exception {
+        Retrieval retrieval = RetrievalFactory.instance(p);
+        String docName = "clueweb09-en0000-03-33030";
+        Document doc = retrieval.getDocument(docName, new Document.DocumentComponents(true, true, false));
+        File dataFile = new File("test.dat");
+        Utility.copyStreamToFile(new ByteArrayInputStream(Document.serialize(doc, new Parameters())), dataFile);
+        System.err.println(String.format("written in %s", dataFile.getAbsoluteFile()));
+        doc = Document.deserialize(new DataInputStream(new FileInputStream(dataFile)), p, new Document.DocumentComponents(true, true, false));
+        output.println(doc.toString());
     }
 
 }

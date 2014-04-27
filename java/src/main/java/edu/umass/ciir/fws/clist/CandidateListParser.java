@@ -4,11 +4,8 @@
  */
 package edu.umass.ciir.fws.clist;
 
-import edu.umass.ciir.fws.crawl.Document;
-import edu.umass.ciir.fws.crawl.QuerySetDocuments;
 import edu.umass.ciir.fws.types.Query;
 import edu.umass.ciir.fws.utility.Utility;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;

@@ -8,9 +8,16 @@ import edu.emory.mathcs.backport.java.util.Arrays;
 import edu.emory.mathcs.backport.java.util.Collections;
 import edu.umass.ciir.fws.nlp.HtmlContentExtractor;
 import edu.umass.ciir.fws.utility.TextProcessing;
+import edu.umass.ciir.fws.utility.Utility;
+import java.io.DataInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import org.lemurproject.galago.core.eval.QueryResults;
 import org.lemurproject.galago.core.retrieval.ScoredDocument;
+import org.lemurproject.galago.tupleflow.Parameters;
 
 /**
  * Represents a document.
@@ -28,31 +35,20 @@ public class Document {
     public List<String> terms;
     public HashMap<String, Integer> ngramMap; // ngram -> frequency
 
-    Document(ScoredDocument sd, org.lemurproject.galago.core.parse.Document document) {
-        rank = sd.rank;
+    public Document(ScoredDocument sd, org.lemurproject.galago.core.parse.Document document) {
         name = sd.documentName;
+        rank = sd.rank;
         html = document.text;
-        this.url = document.metadata.get("url");
-        //this.terms = document.terms; 
-        // galago tokenzier is inconsistent when processing original html and the text content of it,
-        // for single quote. "&apos;" will be a split point in galago tokenizer, but "\'" is not.
-        // So I re-tokenize by the html's content.
-        this.terms = TextProcessing.tokenize(HtmlContentExtractor.extractFromContent(document.text));
+        url = document.metadata.get("url");
         site = getSiteUrl(url);
-        title = TextProcessing.clean(HtmlContentExtractor.extractTitle(document.text));
-
+        terms = TextProcessing.tokenize(HtmlContentExtractor.extractFromContent(html));
+        title = TextProcessing.clean(HtmlContentExtractor.extractTitle(html));
     }
-
-    Document(ScoredDocument sd, String text) {
-        rank = sd.rank;
-        name = sd.documentName;
-        html = text;
-    }
-
+   
     public Document() {
-
+        
     }
-
+    
     public static String getSiteUrl(String url) {
         url = url.replaceAll("^https?://", "");
         url = url.replaceAll("/.*?$", "");
@@ -61,26 +57,15 @@ public class Document {
         return url;
     }
 
-//    public static Document[] loadDocumentsFromRankedList(String file, String qid, long topNum, Retrieval retrieval) throws IOException {
-//        QuerySetResults querySetResults = new QuerySetResults(file);
-//        QueryResults queryResults = querySetResults.get(qid);
-//
-//        int num = 0;
-//        boolean full = false;
-//        ArrayList<Document> docs = new ArrayList<>();
-//        for (ScoredDocument sd : queryResults.getIterator()) {
-//            org.lemurproject.galago.core.parse.Document document = retrieval.getDocument(sd.documentName, new org.lemurproject.galago.core.parse.Document.DocumentComponents(true, true, true));
-//            docs.add(new Document(sd, document.text));
-//            if (++num >= topNum) {
-//                full = true;
-//                break;
-//            }
-//        }
-//
-//        if (!full) {
-//            System.err.println("Warning: number of documents is less than requested in rankedlist for query " + qid);
-//        }
-//
-//        return docs.toArray(new Document[0]);
-//    }
+    public static List<Document> loadDocumentsFromFiles(QueryResults queryResults, String docDir, String qid) throws IOException {
+        ArrayList<Document> docs = new ArrayList<>();
+        for (ScoredDocument sd : queryResults.getIterator()) {
+            DataInputStream data = new DataInputStream(new FileInputStream(Utility.getDocFileName(docDir, qid, sd.documentName, "dat")));
+            org.lemurproject.galago.core.parse.Document doc
+                    = org.lemurproject.galago.core.parse.Document.deserialize(data, new Parameters(),
+                            new org.lemurproject.galago.core.parse.Document.DocumentComponents(true, true, false));
+            docs.add(new Document(sd, doc));
+        }
+        return docs;
+    }
 }

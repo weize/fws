@@ -4,6 +4,7 @@
  */
 package edu.umass.ciir.fws.feature;
 
+import edu.umass.ciir.fws.crawl.Document;
 import edu.umass.ciir.fws.clist.CandidateList;
 import edu.umass.ciir.fws.clist.CandidateListParser;
 import edu.umass.ciir.fws.crawl.*;
@@ -42,12 +43,14 @@ public class TermFeaturesExtractor implements Processor<Query> {
     String clistDir;
     String featureDir;
 
-    QuerySetDocuments querySetDocuments;
+    QuerySetResults querySetResults;
     List<CandidateList> clists;
     List<Document> docs;
     BufferedWriter writer;
     Logger logger;
     long topNum; // top number of documents used.
+    String rankedListFile;
+    String docDir;
 
     Query query;
     TreeMap<String, TermFeatures> termFeatures;
@@ -67,12 +70,14 @@ public class TermFeaturesExtractor implements Processor<Query> {
         String clistDfFile = p.getString("clistDfFile");
         clueCdf = p.getLong("clueCdf");
         topNum = p.getLong("topNum");
+        rankedListFile = p.getString("rankedListFile");
+        docDir = p.getString("docDir");
 
         termFeatures = new TreeMap<>();
         clueDfs = new CluewebDocFreqMap(clueDfFile); // load clueWebDocFreqs
         clistDfs = new HashMap<>();
 
-        loadDocuments(p);
+        loadQuerySetResults();
         loadCandidateListDocFreqs(clistDfFile);
 
         logger = Logger.getLogger(TermFeaturesExtractor.class.toString());
@@ -85,7 +90,7 @@ public class TermFeaturesExtractor implements Processor<Query> {
         System.err.println(String.format("processing query %s", query.id));
         loadCandidateLists();
         initializeTermFeatures();
-        setCurrentDocumentList();
+        loadDocuments();
 
         extractTermLength(); // feature: length of the feature term
 
@@ -130,9 +135,8 @@ public class TermFeaturesExtractor implements Processor<Query> {
         }
     }
 
-    private void loadDocuments(Parameters p) throws Exception {
-        p.set("loadDocsFromIndex", true);
-        querySetDocuments = new QuerySetDocuments(p);
+    private void loadQuerySetResults() throws Exception {
+        querySetResults = new QuerySetResults(rankedListFile, topNum);
     }
 
     private void loadCandidateListDocFreqs(String fileName) throws IOException {
@@ -267,8 +271,8 @@ public class TermFeaturesExtractor implements Processor<Query> {
         }
     }
 
-    private void setCurrentDocumentList() {
-        docs = querySetDocuments.get(query.id);
+    private void loadDocuments() throws IOException {
+        docs = Document.loadDocumentsFromFiles(querySetResults.get(query.id), docDir, query.id);
     }
 
     /**

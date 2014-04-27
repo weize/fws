@@ -4,8 +4,8 @@
  */
 package edu.umass.ciir.fws.clist;
 
-import edu.umass.ciir.fws.crawl.QuerySetDocuments;
 import edu.umass.ciir.fws.crawl.Document;
+import edu.umass.ciir.fws.crawl.QuerySetResults;
 import edu.umass.ciir.fws.types.CandidateList;
 import edu.umass.ciir.fws.types.Query;
 import edu.umass.ciir.fws.utility.Utility;
@@ -21,7 +21,8 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 
 /**
  * Candidate lists extractor that will be called by Tupleflow jobs to extract
- * candidate lists. 
+ * candidate lists.
+ *
  * @author wkong
  */
 @Verified
@@ -29,7 +30,7 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 @OutputClass(className = "edu.umass.ciir.fws.types.CandidateList")
 public class CandidateListExtractor extends StandardStep<Query, CandidateList> {
 
-    QuerySetDocuments querySetDocuments;
+    QuerySetResults querySetResults;
     CandidateListHtmlExtractor cListHtmlExtractor;
     CandidateListTextExtractor cListTextExtractor;
     String parseDir;
@@ -37,22 +38,25 @@ public class CandidateListExtractor extends StandardStep<Query, CandidateList> {
 
     public CandidateListExtractor(TupleFlowParameters parameters) throws Exception {
         Parameters p = parameters.getJSON();
-        querySetDocuments = new QuerySetDocuments(p);
+        docDir = p.getString("docDir");
+        long topNum = p.getLong("topNum");
+        String rankedListFile = p.getString("rankedListFile");
+        querySetResults = new QuerySetResults(rankedListFile, topNum);
         cListHtmlExtractor = new CandidateListHtmlExtractor();
         cListTextExtractor = new CandidateListTextExtractor();
         parseDir = p.getString("parseDir");
-        docDir = p.getString("docDir");
+
     }
 
     @Override
     public void process(Query query) throws IOException {
-        List<Document> documents = querySetDocuments.get(query.id);
+        List<Document> documents = Document.loadDocumentsFromFiles(querySetResults.get(query.id), docDir, query.id);
         for (Document doc : documents) {
-            String docFileName = Utility.getDocFileName(docDir, query.id, doc.name);
+            String docFileName = Utility.getDocFileName(docDir, query.id, doc.name, "html");
             System.err.println("Processing " + docFileName);
             extractHtml(query, doc);
             System.err.println("Done processing " + docFileName);
-            
+
             String pasedDocFileName = Utility.getParsedDocFileName(parseDir, query.id, doc.name);
             System.err.println("Processing " + pasedDocFileName);
             extractText(query, doc);

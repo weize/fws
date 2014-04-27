@@ -86,9 +86,9 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         return String.format("%s%s%s", parseDir, File.separator, qid);
     }
 
-    public static String getDocFileName(String docDir, String qid, String docName) {
-        return String.format("%s%s%s%s%s.html",
-                docDir, File.separator, qid, File.separator, docName);
+    public static String getDocFileName(String docDir, String qid, String docName, String suffix) {
+        return String.format("%s%s%s%s%s.%s",
+                docDir, File.separator, qid, File.separator, docName, suffix);
     }
 
     public static String getDocDirName(String docDir, String qid) {
