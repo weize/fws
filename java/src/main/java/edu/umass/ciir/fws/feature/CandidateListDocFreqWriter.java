@@ -147,6 +147,7 @@ public class CandidateListDocFreqWriter implements Processor<CandidateList> {
             writer.write(item + "\t" + TextProcessing.join(termDfs.get(item), "\t") + "\n");
         }
         writer.close();
+        System.err.println("Written in " + clistDfFile);
     }
 
     private Long[] getZeros() {

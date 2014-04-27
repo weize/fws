@@ -45,7 +45,7 @@ public class TermCountWriter implements Processor<TermCount> {
     @Override
     public void close() throws IOException {
         writer.close();
-
+        System.err.println("Written in " + clueDfFile);
     }
 
 }

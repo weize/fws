@@ -22,6 +22,7 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 
 /**
  * Clean and filter raw candidate lists extracted.
+ *
  * @author wkong
  */
 @Verified
@@ -54,7 +55,7 @@ public class CandidateListCleaner extends StandardStep<CandidateList, CandidateL
                 itemCleanedSet.add(itemCleaned);
             }
         }
-        
+
         if (isValidItemList(itemsCleaned)) {
             String itemList = CandidateListParser.joinItemList(itemsCleaned);
             processor.process(new CandidateList(
@@ -64,14 +65,14 @@ public class CandidateListCleaner extends StandardStep<CandidateList, CandidateL
     }
 
     private boolean isValidItem(String item) {
-        if (item.length() <= 2) {
+        if (item.length() < 1) {
             return false;
-        } 
-        
+        }
+
         if (stopwords.contains(item)) {
             return false;
         }
-        
+
         // number of words
         int length = item.split("\\s+").length;
         return length <= edu.umass.ciir.fws.clist.CandidateList.MAX_TERM_SIZE;
@@ -79,7 +80,7 @@ public class CandidateListCleaner extends StandardStep<CandidateList, CandidateL
 
     private boolean isValidItemList(List<String> items) {
         int size = items.size();
-        
+
         return size > 1 && size <= 200;
     }
 }
