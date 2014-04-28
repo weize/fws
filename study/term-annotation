@@ -1,0 +1,21 @@
+1	1	tree
+1	2	grandfather|his mother|hawaii|kenya|kansas
+1	3	his mother
+4	1	tubs|urinals|pressure|sanagloss|whirlpools|flush|bidets
+4	2	kohler|american standard
+4	3	american standard|toilet seats|the toilet tank|the toilet bowl|toilet rim|tank|toilet bowl|toilet|seat|a chain|hollow rim|elongated bowl|cover
+4	4	
+4	5	bidets|american standard|kohler
+4	6	Kohler
+7	1	restrictions|size|weight|baggage
+7	2	restrictions|regulations|baggage|size
+7	3	flight status|cancellations
+7	4	travel guides
+7	5	travel guides|security
+10	1	rates|price|charter|comcast|at t|verizon|earthlink|netzero|cox|qwest|peoplepc|broadband dsl
+10	2	charter|comcast|at t|verizon|earthlink|netzero|cox|qwest|peoplepc
+10	3	rates|price|cable|charter|comcast|at t|verizon|earthlink|netzero|cox|qwest|peoplepc
+10	4	wireless|wireless internet
+10	5	dsl internet service|dsl|broadband dsl|rates|price
+10	6	charter|comcast|at t|verizon|earthlink|netzero|cox|qwest|peoplepc
+10	7	comcast

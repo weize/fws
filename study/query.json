@@ -1,0 +1,68 @@
+{
+"index" : "../data/index",
+"queries" : [    {
+"number" : "1-1",
+"test" : "#sdm( obama family tree )",
+},    {
+"number" : "1-2",
+"test" : "#sdm( obama family tree )",
+},    {
+"number" : "1-3",
+"test" : "#sdm( obama family tree )",
+},    {
+"number" : "4-1",
+"test" : "#sdm( toilet )",
+},    {
+"number" : "4-2",
+"test" : "#sdm( toilet )",
+},    {
+"number" : "4-3",
+"test" : "#sdm( toilet )",
+},    {
+"number" : "4-4",
+"test" : "#sdm( toilet )",
+},    {
+"number" : "4-5",
+"test" : "#sdm( toilet )",
+},    {
+"number" : "4-6",
+"test" : "#sdm( toilet )",
+},    {
+"number" : "7-1",
+"test" : "#sdm( air travel information )",
+},    {
+"number" : "7-2",
+"test" : "#sdm( air travel information )",
+},    {
+"number" : "7-3",
+"test" : "#sdm( air travel information )",
+},    {
+"number" : "7-4",
+"test" : "#sdm( air travel information )",
+},    {
+"number" : "7-5",
+"test" : "#sdm( air travel information )",
+},    {
+"number" : "10-1",
+"test" : "#sdm( cheap internet )",
+},    {
+"number" : "10-2",
+"test" : "#sdm( cheap internet )",
+},    {
+"number" : "10-3",
+"test" : "#sdm( cheap internet )",
+},    {
+"number" : "10-4",
+"test" : "#sdm( cheap internet )",
+},    {
+"number" : "10-5",
+"test" : "#sdm( cheap internet )",
+},    {
+"number" : "10-6",
+"test" : "#sdm( cheap internet )",
+},    {
+"number" : "10-7",
+"test" : "#sdm( cheap internet )",
+}],
+"requested" : 1000
+}
