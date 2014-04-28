@@ -15,7 +15,8 @@
 10	1	rates|price|charter|comcast|at t|verizon|earthlink|netzero|cox|qwest|peoplepc|broadband dsl
 10	2	charter|comcast|at t|verizon|earthlink|netzero|cox|qwest|peoplepc
 10	3	rates|price|cable|charter|comcast|at t|verizon|earthlink|netzero|cox|qwest|peoplepc
-10	4	wireless|wireless internet
-10	5	dsl internet service|dsl|broadband dsl|rates|price
-10	6	charter|comcast|at t|verizon|earthlink|netzero|cox|qwest|peoplepc
-10	7	comcast
+10	4	
+10	5	wireless|wireless internet
+10	6	dsl internet service|dsl|broadband dsl|rates|price
+10	7	charter|comcast|at t|verizon|earthlink|netzero|cox|qwest|peoplepc
+10	8	comcast

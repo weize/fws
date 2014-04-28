@@ -19,7 +19,7 @@ my $query = $queriesRef->{$qid};
 
 my $q = sdmQuery($query, $termStr);
 print $out "\"number\" : \"$qidSid\",\n"; 
-print $out "\"test\" : \"$q\",\n"; 
+print $out "\"text\" : \"$q\",\n"; 
 print $out "}"; 
 
 for my $qidSid (@qidSids[1..$#qidSids]) {
@@ -29,7 +29,7 @@ for my $qidSid (@qidSids[1..$#qidSids]) {
 	my $q = sdmQuery($query);
 	print $out ",    {\n"; 
 	print $out "\"number\" : \"$qidSid\",\n"; 
-	print $out "\"test\" : \"$q\",\n"; 
+	print $out "\"text\" : \"$q\",\n"; 
 	print $out "}"; 
 }
 

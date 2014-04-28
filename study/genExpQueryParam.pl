@@ -19,7 +19,7 @@ my $query = $queriesRef->{$qid};
 
 my $q = expandQuery($query, $termStr);
 print $out "\"number\" : \"$qidSid\",\n"; 
-print $out "\"test\" : \"$q\",\n"; 
+print $out "\"text\" : \"$q\",\n"; 
 print $out "}"; 
 
 for my $qidSid (@qidSids[1..$#qidSids]) {
@@ -29,7 +29,7 @@ for my $qidSid (@qidSids[1..$#qidSids]) {
 	my $q = expandQuery($query, $termStr);
 	print $out ",    {\n"; 
 	print $out "\"number\" : \"$qidSid\",\n"; 
-	print $out "\"test\" : \"$q\",\n"; 
+	print $out "\"text\" : \"$q\",\n"; 
 	print $out "}"; 
 }
 
@@ -40,7 +40,11 @@ close $out;
 
 sub expandQuery {
 	my ($query, $termStr) = @_;
-	return "test";
+	my @terms = split /\|/, $termStr; 
+	my $w1 = 0.7;
+	my $w2 = 1 - $w1;
+	my $joinTerms = join(" ", @terms);
+	return "#combine:0=$w1:1=$w2( #sdm( $query ) #combine( $joinTerms ))";
 }
 sub loadTerms {
 	my %terms= (); 
