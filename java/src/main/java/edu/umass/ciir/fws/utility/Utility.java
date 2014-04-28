@@ -1,5 +1,6 @@
 package edu.umass.ciir.fws.utility;
 
+import edu.emory.mathcs.backport.java.util.Arrays;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -9,6 +10,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.List;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -74,43 +76,71 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
     }
 
     public static String getCandidateListFileName(String clistDir, String qid, String suffix) {
-        return String.format("%s%s%s.%s", clistDir, File.separator, qid, suffix);
+        return getFileNameWithSuffix(clistDir, qid, suffix);
     }
 
     public static String getParsedDocFileName(String parseDir, String qid, String docName) {
-        return String.format("%s%s%s%s%s.parse",
-                parseDir, File.separator, qid, File.separator, docName);
+        return getFileNameWithSuffix(parseDir, qid, docName, "parse");
     }
 
-    public static String getParsedDocDirName(String parseDir, String qid) {
-        return String.format("%s%s%s", parseDir, File.separator, qid);
+    public static String getDocHtmlFileName(String docDir, String qid, String docName) {
+        return getFileNameWithSuffix(docDir, qid, docName, "html");
     }
 
-    public static String getDocFileName(String docDir, String qid, String docName, String suffix) {
-        return String.format("%s%s%s%s%s.%s",
-                docDir, File.separator, qid, File.separator, docName, suffix);
+    public static String getDocFileDir(String docDir, String qid) {
+        return getFileName(docDir, qid);
     }
-
-    public static String getDocDirName(String docDir, String qid) {
-        return String.format("%s%s%s", docDir, File.separator, qid);
+    
+    public static String getDocDataFileName(String docDir, String qid, String docName) {
+        return getFileNameWithSuffix(docDir, qid, docName, "dat");
     }
 
     public static String getParsedCorpusDocFileName(String corpusDocDir, String docName) {
         String[] subDirNames = docName.split("-");
-        return String.format("%s%s%s%s%s%s%s.parse.gz", corpusDocDir, File.separator, subDirNames[1], File.separator, subDirNames[2],
-                File.separator, docName);
+        return getFileNameWithSuffix(corpusDocDir, subDirNames[1], subDirNames[2], docName, "parse.gz");
     }
 
     public static String getTermFeatureFileName(String featureDir, String qid) {
-        return String.format("%s%s%s.t.feature", featureDir, File.separator, qid);
+        return getFileNameWithSuffix(featureDir, qid, "t.feature");
     }
 
     public static String getQdFacetFeatureFileName(String qdFeatureDir, String qid) {
-        return String.format("%s%s%s.f.feature", qdFeatureDir, File.separator, qid);
+        return getFileNameWithSuffix(qdFeatureDir, qid, "f.feature");
     }
 
-    public static String getQdFacetClusterFileName(String clusterDir, String qid) {
-        return String.format("%s%s%s.cluster", clusterDir, File.separator, qid);
+    public static String getQdClusterFileName(String clusterDir, String qid, double distanceMax, double websiteCountMin) {
+        String name = String.format("%s.%s.cluster", qid, parametersToFileNameString(distanceMax, websiteCountMin));
+        return getFileName(clusterDir, qid, name);
     }
+
+    public static String getQdFacetFileName(String facetDir, String qid, double distanceMax, double websiteCountMin, double itemRatio) {
+        String name = String.format("%s.%s.facet", qid, parametersToFileNameString(distanceMax, websiteCountMin, itemRatio));
+        return getFileName(facetDir, qid, name);
+    }
+    
+    public static String getFileName(String... parts) {
+        return TextProcessing.join(parts, File.separator);
+    }
+
+    public static String getFileNameWithSuffix(String... parts) {
+        List<String> list = Arrays.asList(parts);
+        int last = list.size() - 1;
+        return TextProcessing.join(list.subList(0, last), File.separator) + "." + list.get(last);
+    }
+
+    public static String parametersToFileNameString(Object... parameters) {
+        String str = parametersToString(parameters);
+        return str.replace('.', '_');
+    }
+
+    public static String parametersToString(Object... parameters) {
+        return TextProcessing.join(parameters, ":");
+    }
+
+    public static String[] splitParameters(String parametersStr) {
+        return parametersStr.split(":");
+    }
+
+    
 
 }

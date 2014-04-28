@@ -15,7 +15,9 @@
 	"featureDir" : "../exp/feature",
 	"qdFeatureDir" : "../exp/qd/feature",
 	"qdClusterDir" : "../exp/qd/cluster",
-	"qdDistanceMax" : 0.6,
-	"qdWebsiteCountMin" : 3,
+	"qdFacetDir" : "../exp/qd/facet",
+	"qdDistanceMax" : [0.5, 0.6],
+	"qdWebsiteCountMin" : [3.0],
+	"qdItemRatios" : [0.1, 0.01],
 	"topNum" : 100
 }

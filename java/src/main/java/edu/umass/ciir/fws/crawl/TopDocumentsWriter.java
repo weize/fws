@@ -55,17 +55,17 @@ public class TopDocumentsWriter implements Processor<Query> {
     @Override
     public void process(Query query) throws IOException {
         QueryResults docs = querySetResults.get(query.id);
-        String dirName = Utility.getDocDirName(docDir, query.id);
+        String dirName = Utility.getDocFileDir(docDir, query.id);
         Utility.createDirectory(dirName);
         for (ScoredDocument sd : docs.getIterator()) {
             Document doc = retrieval.getDocument(sd.documentName, new Document.DocumentComponents(true, true, false));
             // html
-            File htmlFile = new File(Utility.getDocFileName(docDir, query.id, doc.name, "html"));
+            File htmlFile = new File(Utility.getDocHtmlFileName(docDir, query.id, doc.name));
             Utility.copyStringToFile(doc.text, htmlFile);
             System.err.println(String.format("written in %s", htmlFile.getAbsoluteFile()));
             
             // data
-            File dataFile = new File(Utility.getDocFileName(docDir, query.id, doc.name, "dat"));
+            File dataFile = new File(Utility.getDocDataFileName(docDir, query.id, doc.name));
             Utility.copyStreamToFile(new ByteArrayInputStream(Document.serialize(doc, new Parameters())), dataFile);
             System.err.println(String.format("written in %s", dataFile.getAbsoluteFile()));
 

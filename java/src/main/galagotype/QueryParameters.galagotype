@@ -1,0 +1,9 @@
+package edu.umass.ciir.fws.types;
+
+type QueryParameters {
+	String id;
+	String text;
+        String parameters;
+
+	order: +id +parameters;
+}

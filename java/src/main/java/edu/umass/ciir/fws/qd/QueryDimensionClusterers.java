@@ -6,6 +6,7 @@ package edu.umass.ciir.fws.qd;
 
 import edu.umass.ciir.fws.clist.CandidateListParser;
 import edu.umass.ciir.fws.types.Query;
+import edu.umass.ciir.fws.types.QueryParameters;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.IOException;
@@ -24,13 +25,13 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
  * @author wkong
  */
 @Verified
-@InputClass(className = "edu.umass.ciir.fws.types.Query")
-public class QueryDimensionClusterer implements Processor<Query> {
+@InputClass(className = "edu.umass.ciir.fws.types.QueryParameters")
+public class QueryDimensionClusterers implements Processor<QueryParameters> {
 
     boolean debug = false;
     // lists
     List<FacetFeatures> nodes; // html lists featuress    
-    
+
     HashSet<Integer> pool; // pool of list ids
     HashSet<Integer> candidatePool;
     ArrayList<QDCluster> clusters;
@@ -45,12 +46,10 @@ public class QueryDimensionClusterer implements Processor<Query> {
     String featureDir;
     final static int maxListNum = 5000; // only use top maxListNum lists for clustering b/c memory issue
 
-    Query query;
+    String qid;
 
-    public QueryDimensionClusterer(TupleFlowParameters parameters) {
+    public QueryDimensionClusterers(TupleFlowParameters parameters) {
         Parameters p = parameters.getJSON();
-        distanceMax = p.getDouble("qdDistanceMax");
-        websiteCountMin = p.getDouble("qdWebsiteCountMin");
         clusterDir = p.getString("qdClusterDir");
         featureDir = p.getString("qdFeatureDir");
 
@@ -64,8 +63,14 @@ public class QueryDimensionClusterer implements Processor<Query> {
     }
 
     @Override
-    public void process(Query query) throws IOException {
-        this.query = query;
+    public void process(QueryParameters queryParameters) throws IOException {
+        //setQueryParameters
+        System.err.println(String.format("Processing qid:%s parameters:%s", queryParameters.id, queryParameters.parameters));
+        qid = queryParameters.id;
+        String[] fields = Utility.splitParameters(queryParameters.parameters);
+        distanceMax = Double.parseDouble(fields[0]);
+        websiteCountMin = Double.parseDouble(fields[1]);
+
         loadFacetFeatures(); // load lists and features
         initializeClusetering();
         clustering();
@@ -235,7 +240,7 @@ public class QueryDimensionClusterer implements Processor<Query> {
     }
 
     private void loadFacetFeatures() throws IOException {
-        String facetFeaturesFile = Utility.getQdFacetFeatureFileName(featureDir, query.id);
+        String facetFeaturesFile = Utility.getQdFacetFeatureFileName(featureDir, qid);
         nodes = FacetFeatures.readFromFile(facetFeaturesFile);
         // sort lists according qdScore
         Collections.sort(nodes);
@@ -315,7 +320,8 @@ public class QueryDimensionClusterer implements Processor<Query> {
     }
 
     private void output() throws IOException {
-        String fileName = Utility.getQdFacetClusterFileName(clusterDir, query.id);
+        String fileName = Utility.getQdClusterFileName(clusterDir, qid, distanceMax, websiteCountMin);
+        Utility.createDirectoryForFile(fileName);
         Writer writer = Utility.getWriter(fileName);
         for (QDCluster c : clusters) {
             if (c.items.size() < 2) {
@@ -358,27 +364,6 @@ public class QueryDimensionClusterer implements Processor<Query> {
         @Override
         public int compareTo(QDCluster other) {
             return Utility.compare(other.score, this.score);
-        }
-    }
-
-    class ScoredItem implements Comparable<ScoredItem> {
-
-        String item;
-        double score;
-
-        public ScoredItem(String item, double score) {
-            this.item = item;
-            this.score = score;
-        }
-
-        @Override
-        public int compareTo(ScoredItem other) {
-            return Utility.compare(other.score, this.score);
-        }
-
-        @Override
-        public String toString() {
-            return item + ":" + score;
         }
     }
 }

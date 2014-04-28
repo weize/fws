@@ -67,7 +67,6 @@ public class FacetFeatures extends CandidateList implements Comparable<FacetFeat
         ArrayList<FacetFeatures> ffs = new ArrayList<>();
         BufferedReader in = Utility.getReader(filename);
         String line;
-        System.out.println(filename);
         while ((line = in.readLine()) != null) {
             String[] fields = line.split("\t");
             // features: qid docrank type terms len ... sites
@@ -82,9 +81,6 @@ public class FacetFeatures extends CandidateList implements Comparable<FacetFeat
             ff.features[_WDF] = Double.parseDouble(fields[5]);
             ff.features[_cluIDF] = Double.parseDouble(fields[6]);
             ff.features[_qdScore] = Double.parseDouble(fields[7]);
-            if (fields.length < 9) {
-                System.out.println(line);
-            }
             ff.features[_sites] = fields[8];
             ff.sites = splitStringToSites(fields[8]);
             ffs.add(ff);

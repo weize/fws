@@ -41,11 +41,10 @@ public class DocumentNLPParser implements Processor<QueryDocumentName> {
     @Override
     public void process(QueryDocumentName queryDocName) throws IOException {
 
-        String dirName = Utility.getParsedDocDirName(parseDir, queryDocName.qid);
-        Utility.createDirectory(dirName);
-
         String outputFileName = Utility.getParsedDocFileName(
                 parseDir, queryDocName.qid, queryDocName.docName);
+
+        Utility.createDirectoryForFile(outputFileName);
 
         // Do not parse again if the parse file already exists
         if (new File(outputFileName).exists()) {
@@ -53,8 +52,8 @@ public class DocumentNLPParser implements Processor<QueryDocumentName> {
             return;
         }
 
-        String inputFileName = Utility.getDocFileName(
-                docDir, queryDocName.qid, queryDocName.docName, "html");
+        String inputFileName = Utility.getDocHtmlFileName(
+                docDir, queryDocName.qid, queryDocName.docName);
         String content = HtmlContentExtractor.extractFromFile(inputFileName);
 
         System.err.println("processing  " + inputFileName);

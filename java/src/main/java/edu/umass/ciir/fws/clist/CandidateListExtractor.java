@@ -52,7 +52,7 @@ public class CandidateListExtractor extends StandardStep<Query, CandidateList> {
     public void process(Query query) throws IOException {
         List<Document> documents = Document.loadDocumentsFromFiles(querySetResults.get(query.id), docDir, query.id);
         for (Document doc : documents) {
-            String docFileName = Utility.getDocFileName(docDir, query.id, doc.name, "html");
+            String docFileName = Utility.getDocHtmlFileName(docDir, query.id, doc.name);
             System.err.println("Processing " + docFileName);
             extractHtml(query, doc);
             System.err.println("Done processing " + docFileName);

@@ -44,11 +44,11 @@ public class Document {
         terms = TextProcessing.tokenize(HtmlContentExtractor.extractFromContent(html));
         title = TextProcessing.clean(HtmlContentExtractor.extractTitle(html));
     }
-   
+
     public Document() {
-        
+
     }
-    
+
     public static String getSiteUrl(String url) {
         url = url.replaceAll("^https?://", "");
         url = url.replaceAll("/.*?$", "");
@@ -60,7 +60,7 @@ public class Document {
     public static List<Document> loadDocumentsFromFiles(QueryResults queryResults, String docDir, String qid) throws IOException {
         ArrayList<Document> docs = new ArrayList<>();
         for (ScoredDocument sd : queryResults.getIterator()) {
-            DataInputStream data = new DataInputStream(new FileInputStream(Utility.getDocFileName(docDir, qid, sd.documentName, "dat")));
+            DataInputStream data = new DataInputStream(new FileInputStream(Utility.getDocDataFileName(docDir, qid, sd.documentName)));
             org.lemurproject.galago.core.parse.Document doc
                     = org.lemurproject.galago.core.parse.Document.deserialize(data, new Parameters(),
                             new org.lemurproject.galago.core.parse.Document.DocumentComponents(true, true, false));

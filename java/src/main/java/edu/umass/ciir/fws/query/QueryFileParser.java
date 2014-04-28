@@ -35,7 +35,7 @@ public class QueryFileParser extends StandardStep<FileName, Query> {
     public static Query[] loadQueryList(String inputFile) throws IOException {
         BufferedReader reader = Utility.getReader(inputFile);
         String line;
-        ArrayList<Query> queries = new ArrayList<Query>();
+        ArrayList<Query> queries = new ArrayList<>();
         while ((line = reader.readLine()) != null) {
             String[] fields = line.split("\t");
             String qid = fields[0];
