@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.umass.ciir.fws.qd;
+package edu.umass.ciir.fws.clustering.qd;
 
 import edu.umass.ciir.fws.types.QueryParameters;
 import edu.umass.ciir.fws.utility.TextProcessing;

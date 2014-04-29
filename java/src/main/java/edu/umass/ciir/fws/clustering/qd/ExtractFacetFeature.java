@@ -1,8 +1,8 @@
-package edu.umass.ciir.fws.qd;
+package edu.umass.ciir.fws.clustering.qd;
 
+import edu.umass.ciir.fws.feature.*;
 import edu.umass.ciir.fws.query.QueryFileParser;
 import edu.umass.ciir.fws.types.Query;
-import edu.umass.ciir.fws.types.QueryParameters;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -20,15 +20,14 @@ import org.lemurproject.galago.tupleflow.execution.Step;
 import org.lemurproject.galago.tupleflow.types.FileName;
 
 /**
- * Tupleflow application that does reads in query dimension clusters and output
- * query facets.
+ * Tupleflow application that extract facet features for QD.
  *
  *
  * @author wkong
  */
-public class QueryDimensionsToFacet extends AppFunction {
+public class ExtractFacetFeature extends AppFunction {
 
-    private static final String name = "qd-cluster-to-facets";
+    private static final String name = "extract-facet-feature";
 
     @Override
     public String getName() {
@@ -43,6 +42,16 @@ public class QueryDimensionsToFacet extends AppFunction {
 
     @Override
     public void run(Parameters p, PrintStream output) throws Exception {
+        assert (p.isString("queryFile")) : "missing input file, --input";
+        assert (p.isString("index")) : "missing --index";
+        assert (p.isString("rankedListFile")) : "missing --rankedListFile";
+        assert (p.isString("topNum")) : "missing --topNum";
+        assert (p.isString("clistDir")) : "missing --clistDir";
+        assert (p.isString("clueDfFile")) : "missing --clueDfFile";
+        assert (p.isString("clueCdf")) : "missing --clueCdf";
+        assert (p.isString("clistDfFile")) : "missing --clistDfFile";
+        assert (p.isString("qdFeatureDir")) : "missing --qdFeatureDir";
+
         Job job = createJob(p);
         AppFunction.runTupleFlowJob(job, p, output);
 
@@ -62,7 +71,7 @@ public class QueryDimensionsToFacet extends AppFunction {
     private Stage getSplitStage(Parameters parameter) {
         Stage stage = new Stage("split");
 
-        stage.addOutput("queryParameters", new QueryParameters.IdParametersOrder());
+        stage.addOutput("praseQueries", new Query.IdOrder());
 
         List<String> inputFiles = parameter.getAsList("queryFile");
 
@@ -75,9 +84,8 @@ public class QueryDimensionsToFacet extends AppFunction {
         stage.add(new Step(FileSource.class, p));
         stage.add(Utility.getSorter(new FileName.FilenameOrder()));
         stage.add(new Step(QueryFileParser.class));
-        stage.add(new Step(GenerateClusterFacetParameters.class, parameter));
-        stage.add(Utility.getSorter(new QueryParameters.IdParametersOrder()));
-        stage.add(new OutputStep("queryParameters"));
+        stage.add(Utility.getSorter(new Query.IdOrder()));
+        stage.add(new OutputStep("praseQueries"));
 
         return stage;
     }
@@ -85,10 +93,10 @@ public class QueryDimensionsToFacet extends AppFunction {
     private Stage getProcessStage(Parameters parameters) {
         Stage stage = new Stage("process");
 
-        stage.addInput("queryParameters", new QueryParameters.IdParametersOrder());
+        stage.addInput("praseQueries", new Query.IdOrder());
 
-        stage.add(new InputStep("queryParameters"));
-        stage.add(new Step(QdClusterToFacetConverter.class, parameters));
+        stage.add(new InputStep("praseQueries"));
+        stage.add(new Step(FacetFeaturesExtractor.class, parameters));
         return stage;
     }
 }

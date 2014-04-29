@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package edu.umass.ciir.fws.qd;
+package edu.umass.ciir.fws.clustering.qd;
 
 /**
  *

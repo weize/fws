@@ -20,9 +20,13 @@ import java.util.zip.GZIPOutputStream;
 public class Utility extends org.lemurproject.galago.tupleflow.Utility {
 
     public static BufferedReader getReader(String filename) throws IOException {
+        return getReader(new File(filename));
+    }
+
+    public static BufferedReader getReader(File file) throws IOException {
         BufferedReader reader = null;
-        FileInputStream stream = new FileInputStream(filename);
-        if (filename.endsWith(".gz")) {
+        FileInputStream stream = new FileInputStream(file);
+        if (file.getName().endsWith(".gz")) {
             reader = new BufferedReader(
                     new InputStreamReader(
                             new GZIPInputStream(stream)));
@@ -90,7 +94,7 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
     public static String getDocFileDir(String docDir, String qid) {
         return getFileName(docDir, qid);
     }
-    
+
     public static String getDocDataFileName(String docDir, String qid, String docName) {
         return getFileNameWithSuffix(docDir, qid, docName, "dat");
     }
@@ -117,7 +121,7 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         String name = String.format("%s.%s.facet", qid, parametersToFileNameString(distanceMax, websiteCountMin, itemRatio));
         return getFileName(facetDir, qid, name);
     }
-    
+
     public static String getFileName(String... parts) {
         return TextProcessing.join(parts, File.separator);
     }
@@ -140,7 +144,5 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
     public static String[] splitParameters(String parametersStr) {
         return parametersStr.split(":");
     }
-
-    
 
 }

@@ -1,7 +1,6 @@
-package edu.umass.ciir.fws.qd;
+package edu.umass.ciir.fws.clustering.qd;
 
 import edu.umass.ciir.fws.query.QueryFileParser;
-import edu.umass.ciir.fws.types.Query;
 import edu.umass.ciir.fws.types.QueryParameters;
 import java.io.File;
 import java.io.PrintStream;
