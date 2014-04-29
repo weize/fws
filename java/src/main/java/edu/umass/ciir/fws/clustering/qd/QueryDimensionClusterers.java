@@ -4,8 +4,8 @@
  */
 package edu.umass.ciir.fws.clustering.qd;
 
-import edu.umass.ciir.fws.clist.CandidateListParser;
-import edu.umass.ciir.fws.types.Query;
+import edu.umass.ciir.fws.clustering.ScoredFacet;
+import edu.umass.ciir.fws.clustering.ScoredItem;
 import edu.umass.ciir.fws.types.QueryParameters;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
@@ -350,20 +350,13 @@ public class QueryDimensionClusterers implements Processor<QueryParameters> {
         prevFailedNodesIndex.clear();
     }
 
-    class QDCluster implements Comparable<QDCluster> {
+    class QDCluster extends ScoredFacet {
 
         Integer[] nodeIds;
-        double score;
-        List<ScoredItem> items;
         int numOfSite;
 
-        public QDCluster(ArrayList<Integer> nodeList) {
+        public QDCluster(List<Integer> nodeList) {
             this.nodeIds = nodeList.toArray(new Integer[0]);
-        }
-
-        @Override
-        public int compareTo(QDCluster other) {
-            return Utility.compare(other.score, this.score);
         }
     }
 }

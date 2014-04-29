@@ -24,16 +24,16 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 @Verified
 @InputClass(className = "edu.umass.ciir.fws.types.Query")
 @OutputClass(className = "edu.umass.ciir.fws.types.QueryParameters")
-public class GenerateClusterParameters extends StandardStep<Query, QueryParameters> {
+public class GenerateQdClusterParameters extends StandardStep<Query, QueryParameters> {
 
     List<Double> distanceMaxs;
     List<Double> websiteCountMins;
 
     
-    public GenerateClusterParameters(TupleFlowParameters parameters) {
+    public GenerateQdClusterParameters(TupleFlowParameters parameters) {
          Parameters p = parameters.getJSON();
-         distanceMaxs = p.getList("qdDistanceMax");
-         websiteCountMins = p.getList("qdWebsiteCountMin");
+         distanceMaxs = p.getList("qdDistanceMaxs");
+         websiteCountMins = p.getList("qdWebsiteCountMins");
         
     }
     

@@ -15,8 +15,12 @@
 	"qdFeatureDir" : "../exp/qd/feature",
 	"qdClusterDir" : "../exp/qd/cluster",
 	"qdFacetDir" : "../exp/qd/facet",
-	"qdDistanceMax" : [0.5, 0.6],
-	"qdWebsiteCountMin" : [3.0],
+	"qdDistanceMaxs" : [0.5, 0.6],
+	"qdWebsiteCountMins" : [3.0],
 	"qdItemRatios" : [0.1, 0.01],
+	"plsaClusterDir": "../exp/plsa/cluster",
+	"plsaFacetDir": "../exp/plsa/facet",
+	"plsaTopicNums" : [5, 10],
+	"plsaIterNum" : 3000,
 	"topNum" : 100
 }

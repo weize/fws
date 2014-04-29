@@ -5,6 +5,7 @@
  */
 package edu.umass.ciir.fws.clustering.qd;
 
+import edu.umass.ciir.fws.clustering.ScoredItem;
 import edu.umass.ciir.fws.types.QueryParameters;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
@@ -46,7 +47,8 @@ public class QdClusterToFacetConverter implements Processor<QueryParameters> {
 
         String clusterFileName = Utility.getQdClusterFileName(clusterDir, qid, distanceMax, websiteCountMin);
         BufferedReader reader = Utility.getReader(clusterFileName);
-        String facetFileName = Utility.getQdFacetFileName(clusterDir, qid, distanceMax, websiteCountMin, itemRatio);
+        String facetFileName = Utility.getQdFacetFileName(facetDir, qid, distanceMax, websiteCountMin, itemRatio);
+        Utility.createDirectoryForFile(facetFileName);
         BufferedWriter writer = Utility.getWriter(facetFileName);
         String line;
         while ((line = reader.readLine()) != null) {
@@ -65,7 +67,7 @@ public class QdClusterToFacetConverter implements Processor<QueryParameters> {
             }
 
             if (items.size() > 0) {
-                writer.write(score + "\t" + TextProcessing.join(items, "|")+"\n");
+                writer.write(score + "\t" + TextProcessing.join(items, "|") + "\n");
             }
 
         }

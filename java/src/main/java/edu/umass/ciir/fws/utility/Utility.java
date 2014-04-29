@@ -5,6 +5,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -24,34 +25,40 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
     }
 
     public static BufferedReader getReader(File file) throws IOException {
-        BufferedReader reader = null;
         FileInputStream stream = new FileInputStream(file);
         if (file.getName().endsWith(".gz")) {
-            reader = new BufferedReader(
+            return new BufferedReader(
                     new InputStreamReader(
                             new GZIPInputStream(stream)));
         } else {
-            reader = new BufferedReader(
+            return new BufferedReader(
                     new InputStreamReader(stream));
         }
-
-        return reader;
     }
 
-    public static BufferedWriter getNormalWriter(String filename) throws IOException {
-        File file = new File(filename);
-        BufferedWriter writer = null;
-        FileWriter f = new FileWriter(filename);
-        writer = new BufferedWriter(f);
+    public static BufferedWriter getWriter(File file) throws IOException {
+        if (file.getName().endsWith(".gz")) {
+            return getGzipWriter(file);
+        } else {
+            return getNormalWriter(file);
+        }
+    }
+
+    private static BufferedWriter getGzipWriter(File file) throws IOException {
+        return new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(file))));
+    }
+
+    private static BufferedWriter getNormalWriter(File file) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(file));
         return writer;
     }
 
-    public static BufferedWriter getWriter(String filename) throws IOException {
-        if (filename.endsWith(".gz")) {
-            return getGzipWriter(filename);
-        } else {
-            return getNormalWriter(filename);
-        }
+    public static BufferedWriter getNormalWriter(String fileName) throws IOException {
+        return getNormalWriter(new File(fileName));
+    }
+
+    public static BufferedWriter getWriter(String fileName) throws IOException {
+        return getWriter(new File(fileName));
     }
 
     public static BufferedWriter getGzipWriter(String filename) throws IOException {
@@ -81,6 +88,10 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
 
     public static String getCandidateListFileName(String clistDir, String qid, String suffix) {
         return getFileNameWithSuffix(clistDir, qid, suffix);
+    }
+    
+    public static String getCandidateListCleanFileName(String clistDir, String qid) {
+        return getFileNameWithSuffix(clistDir, qid, "clean.clist");
     }
 
     public static String getParsedDocFileName(String parseDir, String qid, String docName) {
@@ -120,6 +131,11 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
     public static String getQdFacetFileName(String facetDir, String qid, double distanceMax, double websiteCountMin, double itemRatio) {
         String name = String.format("%s.%s.facet", qid, parametersToFileNameString(distanceMax, websiteCountMin, itemRatio));
         return getFileName(facetDir, qid, name);
+    }
+
+    public static String getPlsaClusterFileName(String clusterDir, String qid, long topNum) {
+        String name = String.format("%s.%d.cluster", qid, topNum);
+        return getFileName(clusterDir, qid, name);
     }
 
     public static String getFileName(String... parts) {

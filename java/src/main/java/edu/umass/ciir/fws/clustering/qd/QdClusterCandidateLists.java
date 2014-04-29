@@ -1,7 +1,6 @@
 package edu.umass.ciir.fws.clustering.qd;
 
 import edu.umass.ciir.fws.query.QueryFileParser;
-import edu.umass.ciir.fws.types.Query;
 import edu.umass.ciir.fws.types.QueryParameters;
 import java.io.File;
 import java.io.PrintStream;
@@ -20,15 +19,14 @@ import org.lemurproject.galago.tupleflow.execution.Step;
 import org.lemurproject.galago.tupleflow.types.FileName;
 
 /**
- * Tupleflow application that does reads in query dimension clusters and output
- * query facets.
+ * Tupleflow application that does query dimension clustering.
  *
  *
  * @author wkong
  */
-public class QueryDimensionsToFacet extends AppFunction {
+public class QdClusterCandidateLists extends AppFunction {
 
-    private static final String name = "qd-cluster-to-facets";
+    private static final String name = "cluster-qd";
 
     @Override
     public String getName() {
@@ -75,7 +73,7 @@ public class QueryDimensionsToFacet extends AppFunction {
         stage.add(new Step(FileSource.class, p));
         stage.add(Utility.getSorter(new FileName.FilenameOrder()));
         stage.add(new Step(QueryFileParser.class));
-        stage.add(new Step(GenerateClusterFacetParameters.class, parameter));
+        stage.add(new Step(GenerateQdClusterParameters.class, parameter));
         stage.add(Utility.getSorter(new QueryParameters.IdParametersOrder()));
         stage.add(new OutputStep("queryParameters"));
 
@@ -88,7 +86,7 @@ public class QueryDimensionsToFacet extends AppFunction {
         stage.addInput("queryParameters", new QueryParameters.IdParametersOrder());
 
         stage.add(new InputStep("queryParameters"));
-        stage.add(new Step(QdClusterToFacetConverter.class, parameters));
+        stage.add(new Step(QueryDimensionClusterers.class, parameters));
         return stage;
     }
 }

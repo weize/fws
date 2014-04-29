@@ -32,7 +32,7 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
  */
 @Verified
 @InputClass(className = "edu.umass.ciir.fws.types.Query")
-public class FacetFeaturesExtractor implements Processor<Query> {
+public class QdFacetFeaturesExtractor implements Processor<Query> {
 
     /**
      * Need to extract some basic features for term first. Then combine the term
@@ -64,7 +64,7 @@ public class FacetFeaturesExtractor implements Processor<Query> {
     String qdFeatureDir;
     double clueCdf;
 
-    public FacetFeaturesExtractor(TupleFlowParameters parameters) throws Exception {
+    public QdFacetFeaturesExtractor(TupleFlowParameters parameters) throws Exception {
         Parameters p = parameters.getJSON();
         clistDir = p.getString("clistDir");
         qdFeatureDir = p.getString("qdFeatureDir");
