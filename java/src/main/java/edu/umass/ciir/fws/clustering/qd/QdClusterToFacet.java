@@ -1,23 +1,25 @@
 package edu.umass.ciir.fws.clustering.qd;
 
-import edu.umass.ciir.fws.query.QueryFileParser;
+import edu.umass.ciir.fws.clustering.ScoredFacet;
+import edu.umass.ciir.fws.clustering.ScoredItem;
+import edu.umass.ciir.fws.tool.app.ProcessQueryParametersApp;
 import edu.umass.ciir.fws.types.Query;
 import edu.umass.ciir.fws.types.QueryParameters;
+import edu.umass.ciir.fws.utility.TextProcessing;
+import edu.umass.ciir.fws.utility.Utility;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.PrintStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.lemurproject.galago.core.tools.AppFunction;
-import org.lemurproject.galago.tupleflow.FileSource;
+import org.lemurproject.galago.tupleflow.InputClass;
+import org.lemurproject.galago.tupleflow.OutputClass;
 import org.lemurproject.galago.tupleflow.Parameters;
-import org.lemurproject.galago.tupleflow.Utility;
-import org.lemurproject.galago.tupleflow.execution.ConnectionAssignmentType;
-import org.lemurproject.galago.tupleflow.execution.InputStep;
-import org.lemurproject.galago.tupleflow.execution.Job;
-import org.lemurproject.galago.tupleflow.execution.OutputStep;
-import org.lemurproject.galago.tupleflow.execution.Stage;
-import org.lemurproject.galago.tupleflow.execution.Step;
-import org.lemurproject.galago.tupleflow.types.FileName;
+import org.lemurproject.galago.tupleflow.Processor;
+import org.lemurproject.galago.tupleflow.StandardStep;
+import org.lemurproject.galago.tupleflow.TupleFlowParameters;
+import org.lemurproject.galago.tupleflow.execution.Verified;
 
 /**
  * Tupleflow application that does reads in query dimension clusters and output
@@ -26,69 +28,118 @@ import org.lemurproject.galago.tupleflow.types.FileName;
  *
  * @author wkong
  */
-public class QdClusterToFacet extends AppFunction {
-
-    private static final String name = "qd-cluster-to-facets";
+public class QdClusterToFacet extends ProcessQueryParametersApp {
 
     @Override
-    public String getName() {
-        return name;
+    protected Class getProcessClass() {
+        return QdClusterToFacetConverter.class;
     }
 
     @Override
-    public String getHelpString() {
-        return "fws " + name + " [parameters...]\n"
-                + AppFunction.getTupleFlowParameterString();
+    protected String AppName() {
+        return "facet-qd";
     }
 
     @Override
-    public void run(Parameters p, PrintStream output) throws Exception {
-        Job job = createJob(p);
-        AppFunction.runTupleFlowJob(job, p, output);
-
+    protected Class getQueryParametersGeneratorClass() {
+        return GenerateQdFacetParameters.class;
     }
 
-    private Job createJob(Parameters parameters) {
-        Job job = new Job();
+    @Verified
+    @InputClass(className = "edu.umass.ciir.fws.types.Query")
+    @OutputClass(className = "edu.umass.ciir.fws.types.QueryParameters")
+    public static class GenerateQdFacetParameters extends StandardStep<Query, QueryParameters> {
 
-        job.add(getSplitStage(parameters));
-        job.add(getProcessStage(parameters));
+        List<Double> distanceMaxs;
+        List<Double> websiteCountMins;
+        List<Double> itemRatios;
 
-        job.connect("split", "process", ConnectionAssignmentType.Each);
+        public GenerateQdFacetParameters(TupleFlowParameters parameters) {
+            Parameters p = parameters.getJSON();
+            distanceMaxs = p.getList("qdDistanceMaxs");
+            websiteCountMins = p.getList("qdWebsiteCountMins");
+            itemRatios = p.getList("qdItemRatios");
 
-        return job;
-    }
-
-    private Stage getSplitStage(Parameters parameter) {
-        Stage stage = new Stage("split");
-
-        stage.addOutput("queryParameters", new QueryParameters.IdParametersOrder());
-
-        List<String> inputFiles = parameter.getAsList("queryFile");
-
-        Parameters p = new Parameters();
-        p.set("input", new ArrayList());
-        for (String input : inputFiles) {
-            p.getList("input").add(new File(input).getAbsolutePath());
         }
 
-        stage.add(new Step(FileSource.class, p));
-        stage.add(Utility.getSorter(new FileName.FilenameOrder()));
-        stage.add(new Step(QueryFileParser.class));
-        stage.add(new Step(GenerateQdFacetParameters.class, parameter));
-        stage.add(Utility.getSorter(new QueryParameters.IdParametersOrder()));
-        stage.add(new OutputStep("queryParameters"));
+        @Override
+        public void process(Query query) throws IOException {
+            for (double distanceMax : distanceMaxs) {
+                for (double websiteCountMin : websiteCountMins) {
+                    for (double itemRatio : itemRatios) {
+                        String parameters = Utility.parametersToString(distanceMax, websiteCountMin, itemRatio);
+                        processor.process(new QueryParameters(query.id, query.text, parameters));
+                    }
+                }
+            }
 
-        return stage;
+        }
+
     }
 
-    private Stage getProcessStage(Parameters parameters) {
-        Stage stage = new Stage("process");
+    /**
+     * Terms are selected if it pass the condition (score > NumSite *
+     * itemRatio). See paper "Finding dimensions for queries".
+     */
+    @Verified
+    @InputClass(className = "edu.umass.ciir.fws.types.QueryParameters")
+    public static class QdClusterToFacetConverter implements Processor<QueryParameters> {
 
-        stage.addInput("queryParameters", new QueryParameters.IdParametersOrder());
+        String facetDir;
+        String clusterDir;
 
-        stage.add(new InputStep("queryParameters"));
-        stage.add(new Step(QdClusterToFacetConverter.class, parameters));
-        return stage;
+        public QdClusterToFacetConverter(TupleFlowParameters parameters) {
+            Parameters p = parameters.getJSON();
+            facetDir = p.getString("qdFacetDir");
+            clusterDir = p.getString("qdClusterDir");
+        }
+
+        @Override
+        public void process(QueryParameters queryParameters) throws IOException {
+            System.err.println(String.format("Processing qid:%s parameters:%s", queryParameters.id, queryParameters.parameters));
+            String qid = queryParameters.id;
+            String[] fields = Utility.splitParameters(queryParameters.parameters);
+            double distanceMax = Double.parseDouble(fields[0]);
+            double websiteCountMin = Double.parseDouble(fields[1]);
+            double itemRatio = Double.parseDouble(fields[2]);
+
+            // load clusters
+            String clusterFileName = Utility.getQdClusterFileName(clusterDir, qid, distanceMax, websiteCountMin);
+            BufferedReader reader = Utility.getReader(clusterFileName);
+            
+            String line;
+            ArrayList<ScoredFacet> facets = new ArrayList<>();
+            while ((line = reader.readLine()) != null) {
+                String[] fields2 = line.split("\t");
+                double score = Double.parseDouble(fields2[0]);
+                int siteNum = Integer.parseInt(fields2[1]);
+                double threshold = siteNum * itemRatio;
+                String facetTermList = fields2[2];
+
+                ArrayList<ScoredItem> items = new ArrayList<>();
+                for (String scoredItemStr : facetTermList.split("\\|")) {
+                    ScoredItem scoredItem = new ScoredItem(scoredItemStr);
+                    if (scoredItem.score > threshold) {
+                        items.add(scoredItem);
+                    }
+                }
+
+                if (items.size() > 0) {
+                    facets.add(new ScoredFacet(items, score));
+                }
+
+            }
+            File facetFile = new File(Utility.getQdFacetFileName(facetDir, qid, distanceMax, websiteCountMin, itemRatio));
+            Utility.createDirectoryForFile(facetFile);
+            ScoredFacet.outputAsFacets(facets, facetFile);
+            Utility.InfoWritten(facetFile);
+        }
+
+        @Override
+        public void close() throws IOException {
+
+        }
+
     }
+
 }

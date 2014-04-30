@@ -102,7 +102,7 @@ public class CandidateListHtmlExtractor {
             }
         }
 
-        addCandidateList(type, items.toArray(new String[0]));
+        addCandidateList(type, items);
     }
 
     /**
@@ -218,7 +218,7 @@ public class CandidateListHtmlExtractor {
         int maxw = 0;
         for (ArrayList<String> row : table) {
             String type = HtmlTag.TR;
-            addCandidateList(type, row.toArray(new String[0]));
+            addCandidateList(type, row);
             if (row.size() > maxw) {
                 maxw = row.size();
             }
@@ -227,7 +227,7 @@ public class CandidateListHtmlExtractor {
         // col-wise
         for (int i = 0; i < maxw; i++) {
             String type = HtmlTag.TD;
-            ArrayList<String> items = new ArrayList<String>();
+            ArrayList<String> items = new ArrayList<>();
 
             for (ArrayList<String> row : table) {
                 if (row.size() > i) {
@@ -235,11 +235,11 @@ public class CandidateListHtmlExtractor {
                 }
             }
 
-            addCandidateList(type, items.toArray(new String[0]));
+            addCandidateList(type, items);
         }
     }
 
-    private void addCandidateList(String type, String[] items) {
+    private void addCandidateList(String type, List<String> items) {
         CandidateList clist = new CandidateList(query.id, document.rank, type,
                 items);
         if (clist.valid()) {

@@ -210,7 +210,7 @@ public class CandidateListTextExtractor {
             }
 
             CandidateList clist = new CandidateList(query.id,
-                    document.rank, type, items.toArray(new String[0]));
+                    document.rank, type, items);
             if (clist.valid()) {
                 clists.add(clist);
             }

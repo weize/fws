@@ -6,13 +6,13 @@ package edu.umass.ciir.fws.feature;
 
 import edu.umass.ciir.fws.crawl.Document;
 import edu.umass.ciir.fws.clist.CandidateList;
-import edu.umass.ciir.fws.clist.CandidateListParser;
 import edu.umass.ciir.fws.crawl.*;
 import edu.umass.ciir.fws.types.Query;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -74,7 +74,7 @@ public class TermFeaturesExtractor implements Processor<Query> {
         docDir = p.getString("docDir");
 
         termFeatures = new TreeMap<>();
-        clueDfs = new CluewebDocFreqMap(clueDfFile); // load clueWebDocFreqs
+        clueDfs = new CluewebDocFreqMap(new File(clueDfFile)); // load clueWebDocFreqs
         clistDfs = new HashMap<>();
 
         loadQuerySetResults();
@@ -116,8 +116,8 @@ public class TermFeaturesExtractor implements Processor<Query> {
     }
 
     private void loadCandidateLists() throws IOException {
-        String clistFileName = Utility.getCandidateListFileName(clistDir, query.id, "clean.clist");
-        clists = CandidateListParser.loadCandidateList(clistFileName, topNum);
+        File clistFile = new File(Utility.getCandidateListFileName(clistDir, query.id, "clean.clist"));
+        clists = CandidateList.loadCandidateLists(clistFile, topNum);
     }
 
     /**

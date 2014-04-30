@@ -75,7 +75,7 @@ public class FacetFeatures extends CandidateList implements Comparable<FacetFeat
             ff.docRank = Long.parseLong(fields[1]);
             ff.listType = fields[2];
             ff.itemList = fields[3];
-            ff.items = CandidateListParser.splitItemList(ff.itemList);
+            ff.items = CandidateList.splitItemList(ff.itemList);
             ff.features = new Object[size];
             ff.features[_len] = Integer.parseInt(fields[4]);
             ff.features[_WDF] = Double.parseDouble(fields[5]);

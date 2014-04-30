@@ -8,7 +8,6 @@ import edu.umass.ciir.fws.types.Query;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import org.lemurproject.galago.tupleflow.InputClass;
 import org.lemurproject.galago.tupleflow.OutputClass;
@@ -34,66 +33,16 @@ public class CandidateListParser extends StandardStep<Query, edu.umass.ciir.fws.
     public CandidateListParser(TupleFlowParameters parameters) throws Exception {
         Parameters p = parameters.getJSON();
         clistDir = p.getString("clistDir");
-        suffix = p.getString("suffix");
     }
 
     @Override
     public void process(Query query) throws IOException {
-        String fileName = Utility.getCandidateListFileName(clistDir, query.id, suffix);
-        String[] lines = Utility.readFileToString(new File(fileName)).split("\n");
-        for (String line : lines) {
-            String[] fields = line.split("\t");
-            String qid = fields[0];
-            long docRank = Long.parseLong(fields[1]);
-            String listType = fields[2];
-            String itemList = fields[3];
-            processor.process(new edu.umass.ciir.fws.types.CandidateList(qid, docRank, listType, itemList));
+        File clistFile = new File(Utility.getCandidateListCleanFileName(clistDir, query.id));
+        List<CandidateList> clists = CandidateList.loadCandidateLists(clistFile);
+
+        for (CandidateList clist : clists) {
+            processor.process(new edu.umass.ciir.fws.types.CandidateList(clist.qid,
+                    clist.docRank, clist.listType, clist.itemList));
         }
-    }
-
-    /**
-     * Load candidate lists from a file.
-     *
-     * @param fileName
-     * @return
-     * @throws IOException
-     */
-    public static List<CandidateList> loadCandidateList(String fileName, long topNum) throws IOException {
-        ArrayList<CandidateList> clist = new ArrayList<>();
-        String[] lines = Utility.readFileToString(new File(fileName)).split("\n");
-        for (String line : lines) {
-            String[] fields = line.split("\t");
-            String qid = fields[0];
-            long docRank = Long.parseLong(fields[1]);
-            String listType = fields[2];
-            String itemList = fields[3];
-            String[] items = splitItemList(itemList);
-            if (docRank <= topNum) {
-                clist.add(new CandidateList(qid, docRank, listType, itemList, items));
-            }
-        }
-        return clist;
-    }
-
-    public static String[] splitItemList(String itemList) {
-        return itemList.split("\\|");
-    }
-
-    public static String joinItemList(String[] items) {
-        return Utility.join(items, "|");
-    }
-
-    public static String joinItemList(List<String> items) {
-        return Utility.join(items, "|");
-    }
-
-    /**
-     * if the candidate list is extracted based on html patterns.
-     *
-     * @param candidateList
-     * @return
-     */
-    public static boolean isHtmlCandidateList(edu.umass.ciir.fws.types.CandidateList candidateList) {
-        return !candidateList.listType.equals(CandidateListTextExtractor.type);
     }
 }

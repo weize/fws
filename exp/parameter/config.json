@@ -9,6 +9,7 @@
 	"parseCorpusDir" : "../data/parse",
 	"docNameFile" : "../data/doc-name/query-200-sdm-rank.top10000.docname",
 	"clueDfFile" : "../data/df/clueDf.gz",
+	"clueDfOldFile" : "../data/df/clueDf.gz",
 	"clueCdf" : 33836981,
 	"clistDfFile" : "../data/df/clistDf.gz",
 	"featureDir" : "../exp/feature",
@@ -21,6 +22,7 @@
 	"plsaClusterDir": "../exp/plsa/cluster",
 	"plsaFacetDir": "../exp/plsa/facet",
 	"plsaTopicNums" : [5, 10],
+	"plsaTermNums" : [5, 10, 20],
 	"plsaIterNum" : 3000,
 	"topNum" : 100
 }

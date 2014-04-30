@@ -4,7 +4,6 @@
  */
 package edu.umass.ciir.fws.feature;
 
-import edu.umass.ciir.fws.clist.CandidateListParser;
 import edu.umass.ciir.fws.types.CandidateList;
 import edu.umass.ciir.fws.types.Term;
 import java.io.IOException;
@@ -25,7 +24,7 @@ public class CandidateListToTerms extends StandardStep<CandidateList, Term> {
 
     @Override
     public void process(CandidateList clist) throws IOException {
-        String[] items = CandidateListParser.splitItemList(clist.itemList);
+        String[] items = edu.umass.ciir.fws.clist.CandidateList.splitItemList(clist.itemList);
         for (String item : items) {
             processor.process(new Term(item));
         }

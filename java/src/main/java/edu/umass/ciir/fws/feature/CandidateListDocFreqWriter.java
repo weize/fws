@@ -5,7 +5,6 @@
  */
 package edu.umass.ciir.fws.feature;
 
-import edu.umass.ciir.fws.clist.CandidateListParser;
 import edu.umass.ciir.fws.types.CandidateList;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
@@ -72,7 +71,7 @@ public class CandidateListDocFreqWriter implements Processor<CandidateList> {
      */
     @Override
     public void process(CandidateList clist) throws IOException {
-        isHtmlType = CandidateListParser.isHtmlCandidateList(clist);
+        isHtmlType = edu.umass.ciir.fws.clist.CandidateList.isHtmlCandidateList(clist);
 
         if (last == null) {
             totals[_queryDF]++;
@@ -108,7 +107,7 @@ public class CandidateListDocFreqWriter implements Processor<CandidateList> {
             totals[_listHLDF]++;
         }
 
-        for (String item : CandidateListParser.splitItemList(clist.itemList)) {
+        for (String item : edu.umass.ciir.fws.clist.CandidateList.splitItemList(clist.itemList)) {
             Long[] counts = termDfs.containsKey(item) ? termDfs.get(item) : getZeros();
 
             if (!queryTermSet.contains(item)) {

@@ -13,7 +13,6 @@ package edu.umass.ciir.fws.clustering.plsa;
  * @author wkong
  */
 import edu.umass.ciir.fws.clist.CandidateList;
-import edu.umass.ciir.fws.clist.CandidateListParser;
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.clustering.ScoredItem;
 import edu.umass.ciir.fws.types.QueryParameters;
@@ -56,8 +55,8 @@ public class PlsaClusterer implements Processor<QueryParameters> {
         int topicNum = Integer.parseInt(queryParameters.parameters);
 
         // load candidate lists
-        String clistFileName = Utility.getCandidateListCleanFileName(clistDir, qid);
-        List<CandidateList> clist = CandidateListParser.loadCandidateList(clistFileName, topNum);
+        File clistFile = new File(Utility.getCandidateListCleanFileName(clistDir, qid));
+        List<CandidateList> clist = CandidateList.loadCandidateLists(clistFile, topNum);
 
         // clustering
         Plsa plsa = new Plsa(clist, iterNum);

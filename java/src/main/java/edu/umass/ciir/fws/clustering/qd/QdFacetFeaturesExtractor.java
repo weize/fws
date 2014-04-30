@@ -5,13 +5,13 @@
 package edu.umass.ciir.fws.clustering.qd;
 
 import edu.umass.ciir.fws.clist.CandidateList;
-import edu.umass.ciir.fws.clist.CandidateListParser;
 import edu.umass.ciir.fws.crawl.Document;
 import edu.umass.ciir.fws.crawl.QuerySetResults;
 import edu.umass.ciir.fws.feature.CluewebDocFreqMap;
 import edu.umass.ciir.fws.feature.TermFeaturesExtractor;
 import edu.umass.ciir.fws.types.Query;
 import edu.umass.ciir.fws.utility.Utility;
+import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -74,7 +74,7 @@ public class QdFacetFeaturesExtractor implements Processor<Query> {
         rankedListFile = p.getString("rankedListFile");
         docDir = p.getString("docDir");
         termFeatures = new HashMap<>();
-        clueDfs = new CluewebDocFreqMap(clueDfFile);
+        clueDfs = new CluewebDocFreqMap(new File(clueDfFile));
 
         loadQuerySetResults();
 
@@ -104,8 +104,8 @@ public class QdFacetFeaturesExtractor implements Processor<Query> {
     }
 
     private void loadCandidateListsToFacetFeatures() throws IOException {
-        String clistFileName = Utility.getCandidateListFileName(clistDir, query.id, "clean.clist");
-        List<CandidateList> clists = CandidateListParser.loadCandidateList(clistFileName, topNum);
+        File clistFile = new File(Utility.getCandidateListFileName(clistDir, query.id, "clean.clist"));
+        List<CandidateList> clists = CandidateList.loadCandidateLists(clistFile, topNum);
         this.facetFeatures = new ArrayList<>();
         for (CandidateList clist : clists) {
             facetFeatures.add(new FacetFeatures(clist));

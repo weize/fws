@@ -7,6 +7,7 @@ package edu.umass.ciir.fws.feature;
 
 import edu.umass.ciir.fws.types.Term;
 import edu.umass.ciir.fws.types.TermCount;
+import java.io.File;
 import java.io.IOException;
 import org.lemurproject.galago.core.retrieval.Retrieval;
 import org.lemurproject.galago.core.retrieval.RetrievalFactory;
@@ -36,10 +37,11 @@ public class GalagoDocFreqExtractor extends StandardStep<Term, TermCount> {
     public GalagoDocFreqExtractor(TupleFlowParameters parameters) throws Exception {
         Parameters p = parameters.getJSON();
         retrieval = RetrievalFactory.instance(p);
-        if (p.containsKey("clistDfOldFile")) {
+        if (p.containsKey("clueDfOldFile")) {
             existsClueDfs = true;
-            String clistDfOldFile = p.getString("clistDfOldFile");
-            clueDfs = new CluewebDocFreqMap(clistDfOldFile);
+            File clueDfOldFile = new File(p.getString("clueDfOldFile"));
+            clueDfs = new CluewebDocFreqMap(clueDfOldFile);
+            System.err.println("Load old clue dfs from " + clueDfOldFile.getAbsolutePath());
         } else {
             existsClueDfs = false;
         }

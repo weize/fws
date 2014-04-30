@@ -1,102 +1,115 @@
 package edu.umass.ciir.fws.clist;
 
-import edu.umass.ciir.fws.query.QueryFileParser;
-import edu.umass.ciir.fws.types.CandidateList;
+import edu.umass.ciir.fws.tool.app.ProcessQueryApp;
 import edu.umass.ciir.fws.types.Query;
+import edu.umass.ciir.fws.utility.TextProcessing;
+import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
-import java.io.PrintStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import org.lemurproject.galago.core.tools.AppFunction;
-import org.lemurproject.galago.tupleflow.FileSource;
+import java.util.Set;
+import org.lemurproject.galago.tupleflow.InputClass;
 import org.lemurproject.galago.tupleflow.Parameters;
-import org.lemurproject.galago.tupleflow.Utility;
-import org.lemurproject.galago.tupleflow.execution.ConnectionAssignmentType;
-import org.lemurproject.galago.tupleflow.execution.InputStep;
-import org.lemurproject.galago.tupleflow.execution.Job;
-import org.lemurproject.galago.tupleflow.execution.OutputStep;
-import org.lemurproject.galago.tupleflow.execution.Stage;
-import org.lemurproject.galago.tupleflow.execution.Step;
-import org.lemurproject.galago.tupleflow.types.FileName;
+import org.lemurproject.galago.tupleflow.Processor;
+import org.lemurproject.galago.tupleflow.TupleFlowParameters;
+import org.lemurproject.galago.tupleflow.execution.Verified;
 
 /**
  *
  * @author wkong
  */
-public class CleanCandidateLists extends AppFunction {
-
-    private static final String name = "clean-candidate-lists";
+public class CleanCandidateLists extends ProcessQueryApp {
 
     @Override
-    public String getName() {
-        return name;
+    protected Class getProcessClass() {
+        return CandidateListCleaner.class;
     }
 
     @Override
-    public String getHelpString() {
-        return "fws " + name + " [parameters...]\n"
-                + AppFunction.getTupleFlowParameterString();
+    protected String AppName() {
+        return "clean-candidate-lists";
     }
 
-    @Override
-    public void run(Parameters p, PrintStream output) throws Exception {
-        assert (p.isString("queryFile")) : "missing input file, --input";
-        assert (p.isString("stopwordsFile")) : "missing --stopwordsFile";
-        assert (p.isString("clistDir")) : "missing --clistDir";
-        
-        Job job = createJob(p);
-        AppFunction.runTupleFlowJob(job, p, output);
+    /**
+     * Clean and filter raw candidate lists extracted.
+     *
+     * @author wkong
+     */
+    @Verified
+    @InputClass(className = "edu.umass.ciir.fws.types.Query")
+    public static class CandidateListCleaner implements Processor<Query> {
 
-    }
+        Set<String> stopwords = new HashSet<>();
+        String clistDir;
 
-    private Job createJob(Parameters parameters) {
-        Job job = new Job();
+        public CandidateListCleaner(TupleFlowParameters parameters) throws Exception {
+            Parameters p = parameters.getJSON();
+            clistDir = p.getString("clistDir");
+            // load stopwords
+            String stopwordsFile = p.getString("stopwordsFile");
+            stopwords = Utility.readFileToStringSet(new File(stopwordsFile));
 
-        job.add(getSplitStage(parameters));
-        job.add(getProcessStage(parameters));
-        
-        job.connect("split", "process", ConnectionAssignmentType.Each);
-        
-        return job;
-    }
-
-    private Stage getSplitStage(Parameters parameter) {
-        Stage stage = new Stage("split");
-
-        stage.addOutput("praseQueries", new Query.IdOrder());
-
-        List<String> inputFiles = parameter.getAsList("queryFile");
-
-        Parameters p = new Parameters();
-        p.set("input", new ArrayList());
-        for (String input : inputFiles) {
-            p.getList("input").add(new File(input).getAbsolutePath());
         }
 
-        stage.add(new Step(FileSource.class, p));
-        stage.add(Utility.getSorter(new FileName.FilenameOrder()));
-        stage.add(new Step(QueryFileParser.class));
-        stage.add(Utility.getSorter(new Query.IdOrder()));
-        stage.add(new OutputStep("praseQueries"));
+        @Override
+        public void process(Query query) throws IOException {
+            File clistFile = new File(Utility.getCandidateListRawFileName(clistDir, query.id));
 
-        return stage;
+            List<CandidateList> clists = CandidateList.loadCandidateLists(clistFile);
+            List<CandidateList> cleanedClists = new ArrayList<>();
+
+            for (CandidateList clist : clists) {
+                ArrayList<String> itemsCleaned = new ArrayList<>();
+                HashSet<String> itemCleanedSet = new HashSet(); // constinct
+                for (String item : clist.items) {
+                    String itemCleaned = TextProcessing.clean(item);
+                    if (itemCleanedSet.contains(itemCleaned)) {
+                        continue;
+                    }
+                    if (isValidItem(itemCleaned)) {
+                        itemsCleaned.add(itemCleaned);
+                        itemCleanedSet.add(itemCleaned);
+                    }
+                }
+
+                if (isValidItemList(itemsCleaned)) {
+                    cleanedClists.add(new CandidateList(
+                            clist.qid, clist.docRank, clist.listType, itemsCleaned));
+                }
+            }
+
+            //output
+            File clistCleanFile = new File(Utility.getCandidateListCleanFileName(clistDir, query.id));
+            CandidateList.output(cleanedClists, clistCleanFile);
+            Utility.InfoWritten(clistCleanFile);
+
+        }
+
+        private boolean isValidItem(String item) {
+            if (item.length() < 1) {
+                return false;
+            }
+
+            if (stopwords.contains(item)) {
+                return false;
+            }
+
+            // number of words
+            int length = item.split("\\s+").length;
+            return length <= edu.umass.ciir.fws.clist.CandidateList.MAX_TERM_SIZE;
+        }
+
+        private boolean isValidItemList(List<String> items) {
+            int size = items.size();
+
+            return size > 1 && size <= 200;
+        }
+
+        @Override
+        public void close() throws IOException {
+        }
     }
 
-    private Stage getProcessStage(Parameters parameters) {
-        Stage stage = new Stage("process");
-
-        stage.addInput("praseQueries", new Query.IdOrder());
-        
-        stage.add(new InputStep("praseQueries"));
-        Parameters p1 = parameters.clone();
-        p1.set("suffix", "clist"); // reader from *.clist
-        stage.add(new Step(CandidateListParser.class, p1));
-        stage.add(new Step(CandidateListCleaner.class, p1));
-        
-        Parameters p2 = parameters.clone();
-        p2.set("suffix", "clean.clist"); // write to *.clean.clist
-        stage.add(new Step(CandidateListWriter.class, p2));
-
-        return stage;
-    }
 }

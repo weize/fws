@@ -80,18 +80,25 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         return true;
     }
 
-    public static void createDirectoryForFile(String fileName) {
-        File file = new File(fileName);
+    public static void createDirectoryForFile(File file) {
         File dir = file.getParentFile();
         createDirectory(dir);
+    }
+
+    public static void createDirectoryForFile(String fileName) {
+        createDirectoryForFile(new File(fileName));
     }
 
     public static String getCandidateListFileName(String clistDir, String qid, String suffix) {
         return getFileNameWithSuffix(clistDir, qid, suffix);
     }
-    
+
     public static String getCandidateListCleanFileName(String clistDir, String qid) {
         return getFileNameWithSuffix(clistDir, qid, "clean.clist");
+    }
+
+    public static String getCandidateListRawFileName(String clistDir, String qid) {
+        return getFileNameWithSuffix(clistDir, qid, "clist");
     }
 
     public static String getParsedDocFileName(String parseDir, String qid, String docName) {
@@ -138,6 +145,11 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         return getFileName(clusterDir, qid, name);
     }
 
+    public static String getPlsaFacetFileName(String facetDir, String qid, long plsaTopicNum, long plsaTermNum) {
+        String name = String.format("%s.%s.facet", qid, parametersToFileNameString(plsaTopicNum, plsaTermNum));
+        return getFileName(facetDir, qid, name);
+    }
+
     public static String getFileName(String... parts) {
         return TextProcessing.join(parts, File.separator);
     }
@@ -159,6 +171,10 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
 
     public static String[] splitParameters(String parametersStr) {
         return parametersStr.split(":");
+    }
+
+    public static void InfoWritten(File outfile) {
+        System.err.println(String.format("Writte in %s", outfile.getAbsoluteFile()));
     }
 
 }

@@ -2,16 +2,21 @@ package edu.umass.ciir.fws.feature;
 
 import edu.umass.ciir.fws.clist.CandidateListParser;
 import edu.umass.ciir.fws.query.QueryFileParser;
-import edu.umass.ciir.fws.types.Query;
+import edu.umass.ciir.fws.types.CandidateList;
 import edu.umass.ciir.fws.types.Term;
 import edu.umass.ciir.fws.types.TermCount;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import org.lemurproject.galago.core.tools.AppFunction;
 import org.lemurproject.galago.tupleflow.FileSource;
+import org.lemurproject.galago.tupleflow.InputClass;
 import org.lemurproject.galago.tupleflow.Parameters;
+import org.lemurproject.galago.tupleflow.Processor;
+import org.lemurproject.galago.tupleflow.TupleFlowParameters;
 import org.lemurproject.galago.tupleflow.Utility;
 import org.lemurproject.galago.tupleflow.execution.ConnectionAssignmentType;
 import org.lemurproject.galago.tupleflow.execution.InputStep;
@@ -19,7 +24,7 @@ import org.lemurproject.galago.tupleflow.execution.Job;
 import org.lemurproject.galago.tupleflow.execution.OutputStep;
 import org.lemurproject.galago.tupleflow.execution.Stage;
 import org.lemurproject.galago.tupleflow.execution.Step;
-import org.lemurproject.galago.tupleflow.types.FileName;
+import org.lemurproject.galago.tupleflow.execution.Verified;
 
 /**
  * Tupleflow application that fetch document frequency for all terms in the
@@ -48,7 +53,6 @@ public class ExtractClueWebDocFreq extends AppFunction {
         assert (p.isString("index")) : "missing --index";
         assert (p.isString("clistDir")) : "missing --clistDir";
         assert (p.isString("clueDfFile")) : "missing --clueDfFile";
-
 
         Job job = createJob(p);
         AppFunction.runTupleFlowJob(job, p, output);
@@ -83,7 +87,6 @@ public class ExtractClueWebDocFreq extends AppFunction {
 
         stage.add(new Step(FileSource.class, p));
         stage.add(new Step(QueryFileParser.class));
-        parameter.set("suffix", "clean.clist");
         stage.add(new Step(CandidateListParser.class, parameter));
         stage.add(new Step(CandidateListToTerms.class));
         stage.add(Utility.getSorter(new Term.TermOrder()));
@@ -110,10 +113,44 @@ public class ExtractClueWebDocFreq extends AppFunction {
         Stage stage = new Stage("write");
 
         stage.addInput("termCounts", new TermCount.TermOrder());
-        
+
         stage.add(new InputStep("termCounts"));
         stage.add(new Step(TermCountWriter.class, parameters));
 
         return stage;
     }
+
+    /**
+     * Tupleflow writer that write term count into one file.
+     *
+     * @author wkong
+     */
+    @Verified
+    @InputClass(className = "edu.umass.ciir.fws.types.TermCount")
+    public static class TermCountWriter implements Processor<TermCount> {
+
+        String clueDfFile;
+        CandidateList last = null;
+        BufferedWriter writer;
+        String suffix;
+
+        public TermCountWriter(TupleFlowParameters parameters) throws IOException {
+            Parameters p = parameters.getJSON();
+            clueDfFile = p.getString("clueDfFile");
+            writer = edu.umass.ciir.fws.utility.Utility.getGzipWriter(clueDfFile);
+        }
+
+        @Override
+        public void process(TermCount termCount) throws IOException {
+            writer.write(String.format("%s\t%d\n", termCount.term, termCount.count));
+        }
+
+        @Override
+        public void close() throws IOException {
+            writer.close();
+            System.err.println("Written in " + clueDfFile);
+        }
+
+    }
+
 }

@@ -8,6 +8,7 @@ package edu.umass.ciir.fws.feature;
 
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -19,15 +20,15 @@ public class CluewebDocFreqMap {
     
     HashMap<String, Long> termDf; // term -> docFreq
     
-    public CluewebDocFreqMap(String clueDfFile) throws IOException {
+    public CluewebDocFreqMap(File clueDfFile) throws IOException {
         termDf = new HashMap<>();
         loadClueWebDocFreqs(clueDfFile);
     }
     
     
-    private void loadClueWebDocFreqs(String fileName) throws IOException {
+    private void loadClueWebDocFreqs(File file) throws IOException {
         termDf.clear();
-        BufferedReader reader = Utility.getReader(fileName);
+        BufferedReader reader = Utility.getReader(file);
         String line;
         while ((line = reader.readLine()) != null) {
             // <term> \t <df>

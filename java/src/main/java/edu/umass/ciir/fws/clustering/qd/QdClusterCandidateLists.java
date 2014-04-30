@@ -1,22 +1,17 @@
 package edu.umass.ciir.fws.clustering.qd;
 
-import edu.umass.ciir.fws.query.QueryFileParser;
+import edu.umass.ciir.fws.tool.app.ProcessQueryParametersApp;
+import edu.umass.ciir.fws.types.Query;
 import edu.umass.ciir.fws.types.QueryParameters;
-import java.io.File;
-import java.io.PrintStream;
-import java.util.ArrayList;
+import edu.umass.ciir.fws.utility.Utility;
+import java.io.IOException;
 import java.util.List;
-import org.lemurproject.galago.core.tools.AppFunction;
-import org.lemurproject.galago.tupleflow.FileSource;
+import org.lemurproject.galago.tupleflow.InputClass;
+import org.lemurproject.galago.tupleflow.OutputClass;
 import org.lemurproject.galago.tupleflow.Parameters;
-import org.lemurproject.galago.tupleflow.Utility;
-import org.lemurproject.galago.tupleflow.execution.ConnectionAssignmentType;
-import org.lemurproject.galago.tupleflow.execution.InputStep;
-import org.lemurproject.galago.tupleflow.execution.Job;
-import org.lemurproject.galago.tupleflow.execution.OutputStep;
-import org.lemurproject.galago.tupleflow.execution.Stage;
-import org.lemurproject.galago.tupleflow.execution.Step;
-import org.lemurproject.galago.tupleflow.types.FileName;
+import org.lemurproject.galago.tupleflow.StandardStep;
+import org.lemurproject.galago.tupleflow.TupleFlowParameters;
+import org.lemurproject.galago.tupleflow.execution.Verified;
 
 /**
  * Tupleflow application that does query dimension clustering.
@@ -24,69 +19,53 @@ import org.lemurproject.galago.tupleflow.types.FileName;
  *
  * @author wkong
  */
-public class QdClusterCandidateLists extends AppFunction {
-
-    private static final String name = "cluster-qd";
+public class QdClusterCandidateLists extends ProcessQueryParametersApp {
 
     @Override
-    public String getName() {
-        return name;
+    protected Class getQueryParametersGeneratorClass() {
+        return GenerateQdClusterParameters.class;
     }
 
     @Override
-    public String getHelpString() {
-        return "fws " + name + " [parameters...]\n"
-                + AppFunction.getTupleFlowParameterString();
+    protected Class getProcessClass() {
+        return QueryDimensionClusterers.class;
     }
 
     @Override
-    public void run(Parameters p, PrintStream output) throws Exception {
-        Job job = createJob(p);
-        AppFunction.runTupleFlowJob(job, p, output);
-
+    protected String AppName() {
+        return "cluster-qd";
     }
 
-    private Job createJob(Parameters parameters) {
-        Job job = new Job();
+    /**
+     *
+     * @author wkong
+     */
+    @Verified
+    @InputClass(className = "edu.umass.ciir.fws.types.Query")
+    @OutputClass(className = "edu.umass.ciir.fws.types.QueryParameters")
+    public static class GenerateQdClusterParameters extends StandardStep<Query, QueryParameters> {
 
-        job.add(getSplitStage(parameters));
-        job.add(getProcessStage(parameters));
+        List<Double> distanceMaxs;
+        List<Double> websiteCountMins;
 
-        job.connect("split", "process", ConnectionAssignmentType.Each);
+        public GenerateQdClusterParameters(TupleFlowParameters parameters) {
+            Parameters p = parameters.getJSON();
+            distanceMaxs = p.getList("qdDistanceMaxs");
+            websiteCountMins = p.getList("qdWebsiteCountMins");
 
-        return job;
-    }
-
-    private Stage getSplitStage(Parameters parameter) {
-        Stage stage = new Stage("split");
-
-        stage.addOutput("queryParameters", new QueryParameters.IdParametersOrder());
-
-        List<String> inputFiles = parameter.getAsList("queryFile");
-
-        Parameters p = new Parameters();
-        p.set("input", new ArrayList());
-        for (String input : inputFiles) {
-            p.getList("input").add(new File(input).getAbsolutePath());
         }
 
-        stage.add(new Step(FileSource.class, p));
-        stage.add(Utility.getSorter(new FileName.FilenameOrder()));
-        stage.add(new Step(QueryFileParser.class));
-        stage.add(new Step(GenerateQdClusterParameters.class, parameter));
-        stage.add(Utility.getSorter(new QueryParameters.IdParametersOrder()));
-        stage.add(new OutputStep("queryParameters"));
+        @Override
+        public void process(Query query) throws IOException {
+            for (double distanceMax : distanceMaxs) {
+                for (double websiteCountMin : websiteCountMins) {
+                    String parameters = Utility.parametersToString(distanceMax, websiteCountMin);
+                    processor.process(new QueryParameters(query.id, query.text, parameters));
+                }
+            }
 
-        return stage;
+        }
+
     }
 
-    private Stage getProcessStage(Parameters parameters) {
-        Stage stage = new Stage("process");
-
-        stage.addInput("queryParameters", new QueryParameters.IdParametersOrder());
-
-        stage.add(new InputStep("queryParameters"));
-        stage.add(new Step(QueryDimensionClusterers.class, parameters));
-        return stage;
-    }
 }

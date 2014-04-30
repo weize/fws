@@ -1,22 +1,6 @@
 package edu.umass.ciir.fws.feature;
 
-import edu.umass.ciir.fws.query.QueryFileParser;
-import edu.umass.ciir.fws.types.Query;
-import java.io.File;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
-import org.lemurproject.galago.core.tools.AppFunction;
-import org.lemurproject.galago.tupleflow.FileSource;
-import org.lemurproject.galago.tupleflow.Parameters;
-import org.lemurproject.galago.tupleflow.Utility;
-import org.lemurproject.galago.tupleflow.execution.ConnectionAssignmentType;
-import org.lemurproject.galago.tupleflow.execution.InputStep;
-import org.lemurproject.galago.tupleflow.execution.Job;
-import org.lemurproject.galago.tupleflow.execution.OutputStep;
-import org.lemurproject.galago.tupleflow.execution.Stage;
-import org.lemurproject.galago.tupleflow.execution.Step;
-import org.lemurproject.galago.tupleflow.types.FileName;
+import edu.umass.ciir.fws.tool.app.ProcessQueryApp;
 
 /**
  * Tupleflow application that extract facet term features.
@@ -24,78 +8,15 @@ import org.lemurproject.galago.tupleflow.types.FileName;
  *
  * @author wkong
  */
-public class ExtractTermFeature extends AppFunction {
-
-    private static final String name = "extract-term-feature";
+public class ExtractTermFeature extends ProcessQueryApp {
 
     @Override
-    public String getName() {
-        return name;
+    protected Class getProcessClass() {
+        return TermFeaturesExtractor.class;
     }
 
     @Override
-    public String getHelpString() {
-        return "fws " + name + " [parameters...]\n"
-                + AppFunction.getTupleFlowParameterString();
-    }
-
-    @Override
-    public void run(Parameters p, PrintStream output) throws Exception {
-        assert (p.isString("queryFile")) : "missing input file, --input";
-        assert (p.isString("index")) : "missing --index";
-        assert (p.isString("rankedListFile")) : "missing --rankedListFile";
-        assert (p.isString("topNum")) : "missing --topNum";
-        assert (p.isString("clistDir")) : "missing --clistDir";
-        assert (p.isString("clueDfFile")) : "missing --clueDfFile";
-        assert (p.isString("clueCdf")) : "missing --clueCdf";
-        assert (p.isString("clistDfFile")) : "missing --clistDfFile";
-        assert (p.isString("featureDir")) : "missing --featureDir";
-
-        Job job = createJob(p);
-        AppFunction.runTupleFlowJob(job, p, output);
-
-    }
-
-    private Job createJob(Parameters parameters) {
-        Job job = new Job();
-
-        job.add(getSplitStage(parameters));
-        job.add(getProcessStage(parameters));
-
-        job.connect("split", "process", ConnectionAssignmentType.Each);
-
-        return job;
-    }
-
-    private Stage getSplitStage(Parameters parameter) {
-        Stage stage = new Stage("split");
-
-        stage.addOutput("praseQueries", new Query.IdOrder());
-
-        List<String> inputFiles = parameter.getAsList("queryFile");
-
-        Parameters p = new Parameters();
-        p.set("input", new ArrayList());
-        for (String input : inputFiles) {
-            p.getList("input").add(new File(input).getAbsolutePath());
-        }
-
-        stage.add(new Step(FileSource.class, p));
-        stage.add(Utility.getSorter(new FileName.FilenameOrder()));
-        stage.add(new Step(QueryFileParser.class));
-        stage.add(Utility.getSorter(new Query.IdOrder()));
-        stage.add(new OutputStep("praseQueries"));
-
-        return stage;
-    }
-
-    private Stage getProcessStage(Parameters parameters) {
-        Stage stage = new Stage("process");
-
-        stage.addInput("praseQueries", new Query.IdOrder());
-
-        stage.add(new InputStep("praseQueries"));
-        stage.add(new Step(TermFeaturesExtractor.class, parameters));
-        return stage;
+    protected String AppName() {
+        return "extract-term-feature";
     }
 }
