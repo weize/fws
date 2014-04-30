@@ -4,11 +4,10 @@
  */
 package edu.umass.ciir.fws.tool;
 
-import edu.stanford.nlp.io.EncodingPrintWriter;
+import cc.mallet.types.InstanceList;
 import edu.umass.ciir.fws.clist.CandidateList;
 import edu.umass.ciir.fws.clist.CandidateListHtmlExtractor;
 import edu.umass.ciir.fws.clist.CandidateListTextExtractor;
-import edu.umass.ciir.fws.clist.CandidateListTextExtractor.ParseTree;
 import edu.umass.ciir.fws.nlp.HtmlContentExtractor;
 import edu.umass.ciir.fws.nlp.StanfordCoreNLPParser;
 import edu.umass.ciir.fws.types.Query;
@@ -63,7 +62,8 @@ public class TestFn extends AppFunction {
         //testCandidateListHtmlExtractor(p, output);
         //testHtmlContentExtractor(p, output);
         //testCandidateListTextExtractor(p, output);
-        testDocument(p, output);
+        // testDocument(p, output);
+        testLDA(p, output);
 
     }
 
@@ -277,6 +277,11 @@ public class TestFn extends AppFunction {
         System.err.println(String.format("written in %s", dataFile.getAbsoluteFile()));
         doc = Document.deserialize(new DataInputStream(new FileInputStream(dataFile)), p, new Document.DocumentComponents(true, true, false));
         output.println(doc.toString());
+    }
+
+    private void testLDA(Parameters p, PrintStream output) {
+        
+        
     }
 
 }

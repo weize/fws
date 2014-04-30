@@ -24,5 +24,10 @@
 	"plsaTopicNums" : [5, 10],
 	"plsaTermNums" : [5, 10, 20],
 	"plsaIterNum" : 3000,
+	"ldaClusterDir": "../exp/lda/cluster",
+	"ldaFacetDir": "../exp/lda/facet",
+	"ldaTopicNums" : [5, 10],
+	"ldaTermNums" : [5, 10, 20],
+	"ldaIterNum" : 1000,
 	"topNum" : 100
 }
