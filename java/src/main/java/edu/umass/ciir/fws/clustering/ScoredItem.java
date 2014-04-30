@@ -5,7 +5,8 @@
  */
 package edu.umass.ciir.fws.clustering;
 
-import org.lemurproject.galago.tupleflow.Utility;
+import edu.umass.ciir.fws.utility.Utility;
+
 
 /**
  *

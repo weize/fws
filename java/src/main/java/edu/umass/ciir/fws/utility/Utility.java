@@ -5,7 +5,6 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -145,7 +144,17 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         return getFileName(clusterDir, qid, name);
     }
 
+    public static String getLdaClusterFileName(String clusterDir, String qid, long topNum) {
+        String name = String.format("%s.%d.cluster", qid, topNum);
+        return getFileName(clusterDir, qid, name);
+    }
+
     public static String getPlsaFacetFileName(String facetDir, String qid, long plsaTopicNum, long plsaTermNum) {
+        String name = String.format("%s.%s.facet", qid, parametersToFileNameString(plsaTopicNum, plsaTermNum));
+        return getFileName(facetDir, qid, name);
+    }
+
+    public static String getLdaFacetFileName(String facetDir, String qid, long plsaTopicNum, long plsaTermNum) {
         String name = String.format("%s.%s.facet", qid, parametersToFileNameString(plsaTopicNum, plsaTermNum));
         return getFileName(facetDir, qid, name);
     }
@@ -166,15 +175,27 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
     }
 
     public static String parametersToString(Object... parameters) {
-        return TextProcessing.join(parameters, ":");
+        return TextProcessing.join(parameters, "-");
     }
 
     public static String[] splitParameters(String parametersStr) {
-        return parametersStr.split(":");
+        return parametersStr.split("-");
     }
 
     public static void InfoWritten(File outfile) {
         System.err.println(String.format("Writte in %s", outfile.getAbsoluteFile()));
+    }
+
+    public static int compare(double one, double two) {
+        double result = one - two;
+
+        if (result > epsilon) {
+            return 1;
+        }
+        if (result < -epsilon) {
+            return -1;
+        }
+        return 0;
     }
 
 }

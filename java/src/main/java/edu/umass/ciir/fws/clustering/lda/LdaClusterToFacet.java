@@ -1,4 +1,4 @@
-package edu.umass.ciir.fws.clustering.plsa;
+package edu.umass.ciir.fws.clustering.lda;
 
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.tool.app.ProcessQueryParametersApp;
@@ -12,32 +12,33 @@ import org.lemurproject.galago.tupleflow.InputClass;
 import org.lemurproject.galago.tupleflow.OutputClass;
 import org.lemurproject.galago.tupleflow.Parameters;
 import org.lemurproject.galago.tupleflow.Processor;
+
 import org.lemurproject.galago.tupleflow.StandardStep;
 import org.lemurproject.galago.tupleflow.TupleFlowParameters;
 import org.lemurproject.galago.tupleflow.execution.Verified;
 
 /**
- * Tupleflow application that does reads in query dimension clusters and output
- * query facets.
+ * Tupleflow application that reads in lda clusters and selects top N terms in
+ * each cluster, and outputs query facets.
  *
  *
  * @author wkong
  */
-public class PlsaClusterToFacet extends ProcessQueryParametersApp {
+public class LdaClusterToFacet extends ProcessQueryParametersApp {
 
     @Override
     protected Class getQueryParametersGeneratorClass() {
-        return GeneratePlsaFacetParameters.class;
+        return GenerateLdaFacetParameters.class;
     }
 
     @Override
     protected Class getProcessClass() {
-        return PlsaClusterToFacetConverter.class;
+        return LdaClusterToFacetConverter.class;
     }
 
     @Override
     protected String AppName() {
-        return "facet-plsa";
+        return "facet-lda";
     }
 
     /**
@@ -46,22 +47,22 @@ public class PlsaClusterToFacet extends ProcessQueryParametersApp {
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.Query")
     @OutputClass(className = "edu.umass.ciir.fws.types.QueryParameters")
-    public static class GeneratePlsaFacetParameters extends StandardStep<Query, QueryParameters> {
+    public static class GenerateLdaFacetParameters extends StandardStep<Query, QueryParameters> {
 
-        List<Long> plsaTopicNums;
-        List<Long> plsaTermNums;
+        List<Long> ldaTopicNums;
+        List<Long> ldaTermNums;
 
-        public GeneratePlsaFacetParameters(TupleFlowParameters parameters) {
+        public GenerateLdaFacetParameters(TupleFlowParameters parameters) {
             Parameters p = parameters.getJSON();
-            plsaTopicNums = p.getList("plsaTopicNums");
-            plsaTermNums = p.getList("plsaTermNums");
+            ldaTopicNums = p.getList("ldaTopicNums");
+            ldaTermNums = p.getList("ldaTermNums");
         }
 
         @Override
         public void process(Query query) throws IOException {
-            for (long plsaTopicNum : plsaTopicNums) {
-                for (long plsaTermNum : plsaTermNums) {
-                    String parameters = edu.umass.ciir.fws.utility.Utility.parametersToString(plsaTopicNum, plsaTermNum);
+            for (long plsaTopicNum : ldaTopicNums) {
+                for (long plsaTermNum : ldaTermNums) {
+                    String parameters = Utility.parametersToString(plsaTopicNum, plsaTermNum);
                     processor.process(new QueryParameters(query.id, query.text, parameters));
                 }
             }
@@ -76,35 +77,35 @@ public class PlsaClusterToFacet extends ProcessQueryParametersApp {
      */
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.QueryParameters")
-    public static class PlsaClusterToFacetConverter implements Processor<QueryParameters> {
+    public static class LdaClusterToFacetConverter implements Processor<QueryParameters> {
 
         String facetDir;
         String clusterDir;
 
-        public PlsaClusterToFacetConverter(TupleFlowParameters parameters) {
+        public LdaClusterToFacetConverter(TupleFlowParameters parameters) {
             Parameters p = parameters.getJSON();
-            facetDir = p.getString("plsaFacetDir");
-            clusterDir = p.getString("plsaClusterDir");
+            facetDir = p.getString("ldaFacetDir");
+            clusterDir = p.getString("ldaClusterDir");
         }
 
         @Override
         public void process(QueryParameters queryParameters) throws IOException {
             System.err.println(String.format("Processing qid:%s parameters:%s", queryParameters.id, queryParameters.parameters));
             String qid = queryParameters.id;
-            String[] fields = edu.umass.ciir.fws.utility.Utility.splitParameters(queryParameters.parameters);
-            long plsaTopicNum = Long.parseLong(fields[0]);
-            long plsaTermNum = Long.parseLong(fields[1]);
+            String[] fields = Utility.splitParameters(queryParameters.parameters);
+            long topicNum = Long.parseLong(fields[0]);
+            long termNum = Long.parseLong(fields[1]);
 
             // load clusters
-            File clusterFile = new File(Utility.getPlsaClusterFileName(clusterDir, qid, plsaTopicNum));
+            File clusterFile = new File(Utility.getLdaClusterFileName(clusterDir, qid, topicNum));
             List<ScoredFacet> clusters = ScoredFacet.load(clusterFile);
 
             // select facet terms
             for (ScoredFacet cluster : clusters) {
-                int size = (int) Math.min(plsaTermNum, cluster.items.size());
+                int size = (int) Math.min(termNum, cluster.items.size());
                 cluster.items = cluster.items.subList(0, size);
             }
-            File facetFile = new File(Utility.getPlsaFacetFileName(facetDir, qid, plsaTopicNum, plsaTermNum));
+            File facetFile = new File(Utility.getLdaFacetFileName(facetDir, qid, topicNum, termNum));
             Utility.createDirectoryForFile(facetFile);
             ScoredFacet.outputAsFacets(clusters, facetFile);
             Utility.InfoWritten(facetFile);
@@ -116,5 +117,4 @@ public class PlsaClusterToFacet extends ProcessQueryParametersApp {
         }
 
     }
-
 }

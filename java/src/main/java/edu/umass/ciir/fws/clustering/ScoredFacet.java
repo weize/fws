@@ -43,19 +43,24 @@ public class ScoredFacet implements Comparable<ScoredFacet> {
     public static void outputAsFacets(List<ScoredFacet> facets, File file) throws IOException {
         BufferedWriter writer = Utility.getWriter(file);
         for (ScoredFacet f : facets) {
-            writer.write(f.score + "\t");
-            List<ScoredItem> items = f.items;
-            if (items.size() > 0) {
-                writer.write(items.get(0).item);
-            }
-
-            for (int i = 1; i < items.size(); i++) {
-                writer.write("|" + items.get(i).item);
-            }
+            writer.write(f.toFacetString());
             writer.newLine();
         }
         writer.close();
     }
+
+    public String getItemList() {
+        StringBuilder itemList = new StringBuilder();
+        if (items.size() > 0) {
+            itemList.append(items.get(0).item);
+        }
+
+        for (int i = 1; i < items.size(); i++) {
+            itemList.append("|").append(items.get(i).item);
+        }
+        return itemList.toString();
+    }
+    
 
     public static List<ScoredFacet> load(File file) throws IOException {
         ArrayList<ScoredFacet> facets = new ArrayList<>();
@@ -81,6 +86,10 @@ public class ScoredFacet implements Comparable<ScoredFacet> {
     @Override
     public String toString() {
         return score + "\t" + TextProcessing.join(items, "|");
+    }
+    
+    public String toFacetString() {
+        return score + "\t" + getItemList();
     }
 
     @Override

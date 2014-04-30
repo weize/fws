@@ -209,10 +209,27 @@ public class PlsaClusterer implements Processor<QueryParameters> {
                 Mstep(Pz_dw, Pw_z, Pd_z, Pz);
 
                 L = calcLoglikelihood(Pz, Pd_z, Pw_z);
-                System.err.println("[" + it + "]" + "\tlikelihood: " + L);
+                if (it % 100 == 0) {
+                    System.err.println("[" + it + "]" + "\tlikelihood: " + L);
+                    printCurTopWords();
+                    System.err.println();
+                }
+
             }
 
             return L;
+        }
+
+        private void printCurTopWords() {
+            for (int z = 0; z < K; z++) {
+                ArrayList<ScoredItem> items = new ArrayList<>();
+                for (int w = 0; w < this.V; w++) {
+                    items.add(new ScoredItem(dict[w], Pw_z[z][w]));
+                }
+                Collections.sort(items);
+                ScoredFacet facet = new ScoredFacet(items.subList(0, Math.min(items.size(), 7)), Pz[z]);
+                System.err.println(facet.toString());
+            }
         }
 
         private void Estep(double[] Pz, double[][] Pd_z, double[][] Pw_z, double[][][] Pz_dw) {

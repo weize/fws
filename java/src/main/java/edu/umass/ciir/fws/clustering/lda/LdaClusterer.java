@@ -95,14 +95,14 @@ public class LdaClusterer implements Processor<QueryParameters> {
         }
 
         private List<ScoredFacet> cluster(int topicNum) throws IOException {
-            ParallelTopicModel topicModel;
-
             double alpha = 50.0;
             double beta = 0.01;
+            ParallelTopicModel topicModel;
             topicModel = new ParallelTopicModel(topicNum, alpha, beta);
             topicModel.addInstances(instances);
             topicModel.setNumIterations((int) iterNum);
             topicModel.setSymmetricAlpha(false);
+            topicModel.setTopicDisplay(100, 7);
 
             /**
              * This is the default setting for OptimizeInterval in mallet
@@ -112,7 +112,6 @@ public class LdaClusterer implements Processor<QueryParameters> {
             topicModel.setOptimizeInterval(0);
             topicModel.estimate();
 
-            
             // output
             ArrayList<ScoredFacet> facets = new ArrayList<>();
 
