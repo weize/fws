@@ -11,8 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
-import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
 /**
@@ -23,7 +21,7 @@ import org.jsoup.select.Elements;
  */
 public class CandidateListHtmlExtractor {
 
-    static class HtmlTag {
+    public static class HtmlTag {
 
         final static String UL = "ul";
         final static String OL = "ol";
@@ -98,7 +96,7 @@ public class CandidateListHtmlExtractor {
 
         for (Element child : children) {
             if (child.tagName().equalsIgnoreCase(childType)) {
-                String text = cleanText(getHeadingText(child));
+                String text = cleanText(HtmlContentExtractor.getHeadingText(child));
                 if (text.length() == 0) {
                     continue;
                 }
@@ -107,70 +105,6 @@ public class CandidateListHtmlExtractor {
         }
 
         addCandidateList(type, items);
-    }
-
-    /**
-     * Get text for list element, which may contain nested ol, ul elements. Only
-     * get the first level text. e.g.
-     * <li> A</li>
-     * <li> 1</li>
-     * <li> 2</li>
-     * <li> B</li>
-     * <li> C</li>
-     * we'll extract {A, B, C}.
-     *
-     * @param root
-     * @return
-     */
-    public static String getHeadingText(Element root) {
-        StringBuilder text = new StringBuilder();
-        Node node = root;
-        int depth = 0;
-
-        /**
-         * there are two types of node 1) element like ul, li, a, etc 2) text
-         * node
-         */
-        while (node != null) {
-            if (node instanceof TextNode) {
-                TextNode textNode = (TextNode) node;
-                text.append(textNode.text());
-            } else if (node instanceof Element) {
-                Element element = (Element) node;
-                if (HtmlTag.isListTag(element)) {
-                    break;
-                }
-
-                if (HtmlContentExtractor.needNewLineTag(element.tagName())) {
-                    text.append("\n");
-                }
-
-                if (HtmlContentExtractor.needSpaceTag(element.tagName())) {
-                    text.append(" ");
-                }
-
-                if (HtmlContentExtractor.isSkippingTag(element.tagName())) {
-                    node = node.nextSibling();
-                    continue;
-                }
-
-            }
-
-            if (node.childNodes().size() > 0) {
-                node = node.childNode(0);
-                depth++;
-            } else {
-                while (node.nextSibling() == null && depth > 0) {
-                    node = node.parent();
-                    depth--;
-                }
-                if (node == root) {
-                    break;
-                }
-                node = node.nextSibling();
-            }
-        }
-        return text.toString();
     }
 
     /**
@@ -206,7 +140,7 @@ public class CandidateListHtmlExtractor {
             ArrayList<String> row = new ArrayList<>();
             for (Element td : tr.children()) {
                 if (td.tagName().equalsIgnoreCase(HtmlTag.TD)) {
-                    String text = cleanText(getHeadingText(td));
+                    String text = cleanText(HtmlContentExtractor.getHeadingText(td));
                     if (text.length() == 0) {
                         continue;
                     }
@@ -250,7 +184,7 @@ public class CandidateListHtmlExtractor {
             clists.add(clist);
         }
     }
-    
+
     private boolean isDescendantOfSkippedElement(Elements element) {
         for (Element e : element.parents()) {
             if (HtmlContentExtractor.isSkippingTag(e.tagName())) {
@@ -258,5 +192,9 @@ public class CandidateListHtmlExtractor {
             }
         }
         return false;
+    }
+
+    public static boolean isListTag(Element e) {
+        return HtmlTag.isListTag(e);
     }
 }

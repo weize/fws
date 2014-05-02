@@ -4,10 +4,8 @@
  */
 package edu.umass.ciir.fws.nlp;
 
-import edu.umass.ciir.fws.clist.CandidateListHtmlExtractor;
 import java.io.File;
 import java.io.IOException;
-import java.util.Stack;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -21,7 +19,7 @@ import org.jsoup.select.Elements;
  *
  * @author wkong
  */
-public class HtmlContentExtractor {
+public class HtmlContentOldExtractor {
 
     final static String[] newLineTags = {
         "article", "aside", "blockquote", "br", "caption",
@@ -30,7 +28,7 @@ public class HtmlContentExtractor {
         "option", "center", "dt", "dd", "details", "dir", "dl",
         "fieldset", "figcaption", "footer", "form", "frame", "frameset",
         "header", "hgroup", "iframe", "legend", "menu", "nav", "optgroup",
-        "pre", "section", "select", "summary", "textarea", "tfoot",
+        "pre", "section", "select", "summary", "table", "textarea", "tfoot",
         "thead"
     };
 
@@ -39,7 +37,7 @@ public class HtmlContentExtractor {
         "img", "input", "embed", "figure", "keygen", "map", "object",
         "progress", "q", "video", "span"};
 
-    final static String[] skippingTags = {"script", "noframes", "rp"};
+    final static String[] skippingTags = {"script", "noscript", "noframes", "rp"};
 
     public static String extractFromFile(String filename) throws IOException {
         File input = new File(filename);
@@ -85,90 +83,25 @@ public class HtmlContentExtractor {
     }
 
     public static void getNodeText(Node node, StringBuilder text) {
-        if (node instanceof TextNode) {
-            TextNode textNode = (TextNode) node;
-            text.append(textNode.getWholeText().replaceAll("\n", " "));
-        } else if (node instanceof Element) {
+        if (node instanceof Element) {
             Element elementNode = (Element) node;
-            String spacing = "";
             if (isSkippingTag(elementNode.tagName())) {
                 return; // skip tags such as <script>
             } else if (needNewLineTag(elementNode.tagName())) {
-                spacing = "\n";
+                text.append("\n");
             } else if (needSpaceTag(elementNode.tagName())) {
-                spacing = " ";
+                text.append(" ");
             }
-            text.append(spacing);
-            for (Node childNode : node.childNodes()) {
-                getNodeText(childNode, text);
-            }
-            text.append(spacing);
+        } else if (node instanceof TextNode) {
+            TextNode textNode = (TextNode) node;
+            text.append(textNode.getWholeText().replaceAll("\n", " "));
+            return;
         }
-    }
 
-    /**
-     * Get text for list element, which may contain nested ol, ul elements. Only
-     * get the first level text. e.g.
-     * <li> A</li>
-     * <li> 1</li>
-     * <li> 2</li>
-     * <li> B</li>
-     * <li> C</li>
-     * we'll extract {A, B, C}.
-     *
-     * @param root
-     * @return
-     */
-    public static String getHeadingText(Element root) {
-        StringBuilder text = new StringBuilder();
-        Node node = root;
-        int depth = 0;
-        Stack<String> spacings = new Stack<>();
-
-        /**
-         * there are two types of node 1) element like ul, li, a, etc 2) text
-         * node.
-         */
-        while (node != null) {
-            String spacing = "";
-            if (node instanceof TextNode) {
-                TextNode textNode = (TextNode) node;
-                text.append(textNode.text());
-            } else if (node instanceof Element) {
-                Element element = (Element) node;
-                if (CandidateListHtmlExtractor.isListTag(element)) {
-                    break;
-                } else if (isSkippingTag(element.tagName())) {
-                    node = node.nextSibling();
-                    continue;
-                } else if (needNewLineTag(element.tagName())) {
-                    spacing = "\n";
-                } else if (needSpaceTag(element.tagName())) {
-                    spacing = " ";
-                }
-                text.append(spacing);
-            }
-
-            if (node.childNodes().size() > 0) {
-                // get to the first child
-                node = node.childNode(0);
-                spacings.add(spacing);
-                depth++;
-            } else {
-                while (node.nextSibling() == null && depth > 0) {
-                    depth--;
-                    text.append(spacings.pop());
-                    node = node.parent();
-                }
-                if (node == root) {
-                    break;
-                }
-
-                // get to the next sibling
-                node = node.nextSibling();
-            }
+        for (Node childNode : node.childNodes()) {
+            getNodeText(childNode, text);
         }
-        return text.toString();
+
     }
 
     private static boolean inTagNameSet(String tagName, String[] tagSet) {

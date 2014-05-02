@@ -60,7 +60,7 @@ public class TestFn extends AppFunction {
         //testPrintTermsInDoc(p, output);
         //testHtml(p, output);
         //testCandidateListHtmlExtractor(p, output);
-        //testHtmlContentExtractor(p, output);
+        // testHtmlContentExtractor(p, output);
         //testCandidateListTextExtractor(p, output);
         // testDocument(p, output);
         //testLDA(p, output);
@@ -117,7 +117,7 @@ public class TestFn extends AppFunction {
 //        }
     }
 
-    private void testTokenizer(Parameters p, PrintStream output) {
+    private void testTokenizer(Parameters p, PrintStream output) throws IOException {
 //        String text = "U.S.A <tag> and U.S. are efe©egfe the© f©fefe abbrevation_for United States of American.\n"
 //                + "edu.umass.ciir.fws and edu.umass.cirr.galago are package pathes.\n"
 //                + "Mom's and dad's computers are34343 234 updated.\n"
@@ -136,7 +136,7 @@ public class TestFn extends AppFunction {
         output.println("\n\n================term2===========\n");
         TagTokenizer tokenizer = new TagTokenizer();
         Document doc = new Document();
-        doc.text = text;
+        doc.text = Utility.readFileToString(new File("test.html"));
         tokenizer.tokenize(doc);
         for (String token : doc.terms) {
             output.println(token);
@@ -192,7 +192,7 @@ public class TestFn extends AppFunction {
         for (Element tr : doc.getElementsByTag("tr")) {
             for (Element td : tr.children()) {
                 if (td.tagName().equalsIgnoreCase("td")) {
-                    output.println(CandidateListHtmlExtractor.getHeadingText(td));
+                    output.println(HtmlContentExtractor.getHeadingText(td));
                 }
             }
         }
@@ -240,12 +240,12 @@ public class TestFn extends AppFunction {
 //        writer.write(document.text);
 //        writer.close();
 
+        
         BufferedWriter writer = Utility.getWriter("test.txt");
-        org.jsoup.nodes.Document doc = Jsoup.parse(new File(htmlFileName), "UTF-8");
         String html = Utility.readFileToString(new File(htmlFileName));
-        String content = HtmlContentExtractor.extractFromContent(html);
+        List<String> tokens = TextProcessing.tokenize(HtmlContentExtractor.extractFromContent(html));
         //writer.write(doc.text());
-        writer.write(content);
+        writer.write(TextProcessing.join(tokens, " "));
         writer.close();
     }
 
