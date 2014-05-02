@@ -55,7 +55,7 @@ public class TestFn extends AppFunction {
 
         //testPrintHTML(p, output);
         //testNlp(output);
-        //testTokenizer(p, output);
+        testTokenizer(p, output);
         //testReplace(p, output);
         //testPrintTermsInDoc(p, output);
         //testHtml(p, output);
@@ -63,7 +63,7 @@ public class TestFn extends AppFunction {
         //testHtmlContentExtractor(p, output);
         //testCandidateListTextExtractor(p, output);
         // testDocument(p, output);
-        testLDA(p, output);
+        //testLDA(p, output);
 
     }
 
@@ -126,7 +126,7 @@ public class TestFn extends AppFunction {
 //                + "that`efe `` efe\n"
 //                + "17.1 h\n";
 
-        String text = "17.1 h";
+        String text = "All the Features of the $9.95 Plan PLUS Ph.D.";
         output.println("================term1===========\n");
         List<String> tokens = TextProcessing.tokenize(text);
         for (String token : tokens) {

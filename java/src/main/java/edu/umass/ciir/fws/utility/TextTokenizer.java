@@ -326,7 +326,7 @@ public class TextTokenizer {
                 int s = 0;
                 for (int e = 0; e < token.length(); e++) {
                     if (token.charAt(e) == '.') {
-                        if (e - s > 1) {
+                        if (e - s > 0) {
                             String subtoken = token.substring(s, e);
                             addToken(subtoken, start + s, start + e);
                         }
@@ -334,7 +334,7 @@ public class TextTokenizer {
                     }
                 }
 
-                if (token.length() - s >= 1) {
+                if (token.length() - s > 0) {
                     String subtoken = token.substring(s);
                     addToken(subtoken, start + s, end);
                 }
