@@ -298,29 +298,17 @@ public class CandidateListTextExtractor {
                 int curBegin = begins[beginI]; // beginning position of this token
                 int preEnd = ends[beginI - 1]; // ending position of previous token
 
-                if (curBegin != preEnd) { // two tokens are sperated by spaces
+                if (curBegin != preEnd || TextTokenizer.isSplitPoint(senText, curBegin)) {
                     break;
-                } else {
-                    char c1 = senText.charAt(curBegin);
-                    char c2 = senText.charAt(preEnd - 1);
-                    if (!TextTokenizer.isApostrophe(c1) && !TextTokenizer.isApostrophe(c2)) {
-                        break;
-                    }
                 }
             }
 
             for (; endI + 1 < ends.length; endI++) {
                 int curEnd = ends[endI]; // ending position of this token
-                int preBegin = begins[endI + 1]; // begining position of previous token
+                int nextBegin = begins[endI + 1]; // begining position of the next token
 
-                if (curEnd != preBegin) { // two tokens are sperated by spaces
+                if (curEnd != nextBegin || TextTokenizer.isSplitPoint(senText, nextBegin)) {
                     break;
-                } else {
-                    char c1 = senText.charAt(curEnd - 1);
-                    char c2 = senText.charAt(preBegin);
-                    if (!TextTokenizer.isApostrophe(c1) && !TextTokenizer.isApostrophe(c2)) {
-                        break;
-                    }
                 }
             }
 

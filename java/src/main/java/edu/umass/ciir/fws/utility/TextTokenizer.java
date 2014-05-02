@@ -59,7 +59,7 @@ public class TextTokenizer {
         lastSplit = -1;
     }
 
-    private boolean isSplitChar(char c) {
+    private static boolean isSplitChar(char c) {
         Matcher matcher = splitCharPattern.matcher(String.valueOf(c));
         return matcher.find();
     }
@@ -160,6 +160,53 @@ public class TextTokenizer {
     }
 
     /**
+     * If the text will be split at the position. [0, position-1], [position,
+     * size).
+     *
+     * @param text
+     * @param position
+     * @return
+     */
+    public static boolean isSplitPoint(String text, int position) {
+        if (position > 0 && position < text.length()) {
+            // text = ... c1 c2 ...
+            char c1 = text.charAt(position - 1);
+            char c2 = text.charAt(position);
+
+            if (isSplitChar(c1) || isSplitChar(c2)) {
+                // either c1, c2 is a split char then this is a split point.
+                return true;
+            } else if (c1 == '.' || c2 == '.') {
+                // if the two parts are connected by a period.
+                // Check if they are acronymConnected, meaning 
+                // they are parts of a acronym and should be connected.
+
+                // get the token that spans the period
+                int begin = position - 2;
+                for (; begin >= 0; begin--) {
+                    if (isSplitChar(text.charAt(begin))) {
+                        break;
+                    }
+                }
+                begin++;
+
+                int end = position + 1;
+                for (; end < text.length(); end++) {
+                    if (isSplitChar(text.charAt(end))) {
+                        break;
+                    }
+                }
+                return !isAcronymConnected(text.substring(begin, end));
+            } else {
+                return false;
+            }
+
+        }
+
+        return true;
+    }
+
+    /**
      * Scans through the token, removing apostrophes and converting uppercase to
      * lowercase letters.
      *
@@ -196,6 +243,38 @@ public class TextTokenizer {
         token = token.toLowerCase();
 
         return token;
+    }
+
+    /**
+     * If the token which contains a period is connected or split during
+     * tokenization. Should be consistent with tokenAcronymProcessing.
+     *
+     * @param token
+     * @return
+     */
+    private static boolean isAcronymConnected(String token) {
+        // remove start and ending periods
+        while (token.startsWith(".")) {
+            token = token.substring(1);
+        }
+
+        while (token.endsWith(".")) {
+            token = token.substring(0, token.length() - 1);
+        }
+
+        // does the token have any periods left?
+        if (token.indexOf('.') >= 0) {
+            // is this an acronym?  then there will be periods
+            // at odd positions
+            for (int pos = 1; pos < token.length(); pos += 2) {
+                if (token.charAt(pos) != '.') {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**

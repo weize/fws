@@ -67,15 +67,19 @@ public class CandidateListHtmlExtractor {
         String[] tags = {HtmlTag.UL, HtmlTag.OL, HtmlTag.SELECT};
         for (String tag : tags) {
             Elements es = htmlDoc.getElementsByTag(tag);
-            for (Element e : es) {
-                extractFromUOLSelect(e);
+            if (!isDescendantOfSkippedElement(es)) {
+                for (Element e : es) {
+                    extractFromUOLSelect(e);
+                }
             }
         }
 
         // extract from table
         Elements es = htmlDoc.getElementsByTag(HtmlTag.TABLE);
         for (Element e : es) {
-            extractFromTABLE(e);
+            if (!isDescendantOfSkippedElement(es)) {
+                extractFromTABLE(e);
+            }
         }
         return clists;
     }
@@ -190,7 +194,7 @@ public class CandidateListHtmlExtractor {
      * @param e
      */
     private void extractFromTABLE(Element e) {
-        ArrayList<ArrayList<String>> table = new ArrayList<ArrayList<String>>();
+        ArrayList<ArrayList<String>> table = new ArrayList<>();
         for (Element tr : e.getElementsByTag(HtmlTag.TR)) {
             // not: <table> <tr>
             // not: <table> <tbody> <tr>
@@ -199,10 +203,10 @@ public class CandidateListHtmlExtractor {
                 continue;
             }
 
-            ArrayList<String> row = new ArrayList<String>();
+            ArrayList<String> row = new ArrayList<>();
             for (Element td : tr.children()) {
                 if (td.tagName().equalsIgnoreCase(HtmlTag.TD)) {
-                    String text = cleanText(this.getHeadingText(td));
+                    String text = cleanText(getHeadingText(td));
                     if (text.length() == 0) {
                         continue;
                     }
@@ -245,5 +249,14 @@ public class CandidateListHtmlExtractor {
         if (clist.valid()) {
             clists.add(clist);
         }
+    }
+    
+    private boolean isDescendantOfSkippedElement(Elements element) {
+        for (Element e : element.parents()) {
+            if (HtmlContentExtractor.isSkippingTag(e.tagName())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -37,8 +37,7 @@ public class HtmlContentExtractor {
         "img", "input", "embed", "figure", "keygen", "map", "object",
         "progress", "q", "video", "span"};
 
-    //final static String[] skippingTags = {"script", "noscript", "noframes", "rp"};
-    final static String[] skippingTags = {"script"};
+    final static String[] skippingTags = {"script", "noscript", "noframes", "rp"};
 
     public static String extractFromFile(String filename) throws IOException {
         File input = new File(filename);
