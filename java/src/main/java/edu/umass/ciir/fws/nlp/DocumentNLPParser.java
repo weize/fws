@@ -47,10 +47,10 @@ public class DocumentNLPParser implements Processor<QueryDocumentName> {
         Utility.createDirectoryForFile(outputFileName);
 
         // Do not parse again if the parse file already exists
-        if (new File(outputFileName).exists()) {
-            System.err.println(String.format("Warning: file exists ", outputFileName));
-            return;
-        }
+//        if (new File(outputFileName).exists()) {
+//            System.err.println(String.format("Warning: file exists ", outputFileName));
+//            return;
+//        }
 
         String inputFileName = Utility.getDocHtmlFileName(
                 docDir, queryDocName.qid, queryDocName.docName);

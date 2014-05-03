@@ -83,6 +83,7 @@ public class NlpParseDocumentsFix extends AppFunction {
 
         stage.add(new Step(FileSource.class, p));
         stage.add(new Step(QueryFileDocumentsParser.class, parameter));
+        stage.add(new Step(QueryDocumentNameFilter.class, parameter));
         stage.add(Utility.getSorter(new QueryDocumentName.QidDocNameOrder()));
         stage.add(new OutputStep("queryDocNames"));
 
@@ -95,8 +96,7 @@ public class NlpParseDocumentsFix extends AppFunction {
         stage.addInput("queryDocNames", new QueryDocumentName.QidDocNameOrder());
 
         stage.add(new InputStep("queryDocNames"));
-        stage.add(new Step(QueryDocumentNameFilter.class, parameters));
-        stage.add(new Step(DoNonething.class, parameters));
+        stage.add(new Step(DocumentNLPParser.class, parameters));
         return stage;
     }
 
