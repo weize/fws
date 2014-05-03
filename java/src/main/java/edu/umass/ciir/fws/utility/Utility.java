@@ -206,15 +206,7 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
     }
 
     public static int compare(double one, double two) {
-        double result = one - two;
-
-        if (result > epsilon) {
-            return 1;
-        }
-        if (result < -epsilon) {
-            return -1;
-        }
-        return 0;
+        return Double.compare(one, two);
     }
 
 }
