@@ -1,6 +1,7 @@
 package edu.umass.ciir.fws.nlp;
 
 import edu.umass.ciir.fws.types.QueryDocumentName;
+import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
@@ -134,6 +135,9 @@ public class NlpParseDocumentsFix extends AppFunction {
         private boolean isSame(List<String> s1, List<String> s2) {
             if (s1.size() != s2.size()) {
                 System.err.println("Diff: size " + s1.size() + " " + s2.size());
+                System.err.println(TextProcessing.join(s1, "\n") + "\n");
+                System.err.println("----------------------------------------");
+                System.err.println(TextProcessing.join(s2, "\n") + "\n");
                 return false;
             } else {
                 for (int i = 0; i < s1.size(); i++) {
