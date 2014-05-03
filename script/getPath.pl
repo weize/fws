@@ -1,8 +1,8 @@
 use strict;
 
-my $qid = $ARGV[0];
-my $rank = $ARGV[1];
-my $type = $ARGV[2];
+my $type = $ARGV[0];
+my $qid = $ARGV[1];
+my $rank = $ARGV[2];
 
 my $rankFile = "../exp/query/query-sdm-rank";
 

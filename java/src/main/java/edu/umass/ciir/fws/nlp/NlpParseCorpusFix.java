@@ -97,11 +97,12 @@ public class NlpParseCorpusFix extends AppFunction {
     private Stage getFilterStage(Parameters parameters) {
         Stage stage = new Stage("filter");
 
-        stage.addInput("docNames", new QueryDocumentName.QidDocNameOrder());
-        stage.addOutput("docNames2", new QueryDocumentName.QidDocNameOrder());
+        stage.addInput("docNames", new DocumentName.NameOrder());
+        stage.addOutput("docNames2", new DocumentName.NameOrder());
 
         stage.add(new InputStep("docNames"));
         stage.add(new Step(DocumentNameFilter.class, parameters));
+        stage.add(Utility.getSorter(new DocumentName.NameOrder()));
         stage.add(new OutputStep("docNames2"));
         return stage;
     }
@@ -141,8 +142,8 @@ public class NlpParseCorpusFix extends AppFunction {
             System.err.println("Filtering  " + docName.name);
             Document doc = retrieval.getDocument(docName.name, new Document.DocumentComponents(true, false, false));
 
-            String contentNew = HtmlContentExtractor.extractFromFile(doc.text);
-            String contentOld = HtmlContentOldExtractor.extractFromFile(doc.text);
+            String contentNew = HtmlContentExtractor.extractFromContent(doc.text);
+            String contentOld = HtmlContentOldExtractor.extractFromContent(doc.text);
 
             List<String> sentencesNew = stanfordParser.getAndOrSentences(contentNew);
             List<String> sentencesOld = stanfordParser.getAndOrSentences(contentOld);
