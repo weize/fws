@@ -36,7 +36,7 @@ public class PlsaClusterToFacet extends ProcessQueryParametersApp {
     }
 
     @Override
-    protected String AppName() {
+    public String getName() {
         return "facet-plsa";
     }
 
@@ -107,7 +107,7 @@ public class PlsaClusterToFacet extends ProcessQueryParametersApp {
             File facetFile = new File(Utility.getPlsaFacetFileName(facetDir, qid, plsaTopicNum, plsaTermNum));
             Utility.createDirectoryForFile(facetFile);
             ScoredFacet.outputAsFacets(clusters, facetFile);
-            Utility.InfoWritten(facetFile);
+            Utility.infoWritten(facetFile);
         }
 
         @Override

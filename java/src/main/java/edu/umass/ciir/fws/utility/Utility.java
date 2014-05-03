@@ -159,6 +159,16 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         return getFileName(facetDir, qid, name);
     }
 
+    public static String getFacetFileName(List<Object> run, String qid) {
+        String facetDir = run.get(0).toString();
+        String name = String.format("%s.%s.facet", qid, parametersToFileNameString(run.subList(1, run.size())));
+        return getFileName(facetDir, qid, name);
+    }
+
+    public static String getPoolFileName(String poolDir, String qid) {
+        return getFileName(poolDir, qid + ".pool");
+    }
+
     public static String getFileName(String... parts) {
         return TextProcessing.join(parts, File.separator);
     }
@@ -169,9 +179,18 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         return TextProcessing.join(list.subList(0, last), File.separator) + "." + list.get(last);
     }
 
+    public static String parametersToFileNameString(List<Object> parameters) {
+        String str = parametersToString(parameters);
+        return str.replace('.', '_');
+    }
+
     public static String parametersToFileNameString(Object... parameters) {
         String str = parametersToString(parameters);
         return str.replace('.', '_');
+    }
+
+    public static String parametersToString(List<Object> parameters) {
+        return TextProcessing.join(parameters, "-");
     }
 
     public static String parametersToString(Object... parameters) {
@@ -182,7 +201,7 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         return parametersStr.split("-");
     }
 
-    public static void InfoWritten(File outfile) {
+    public static void infoWritten(File outfile) {
         System.err.println(String.format("Writte in %s", outfile.getAbsoluteFile()));
     }
 

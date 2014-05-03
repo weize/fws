@@ -30,7 +30,7 @@ public class ExtractCandidateLists extends ProcessQueryApp {
     }
 
     @Override
-    protected String AppName() {
+    public String getName() {
         return "extract-candidate-lists";
     }
 
@@ -83,7 +83,7 @@ public class ExtractCandidateLists extends ProcessQueryApp {
             File outfile = new File(Utility.getCandidateListRawFileName(clistDir, query.id));
             Utility.createDirectoryForFile(outfile);
             CandidateList.output(clists, outfile);
-            Utility.InfoWritten(outfile);
+            Utility.infoWritten(outfile);
         }
 
         @Override

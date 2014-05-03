@@ -29,5 +29,8 @@
 	"ldaTopicNums" : [5, 10],
 	"ldaTermNums" : [5, 10, 20],
 	"ldaIterNum" : 1000,
+	"poolDir" : "../exp/anntation/pool",
+	"poolRuns" : [["../exp/qd/facet",0.5, 3.0, 0.1], ["../exp/plsa/facet", 10, 5], ["../exp/lda/facet", 10, 5]],
+	"poolFacetTopNum": 5,
 	"topNum" : 100
 }

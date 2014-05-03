@@ -36,7 +36,7 @@ public class QdClusterToFacet extends ProcessQueryParametersApp {
     }
 
     @Override
-    protected String AppName() {
+    public String getName() {
         return "facet-qd";
     }
 
@@ -132,7 +132,7 @@ public class QdClusterToFacet extends ProcessQueryParametersApp {
             File facetFile = new File(Utility.getQdFacetFileName(facetDir, qid, distanceMax, websiteCountMin, itemRatio));
             Utility.createDirectoryForFile(facetFile);
             ScoredFacet.outputAsFacets(facets, facetFile);
-            Utility.InfoWritten(facetFile);
+            Utility.infoWritten(facetFile);
         }
 
         @Override

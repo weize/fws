@@ -34,7 +34,7 @@ public class LdaClusterItems extends ProcessQueryParametersApp {
     }
 
     @Override
-    protected String AppName() {
+    public String getName() {
         return "cluster-lda";
     }
 

@@ -16,7 +16,7 @@ public class ExtractTermFeature extends ProcessQueryApp {
     }
 
     @Override
-    protected String AppName() {
+    public String getName() {
         return "extract-term-feature";
     }
 }

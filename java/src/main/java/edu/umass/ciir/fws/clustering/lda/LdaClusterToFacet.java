@@ -37,7 +37,7 @@ public class LdaClusterToFacet extends ProcessQueryParametersApp {
     }
 
     @Override
-    protected String AppName() {
+    public String getName() {
         return "facet-lda";
     }
 
@@ -108,7 +108,7 @@ public class LdaClusterToFacet extends ProcessQueryParametersApp {
             File facetFile = new File(Utility.getLdaFacetFileName(facetDir, qid, topicNum, termNum));
             Utility.createDirectoryForFile(facetFile);
             ScoredFacet.outputAsFacets(clusters, facetFile);
-            Utility.InfoWritten(facetFile);
+            Utility.infoWritten(facetFile);
         }
 
         @Override

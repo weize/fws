@@ -45,7 +45,7 @@ public class PlsaClusterItems extends ProcessQueryParametersApp {
     }
 
     @Override
-    protected String AppName() {
+    public String getName() {
         return "cluster-plsa";
     }
 

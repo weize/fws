@@ -16,7 +16,7 @@ public class ExtractFacetFeature extends ProcessQueryApp {
     }
 
     @Override
-    protected String AppName() {
+    public String getName() {
         return "extract-facet-feature";
     }
 }

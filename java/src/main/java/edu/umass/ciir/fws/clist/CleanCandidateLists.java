@@ -28,7 +28,7 @@ public class CleanCandidateLists extends ProcessQueryApp {
     }
 
     @Override
-    protected String AppName() {
+    public String getName() {
         return "clean-candidate-lists";
     }
 
@@ -83,7 +83,7 @@ public class CleanCandidateLists extends ProcessQueryApp {
             //output
             File clistCleanFile = new File(Utility.getCandidateListCleanFileName(clistDir, query.id));
             CandidateList.output(cleanedClists, clistCleanFile);
-            Utility.InfoWritten(clistCleanFile);
+            Utility.infoWritten(clistCleanFile);
 
         }
 

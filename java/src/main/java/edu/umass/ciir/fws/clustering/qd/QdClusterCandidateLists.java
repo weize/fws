@@ -32,7 +32,7 @@ public class QdClusterCandidateLists extends ProcessQueryParametersApp {
     }
 
     @Override
-    protected String AppName() {
+    public String getName() {
         return "cluster-qd";
     }
 

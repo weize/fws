@@ -33,13 +33,8 @@ import org.lemurproject.galago.tupleflow.types.FileName;
 public abstract class ProcessQueryParametersApp extends AppFunction {
 
     @Override
-    public String getName() {
-        return AppName();
-    }
-
-    @Override
     public String getHelpString() {
-        return "fws " + AppName() + " [parameters...]\n"
+        return "fws " + getName() + " [parameters...]\n"
                 + AppFunction.getTupleFlowParameterString();
     }
 
@@ -109,12 +104,4 @@ public abstract class ProcessQueryParametersApp extends AppFunction {
      * @return
      */
     protected abstract Class getProcessClass();
-
-    /**
-     * Subclass use this function to specify the name for the app.
-     *
-     * @return
-     */
-    protected abstract String AppName();
-
 }

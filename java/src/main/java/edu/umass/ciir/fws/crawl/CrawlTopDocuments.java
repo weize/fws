@@ -47,7 +47,7 @@ public class CrawlTopDocuments extends ProcessQueryApp {
     }
 
     @Override
-    protected String AppName() {
+    public String getName() {
         return "crawl-top-documents";
     }
 

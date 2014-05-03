@@ -7,7 +7,6 @@ package edu.umass.ciir.fws.clustering;
 
 import edu.umass.ciir.fws.utility.Utility;
 
-
 /**
  *
  * @author wkong
@@ -25,7 +24,7 @@ public class ScoredItem implements Comparable<ScoredItem> {
     public ScoredItem(String scoredItemStr) {
         String[] fields = scoredItemStr.split(":");
         item = fields[0];
-        score = Double.parseDouble(fields[1]);
+        score = fields.length < 2 ? 0 : Double.parseDouble(fields[1]);
     }
 
     @Override
