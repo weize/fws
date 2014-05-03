@@ -1,13 +1,18 @@
 package edu.umass.ciir.fws.nlp;
 
+import edu.umass.ciir.fws.types.DocumentName;
 import edu.umass.ciir.fws.types.QueryDocumentName;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import org.lemurproject.galago.core.parse.Document;
+import org.lemurproject.galago.core.retrieval.Retrieval;
+import org.lemurproject.galago.core.retrieval.RetrievalFactory;
 import org.lemurproject.galago.core.tools.AppFunction;
 import org.lemurproject.galago.tupleflow.FileSource;
 import org.lemurproject.galago.tupleflow.InputClass;
@@ -25,13 +30,13 @@ import org.lemurproject.galago.tupleflow.execution.Step;
 import org.lemurproject.galago.tupleflow.execution.Verified;
 
 /**
- * Tupleflow application for parsing documents of each query
+ * Tupleflow application for parsing documents in the corpus.
  *
  * @author wkong
  */
-public class NlpParseDocumentsFix extends AppFunction {
+public class NlpParseCorpusFix extends AppFunction {
 
-    private static final String name = "fix-parse-documents";
+    private static final String name = "fix-parse-corpus";
 
     @Override
     public String getName() {
@@ -46,11 +51,9 @@ public class NlpParseDocumentsFix extends AppFunction {
 
     @Override
     public void run(Parameters p, PrintStream output) throws Exception {
-        assert (p.isString("queryFile")) : "missing input file, --input";
-        assert (p.isString("rankedListFile")) : "missing --rankedListFile";
-        assert (p.isString("topNum")) : "missing --topNum";
-        assert (p.isString("parseDir")) : "missing --parseDir";
-        assert (p.isString("docDir")) : "missing --docDir";
+        assert (p.isString("docNameFile")) : "missing input file, --docNameFile";
+        assert (p.isString("parseCorpusDir")) : "missing --parseCorpusDir";
+        assert (p.isString("index")) : "missing --index";
 
         Job job = createJob(p);
         AppFunction.runTupleFlowJob(job, p, output);
@@ -62,10 +65,10 @@ public class NlpParseDocumentsFix extends AppFunction {
 
         job.add(getSplitStage(parameters));
         job.add(getFilterStage(parameters));
-        job.add(getProcessStage(parameters));
+        job.add(getWriteStage(parameters));
 
         job.connect("split", "filter", ConnectionAssignmentType.Each);
-        job.connect("filter", "process", ConnectionAssignmentType.Each);
+        job.connect("filter", "write", ConnectionAssignmentType.Combined);
 
         return job;
     }
@@ -73,9 +76,9 @@ public class NlpParseDocumentsFix extends AppFunction {
     private Stage getSplitStage(Parameters parameter) {
         Stage stage = new Stage("split");
 
-        stage.addOutput("queryDocNames", new QueryDocumentName.QidDocNameOrder());
+        stage.addOutput("docNames", new DocumentName.NameOrder());
 
-        List<String> inputFiles = parameter.getAsList("queryFile");
+        List<String> inputFiles = parameter.getAsList("docNameFile");
 
         Parameters p = new Parameters();
         p.set("input", new ArrayList());
@@ -84,9 +87,9 @@ public class NlpParseDocumentsFix extends AppFunction {
         }
 
         stage.add(new Step(FileSource.class, p));
-        stage.add(new Step(QueryFileDocumentsParser.class, parameter));
-        stage.add(Utility.getSorter(new QueryDocumentName.QidDocNameOrder()));
-        stage.add(new OutputStep("queryDocNames"));
+        stage.add(new Step(DocumentNameFileParser.class));
+        stage.add(Utility.getSorter(new DocumentName.NameOrder()));
+        stage.add(new OutputStep("docNames"));
 
         return stage;
     }
@@ -94,55 +97,58 @@ public class NlpParseDocumentsFix extends AppFunction {
     private Stage getFilterStage(Parameters parameters) {
         Stage stage = new Stage("filter");
 
-        stage.addInput("queryDocNames", new QueryDocumentName.QidDocNameOrder());
-        stage.addOutput("queryDocNames2", new QueryDocumentName.QidDocNameOrder());
+        stage.addInput("docNames", new QueryDocumentName.QidDocNameOrder());
+        stage.addOutput("docNames2", new QueryDocumentName.QidDocNameOrder());
 
-        stage.add(new InputStep("queryDocNames"));
-        stage.add(new Step(QueryDocumentNameFilter.class, parameters));
-        stage.add(Utility.getSorter(new QueryDocumentName.QidDocNameOrder()));
-        stage.add(new OutputStep("queryDocNames2"));
+        stage.add(new InputStep("docNames"));
+        stage.add(new Step(DocumentNameFilter.class, parameters));
+        stage.add(new OutputStep("docNames2"));
         return stage;
     }
 
-    private Stage getProcessStage(Parameters parameters) {
-        Stage stage = new Stage("process");
+    private Stage getWriteStage(Parameters parameters) {
+        Stage stage = new Stage("write");
 
-        stage.addInput("queryDocNames2", new QueryDocumentName.QidDocNameOrder());
+        stage.addInput("docNames2", new DocumentName.NameOrder());
 
-        stage.add(new InputStep("queryDocNames2"));
-        stage.add(new Step(DocumentNLPParser.class, parameters));
+        stage.add(new InputStep("docNames2"));
+        stage.add(new Step(DocumentNameWriter.class, parameters));
         return stage;
     }
 
     @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.QueryDocumentName")
-    @OutputClass(className = "edu.umass.ciir.fws.types.QueryDocumentName")
-    public static class QueryDocumentNameFilter extends StandardStep<QueryDocumentName, QueryDocumentName> {
+    @InputClass(className = "edu.umass.ciir.fws.types.DocumentName")
+    @OutputClass(className = "edu.umass.ciir.fws.types.DocumentName")
+    public static class DocumentNameFilter extends StandardStep<DocumentName, DocumentName> {
 
         StanfordCoreNLPParser stanfordParser;
         String parseDir;
         String docDir;
 
-        public QueryDocumentNameFilter(TupleFlowParameters parameters) throws IOException {
-            Parameters p = parameters.getJSON();
+        Parameters parameters;
+        String parseCorpusDir;
+        Retrieval retrieval;
+
+        public DocumentNameFilter(TupleFlowParameters parameters) throws Exception {
+            this.parameters = parameters.getJSON();
             stanfordParser = new StanfordCoreNLPParser();
-            parseDir = p.getString("parseDir");
-            docDir = p.getString("docDir");
+            parseCorpusDir = this.parameters.getString("parseCorpusDir");
+            retrieval = RetrievalFactory.instance(this.parameters);
         }
 
         @Override
-        public void process(QueryDocumentName queryDocName) throws IOException {
-            String inputFileName = Utility.getDocHtmlFileName(
-                    docDir, queryDocName.qid, queryDocName.docName);
-            System.err.println("Filtering " + inputFileName);
-            String contentNew = HtmlContentExtractor.extractFromFile(inputFileName);
-            String contentOld = HtmlContentOldExtractor.extractFromFile(inputFileName);
+        public void process(DocumentName docName) throws IOException {
+            System.err.println("Filtering  " + docName.name);
+            Document doc = retrieval.getDocument(docName.name, new Document.DocumentComponents(true, false, false));
+
+            String contentNew = HtmlContentExtractor.extractFromFile(doc.text);
+            String contentOld = HtmlContentOldExtractor.extractFromFile(doc.text);
 
             List<String> sentencesNew = stanfordParser.getAndOrSentences(contentNew);
             List<String> sentencesOld = stanfordParser.getAndOrSentences(contentOld);
 
             if (!isSame(sentencesNew, sentencesOld)) {
-                processor.process(queryDocName);
+                processor.process(docName);
             }
         }
 
@@ -166,17 +172,27 @@ public class NlpParseDocumentsFix extends AppFunction {
             }
         }
     }
-
+    
     @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.QueryDocumentName")
-    public static class DoNonething implements Processor<QueryDocumentName> {
+    @InputClass(className = "edu.umass.ciir.fws.types.DocumentName")
+    public static class DocumentNameWriter implements Processor<DocumentName> {
+        String docNameFixFile = "../data/doc-name/doc-name-fix";
+        BufferedWriter writer;
+        
+        public DocumentNameWriter(TupleFlowParameters parameters) throws IOException {
+            writer = Utility.getWriter(docNameFixFile);   
+        }
+
+        @Override
+        public void process(DocumentName documentName) throws IOException {
+            writer.write(documentName.name);
+            writer.newLine();
+        }
 
         @Override
         public void close() throws IOException {
+            writer.close();
         }
-
-        @Override
-        public void process(QueryDocumentName queryDocumentName) throws IOException {
-        }
+        
     }
 }
