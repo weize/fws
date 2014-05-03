@@ -163,6 +163,11 @@ public class QdFacetFeaturesExtractor implements Processor<Query> {
         ArrayList<String> joinSites = new ArrayList<>();
         HashSet<String> curSites = new HashSet<>();
 
+        HashMap<Long, Document> docMap = new HashMap<>();
+        for (Document doc : docs) {
+            docMap.put(doc.rank, doc);
+        }
+
         for (FacetFeatures ff : facetFeatures) {
             // set len 
             int len = ff.items.length;
@@ -197,6 +202,13 @@ public class QdFacetFeaturesExtractor implements Processor<Query> {
                 }
             }
 
+            // a hack to deal with a bug:
+            // for text candidate lists, the list item may not be found
+            // in the original document, due to the difference in tokenization
+            // of stanford parsing, and Galago.
+            String originalSite = docMap.get(ff.docRank).site;
+            joinSites.add(originalSite);
+            
             ff.sites = joinSites.toArray(new String[0]);
 
             sdoc /= (double) len;
