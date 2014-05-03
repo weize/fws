@@ -57,13 +57,11 @@ public class StanfordCoreNLPParser {
     public void parse(String text, String outputFileName) throws IOException {
         // Need to first split sentence
         writer = Utility.getWriter(outputFileName);
-        String[] sentences = splitSentences(text);
+        List<String> sentences = getAndOrSentences(text);
         for (String sen : sentences) {
             // only parse potential setences (sentences that contains "and" or "or"
             // writer.write("\nsentence:\n" + sen + "\n\n");
-            if (CandidateListTextExtractor.containsAndOr(sen)) {
-                prasePerSentence(sen);
-            }
+            prasePerSentence(sen);
         }
         writer.close();
 
@@ -114,7 +112,6 @@ public class StanfordCoreNLPParser {
 //            }
 //            writer.write(tokens.get(tokens.size() - 1).get(CoreAnnotations.PartOfSpeechAnnotation.class));
 //            writer.write("\n");
-
             // begin positions in the original sentence of each tokens
             for (int i = 0; i < tokens.size() - 1; i++) {
                 writer.write(tokens.get(i).beginPosition() + "\t");
@@ -174,7 +171,7 @@ public class StanfordCoreNLPParser {
      * @param text
      * @return
      */
-    private String[] splitSentences(String text) {
+    private List<String> splitSentences(String text) {
         Annotation document = new Annotation(text);
 
         pipelineSsplit.annotate(document);
@@ -195,6 +192,16 @@ public class StanfordCoreNLPParser {
                 System.err.println("Warning: sentence too long :" + senText);
             }
         }
-        return sentencesText.toArray(new String[0]);
+        return sentencesText;
+    }
+
+    public List<String> getAndOrSentences(String text) {
+        ArrayList<String> sentences = new ArrayList<>();
+        for (String sentence : splitSentences(text)) {
+            if (CandidateListTextExtractor.containsAndOr(sentence)) {
+                sentences.add(sentence);
+            }
+        }
+        return sentences;
     }
 }
