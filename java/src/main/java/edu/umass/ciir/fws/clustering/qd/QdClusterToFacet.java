@@ -106,7 +106,7 @@ public class QdClusterToFacet extends ProcessQueryParametersApp {
             // load clusters
             String clusterFileName = Utility.getQdClusterFileName(clusterDir, qid, distanceMax, websiteCountMin);
             BufferedReader reader = Utility.getReader(clusterFileName);
-            
+
             String line;
             ArrayList<ScoredFacet> facets = new ArrayList<>();
             while ((line = reader.readLine()) != null) {
@@ -119,7 +119,7 @@ public class QdClusterToFacet extends ProcessQueryParametersApp {
                 ArrayList<ScoredItem> items = new ArrayList<>();
                 for (String scoredItemStr : facetTermList.split("\\|")) {
                     ScoredItem scoredItem = new ScoredItem(scoredItemStr);
-                    if (scoredItem.score > threshold) {
+                    if (scoredItem.score > 1 && scoredItem.score > threshold) {
                         items.add(scoredItem);
                     }
                 }
