@@ -82,9 +82,12 @@ public class PoolFacets extends ProcessQueryApp {
             for (int i = 0; i < facetTopNum; i++) {
                 Collections.shuffle(listIndice);
                 for (Integer index : listIndice) {
-                    ScoredFacet facet = facetsList.get(index).get(i);
-                    facet.score = 1;
-                    pool.add(facet);
+                    List<ScoredFacet> facets = facetsList.get(index);
+                    if (i < facets.size()) {
+                        ScoredFacet facet = facets.get(i);
+                        facet.score = 1;
+                        pool.add(facet);
+                    }
                 }
             }
 
