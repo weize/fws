@@ -48,10 +48,10 @@ public class DocumentCorpusNLPParser implements Processor<DocumentName> {
         Utility.createDirectoryForFile(outputFileName);
 
         // Do not parse again if the parse file already exists
-        if (new File(outputFileName).exists()) {
-            System.err.println(String.format("Warning: file exists ", outputFileName));
-            return;
-        }
+        //if (new File(outputFileName).exists()) {
+        //    System.err.println(String.format("Warning: file exists ", outputFileName));
+        //    return;
+        //}
 
         Document doc = retrieval.getDocument(docName.name, new DocumentComponents(true, false, false));
         String content = HtmlContentExtractor.extractFromContent(doc.text);

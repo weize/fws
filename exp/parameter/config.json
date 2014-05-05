@@ -7,7 +7,7 @@
 	"docDir" : "../exp/doc",
 	"parseDir" : "../exp/parse",
 	"parseCorpusDir" : "../data/parse",
-	"docNameFile" : "../data/doc-name/query-200-sdm-rank.top10000.docname",
+	"docNameFile" : "../data/doc-name/query-200-sdm-rank.top10000.fix.docname",
 	"clueDfFile" : "../data/df/clueDf.gz",
 	"clueDfOldFile" : "../data/df/clueDf.gz",
 	"clueCdf" : 33836981,
@@ -30,7 +30,7 @@
 	"ldaTermNums" : [5, 10, 20],
 	"ldaIterNum" : 1000,
 	"poolDir" : "../exp/anntation/pool",
-	"poolRuns" : [["../exp/qd/facet",0.5, 3.0, 0.1], ["../exp/plsa/facet", 10, 5], ["../exp/lda/facet", 10, 5]],
-	"poolFacetTopNum": 5,
+	"poolRuns" : [["../exp/qd/facet",0.6, 3.0, 0.1], ["../exp/plsa/facet", 10, 10], ["../exp/lda/facet", 10, 10]],
+	"poolFacetTopNum": 10,
 	"topNum" : 100
 }
