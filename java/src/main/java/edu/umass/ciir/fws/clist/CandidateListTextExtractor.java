@@ -32,7 +32,14 @@ public class CandidateListTextExtractor {
         clists = new ArrayList<>();
     }
 
-    public List<CandidateList> extract(Document document, Query query, String parseFileContent) {
+    public List<CandidateList> extract(String parseFileContent, long docRank, String queryID) {
+        Document doc = new Document();
+        doc.rank = docRank;
+        Query q = new Query(queryID, "");
+        return extract(parseFileContent, doc, q);
+    }
+
+    public List<CandidateList> extract(String parseFileContent, Document document, Query query) {
         this.clists.clear();
         this.query = query;
         this.document = document;

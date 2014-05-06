@@ -49,6 +49,14 @@ public class CandidateListHtmlExtractor {
         clists = new ArrayList<>();
     }
 
+    public List<CandidateList> extract(String docHtml, long docRank, String queryID) {
+        Document doc = new Document();
+        doc.html = docHtml;
+        doc.rank = docRank;
+        Query q = new Query(queryID, "");
+        return extract(doc, q);
+    }
+
     public List<CandidateList> extract(Document document, Query query) {
         this.clists.clear();
         this.query = query;

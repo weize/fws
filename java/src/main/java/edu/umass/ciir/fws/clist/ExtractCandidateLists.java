@@ -77,7 +77,7 @@ public class ExtractCandidateLists extends ProcessQueryApp {
                 String parseFileName = Utility.getParsedDocFileName(parseDir, query.id, doc.name);
                 String parseFileContent = Utility.readFileToString(new File(parseFileName));
                 System.err.println("Processing " + parseFileName);
-                clists.addAll(cListTextExtractor.extract(doc, query, parseFileContent));
+                clists.addAll(cListTextExtractor.extract(parseFileContent, doc, query));
                 System.err.println("Done processing " + parseFileName);
             }
             File outfile = new File(Utility.getCandidateListRawFileName(clistDir, query.id));

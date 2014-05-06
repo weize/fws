@@ -261,7 +261,7 @@ public class TestFn extends AppFunction {
 
         CandidateListTextExtractor extractor = new CandidateListTextExtractor();
         String content = Utility.readFileToString(new File("test.parse"));
-        List<CandidateList> clists = extractor.extract(new edu.umass.ciir.fws.crawl.Document(), new Query("a", "b"), content);
+        List<CandidateList> clists = extractor.extract(content, new edu.umass.ciir.fws.crawl.Document(), new Query("a", "b"));
         for (CandidateList clist : clists) {
             output.println(clist);
         }
