@@ -1,8 +1,10 @@
 package edu.umass.ciir.fws.clist;
 
 import edu.umass.ciir.fws.nlp.*;
+import edu.umass.ciir.fws.types.CandidateList;
 import edu.umass.ciir.fws.types.DocumentName;
 import edu.umass.ciir.fws.utility.Utility;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -14,8 +16,10 @@ import org.lemurproject.galago.core.retrieval.RetrievalFactory;
 import org.lemurproject.galago.core.tools.AppFunction;
 import org.lemurproject.galago.tupleflow.FileSource;
 import org.lemurproject.galago.tupleflow.InputClass;
+import org.lemurproject.galago.tupleflow.OutputClass;
 import org.lemurproject.galago.tupleflow.Parameters;
 import org.lemurproject.galago.tupleflow.Processor;
+import org.lemurproject.galago.tupleflow.StandardStep;
 import org.lemurproject.galago.tupleflow.TupleFlowParameters;
 import org.lemurproject.galago.tupleflow.execution.ConnectionAssignmentType;
 import org.lemurproject.galago.tupleflow.execution.InputStep;
@@ -56,8 +60,10 @@ public class ExtractCandidateListCorpus extends AppFunction {
 
         job.add(getSplitStage(parameters));
         job.add(getProcessStage(parameters));
+        job.add(getWriteStage(parameters));
 
         job.connect("split", "process", ConnectionAssignmentType.Each);
+        job.connect("process", "write", ConnectionAssignmentType.Combined);
 
         return job;
     }
@@ -87,9 +93,21 @@ public class ExtractCandidateListCorpus extends AppFunction {
         Stage stage = new Stage("process");
 
         stage.addInput("docNames", new DocumentName.NameOrder());
+        stage.addOutput("clists", new CandidateList.QidDocRankDocNameListTypeItemListOrder());
 
         stage.add(new InputStep("docNames"));
         stage.add(new Step(DocumentCorpusNLPParser.class, parameters));
+        stage.add(Utility.getSorter(new CandidateList.QidDocRankDocNameListTypeItemListOrder()));
+        stage.add(new OutputStep("clists"));
+        return stage;
+    }
+
+    private Stage getWriteStage(Parameters parameters) {
+        Stage stage = new Stage("write");
+        stage.addInput("clists", new CandidateList.QidDocRankDocNameListTypeItemListOrder());
+
+        stage.add(new InputStep("clists"));
+        stage.add(new Step(CandidateListCorpusWriter.class, parameters));
         return stage;
     }
 
@@ -98,19 +116,77 @@ public class ExtractCandidateListCorpus extends AppFunction {
      * extract candidate lists.
      */
     @Verified
+    @InputClass(className = "edu.umass.ciir.fws.types.CandidateList", order = {"+qid", "+docRank", "+docName", "+listType", "+itemList"})
+    public static class CandidateListCorpusWriter implements Processor<CandidateList> {
+
+        CandidateList lastClist;
+        CandidateList curClist;
+        String fileName;
+        String clistCorpusDir;
+        BufferedWriter writer;
+
+        public CandidateListCorpusWriter(TupleFlowParameters parameters) {
+            Parameters p = parameters.getJSON();
+            clistCorpusDir = p.getString("clistCorpusDir");
+            lastClist = null;
+        }
+
+        @Override
+        public void process(CandidateList clist) throws IOException {
+            curClist = clist;
+            if (lastClist == null) {
+                newWriter();
+                writeClist();
+            } else {
+                if (inSameFile()) {
+
+                } else {
+                    writer.close();
+                }
+            }
+        }
+
+        @Override
+        public void close() throws IOException {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        private void newWriter() throws IOException {
+            fileName = Utility.getCorpusCandidateListFileName(clistCorpusDir, curClist.docName);
+            writer = Utility.getGzipWriter(fileName);
+        }
+
+        private boolean inSameFile() {
+            //String fileName2 = Utility.getCorpusCandidateListFileName(clistCorpusDir, clist.docName)
+            return false;
+        }
+
+        private void writeClist() throws IOException {
+            writer.write(curClist.toString());
+            writer.newLine();
+        }
+
+    }
+
+    /**
+     * Candidate lists extractor that will be called by Tupleflow jobs to
+     * extract candidate lists.
+     */
+    @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.DocumentName")
-    public static class CandidateListCorpusExtractor implements Processor<DocumentName> {
+    @OutputClass(className = "edu.umass.ciir.fws.types.CandidateList")
+    public static class CandidateListCorpusExtractor extends StandardStep<DocumentName, CandidateList> {
 
         CandidateListHtmlExtractor cListHtmlExtractor;
         CandidateListTextExtractor cListTextExtractor;
         String parseCorpusDir;
         Retrieval retrieval;
-        String clistCorpusDir;
+        final static long docRank = 0; // dummy docRank
+        final static String qid = "0"; // dummy qid
 
         public CandidateListCorpusExtractor(TupleFlowParameters parameters) throws Exception {
             Parameters p = parameters.getJSON();
             parseCorpusDir = p.getString("parseCorpusDir");
-            clistCorpusDir = p.getString("clistCorpusDir");
             retrieval = RetrievalFactory.instance(p);
             cListHtmlExtractor = new CandidateListHtmlExtractor();
             cListTextExtractor = new CandidateListTextExtractor();
@@ -120,27 +196,20 @@ public class ExtractCandidateListCorpus extends AppFunction {
         public void process(DocumentName docName) throws IOException {
             System.err.println("processing " + docName.name);
 
-            ArrayList<CandidateList> clists = new ArrayList<>();
-
             // extract by html patterns
             Document doc = retrieval.getDocument(docName.name, new Document.DocumentComponents(true, false, false));
-            clists.addAll(cListHtmlExtractor.extract(doc.text, 0, "0")); // dummy docRank and qid
+            for (edu.umass.ciir.fws.clist.CandidateList clist : cListHtmlExtractor.extract(doc.text, docRank, docName.name, qid)) {
+                processor.process(new CandidateList(clist.qid, clist.docRank, clist.docName, clist.listType, clist.itemList));
+            }
             System.err.println("Done html");
 
             // extract by text patterns
             String parseFileName = Utility.getParsedCorpusDocFileName(parseCorpusDir, docName.name);
             String parseFileContent = Utility.readFileToString(new File(parseFileName));
-            clists.addAll(cListTextExtractor.extract(parseFileContent, 0, "0"));
+            for (edu.umass.ciir.fws.clist.CandidateList clist : cListTextExtractor.extract(parseFileContent, docRank, docName.name, qid)) {
+                processor.process(new CandidateList(clist.qid, clist.docRank, clist.docName, clist.listType, clist.itemList));
+            }
             System.err.println("Done text");
-
-            File outfile = new File(Utility.getCandidateListRawFileName(clistCorpusDir, query.id));
-            edu.umass.ciir.fws.utility.Utility.createDirectoryForFile(outfile);
-            CandidateList.output(clists, outfile);
-            edu.umass.ciir.fws.utility.Utility.infoWritten(outfile);
-        }
-
-        @Override
-        public void close() throws IOException {
         }
     }
 

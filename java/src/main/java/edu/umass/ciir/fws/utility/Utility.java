@@ -121,6 +121,14 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         return getFileNameWithSuffix(corpusDocDir, subDirNames[1], subDirNames[2], docName, "parse.gz");
     }
 
+    public static String getCorpusCandidateListFileName(String clistCorpusDir, String docName) {
+        //clueweb09-en0009-30-02610
+        //<clistCorpusDir>/en0009/clueweb09-en0009-30.clist.gz
+        String[] subDirNames = docName.split("-");
+        String name = String.format("%s-%s-%s.clist.gz", subDirNames[0],subDirNames[1], subDirNames[2]);
+        return getFileName(clistCorpusDir, subDirNames[1], name);
+    }
+
     public static String getTermFeatureFileName(String featureDir, String qid) {
         return getFileNameWithSuffix(featureDir, qid, "t.feature");
     }

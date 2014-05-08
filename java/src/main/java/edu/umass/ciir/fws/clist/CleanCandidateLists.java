@@ -76,7 +76,7 @@ public class CleanCandidateLists extends ProcessQueryApp {
 
                 if (isValidItemList(itemsCleaned)) {
                     cleanedClists.add(new CandidateList(
-                            clist.qid, clist.docRank, clist.listType, itemsCleaned));
+                            clist.qid, clist.docRank, clist.docName, clist.listType, itemsCleaned));
                 }
             }
 

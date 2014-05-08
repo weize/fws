@@ -42,7 +42,7 @@ public class CandidateListParser extends StandardStep<Query, edu.umass.ciir.fws.
 
         for (CandidateList clist : clists) {
             processor.process(new edu.umass.ciir.fws.types.CandidateList(clist.qid,
-                    clist.docRank, clist.listType, clist.itemList));
+                    clist.docRank, clist.docName, clist.listType, clist.itemList));
         }
     }
 }

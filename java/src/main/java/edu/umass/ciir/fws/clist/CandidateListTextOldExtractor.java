@@ -149,7 +149,7 @@ public class CandidateListTextOldExtractor {
             }
 
             CandidateList clist = new CandidateList(query.id,
-                    document.rank, type, items);
+                    document.rank, document.name, type, items);
             if (clist.valid()) {
                 clists.add(clist);
             }

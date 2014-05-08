@@ -21,6 +21,7 @@ public class CandidateList {
 
     public String qid;
     public long docRank;
+    public String docName;
     public String listType;
     public String itemList;
     public String[] items; // candidate list items
@@ -30,28 +31,26 @@ public class CandidateList {
 
     }
 
-    public CandidateList(String qid, long docRank, String listType, List<String> items) {
+    public CandidateList(String qid, long docRank, String docName, String listType, List<String> items) {
         this.qid = qid;
         this.docRank = docRank;
+        this.docName = docName;
         this.listType = listType;
         this.items = items.toArray(new String[0]);
         this.itemList = joinItemList(items);
     }
 
-    public CandidateList(String qid, long docRank, String listType, String itemList) {
+    public CandidateList(String qid, long docRank, String docName, String listType, String itemList) {
         this.qid = qid;
         this.docRank = docRank;
+        this.docName = docName;
         this.listType = listType;
         this.items = splitItemList(itemList);
         this.itemList = itemList;
     }
 
     public boolean valid() {
-        if (items.length > 1) {
-            return true;
-        } else {
-            return false;
-        }
+        return items.length > 1;
     }
 
     /**
@@ -69,7 +68,7 @@ public class CandidateList {
 
     @Override
     public String toString() {
-        return String.format("%s\t%s\t%s\t%s", qid, docRank, listType, itemList);
+        return String.format("%s\t%d\t%s\t%s\t%s", qid, docRank, docName, listType, itemList);
     }
 
     public static void output(List<CandidateList> clists, File file) throws IOException {
@@ -87,9 +86,10 @@ public class CandidateList {
             String[] fields = line.split("\t");
             String qid = fields[0];
             long docRank = Long.parseLong(fields[1]);
-            String listType = fields[2];
-            String itemList = fields[3];
-            clist.add(new CandidateList(qid, docRank, listType, itemList));
+            String docName = fields[2];
+            String listType = fields[3];
+            String itemList = fields[4];
+            clist.add(new CandidateList(qid, docRank, docName, listType, itemList));
         }
         return clist;
     }
@@ -101,10 +101,11 @@ public class CandidateList {
             String[] fields = line.split("\t");
             String qid = fields[0];
             long docRank = Long.parseLong(fields[1]);
-            String listType = fields[2];
-            String itemList = fields[3];
+            String docName = fields[2];
+            String listType = fields[3];
+            String itemList = fields[4];
             if (docRank <= topNum) {
-                clist.add(new CandidateList(qid, docRank, listType, itemList));
+                clist.add(new CandidateList(qid, docRank, docName, listType, itemList));
             }
         }
         return clist;

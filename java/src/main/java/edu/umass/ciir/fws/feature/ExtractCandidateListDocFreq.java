@@ -66,7 +66,7 @@ public class ExtractCandidateListDocFreq extends AppFunction {
     private Stage getSplitStage(Parameters parameter) {
         Stage stage = new Stage("split");
 
-        stage.addOutput("clists", new CandidateList.QidDocRankListTypeItemListOrder());
+        stage.addOutput("clists", new CandidateList.QidDocRankDocNameListTypeItemListOrder());
 
         List<String> inputFiles = parameter.getAsList("queryFile");
 
@@ -80,7 +80,7 @@ public class ExtractCandidateListDocFreq extends AppFunction {
         stage.add(new Step(QueryFileParser.class));
         parameter.set("suffix", "clean.clist");
         stage.add(new Step(CandidateListParser.class, parameter));
-        stage.add(Utility.getSorter(new CandidateList.QidDocRankListTypeItemListOrder()));
+        stage.add(Utility.getSorter(new CandidateList.QidDocRankDocNameListTypeItemListOrder()));
         stage.add(new OutputStep("clists"));
 
         return stage;
@@ -89,7 +89,7 @@ public class ExtractCandidateListDocFreq extends AppFunction {
     private Stage getWriteStage(Parameters parameters) {
         Stage stage = new Stage("write");
 
-        stage.addInput("clists", new CandidateList.QidDocRankListTypeItemListOrder());
+        stage.addInput("clists", new CandidateList.QidDocRankDocNameListTypeItemListOrder());
 
         stage.add(new InputStep("clists"));
         stage.add(new Step(CandidateListDocFreqWriter.class, parameters));

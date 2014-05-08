@@ -49,10 +49,11 @@ public class CandidateListHtmlExtractor {
         clists = new ArrayList<>();
     }
 
-    public List<CandidateList> extract(String docHtml, long docRank, String queryID) {
+    public List<CandidateList> extract(String docHtml, long docRank, String docName, String queryID) {
         Document doc = new Document();
         doc.html = docHtml;
         doc.rank = docRank;
+        doc.name = docName;
         Query q = new Query(queryID, "");
         return extract(doc, q);
     }
@@ -186,7 +187,7 @@ public class CandidateListHtmlExtractor {
     }
 
     private void addCandidateList(String type, List<String> items) {
-        CandidateList clist = new CandidateList(query.id, document.rank, type,
+        CandidateList clist = new CandidateList(query.id, document.rank, document.name, type,
                 items);
         if (clist.valid()) {
             clists.add(clist);
