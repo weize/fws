@@ -3,8 +3,9 @@ package edu.umass.ciir.fws.types;
 type CandidateList {
 	String qid;
 	long docRank;
+        String docName;
         String listType;
         String itemList;
 	
-	order: +qid +docRank +listType +itemList;
+	order: +qid +docRank +docName +listType +itemList;
 }
