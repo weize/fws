@@ -149,7 +149,7 @@ public class CheckNlpParseCorpus extends AppFunction {
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.DocumentName", order = {"+name"})
     @OutputClass(className = "edu.umass.ciir.fws.types.DocumentName", order = {"+name"})
-    public static abstract class CheckParsedDocument extends StandardStep<DocumentName, DocumentName> {
+    public static class CheckParsedDocument extends StandardStep<DocumentName, DocumentName> {
 
         String parseCorpusDir;
         Retrieval retrieval;
