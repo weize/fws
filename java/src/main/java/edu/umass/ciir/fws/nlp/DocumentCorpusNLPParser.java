@@ -26,7 +26,7 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
  * @author wkong
  */
 @Verified
-@InputClass(className = "edu.umass.ciir.fws.types.DocumentName")
+@InputClass(className = "edu.umass.ciir.fws.types.TfDocumentName")
 public class DocumentCorpusNLPParser implements Processor<TfDocumentName> {
 
     Parameters parameters;

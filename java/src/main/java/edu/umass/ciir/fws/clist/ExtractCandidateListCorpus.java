@@ -116,7 +116,7 @@ public class ExtractCandidateListCorpus extends AppFunction {
      * extract candidate lists.
      */
     @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.CandidateList", order = {"+qid", "+docRank", "+docName", "+listType", "+itemList"})
+    @InputClass(className = "edu.umass.ciir.fws.types.TfCandidateList", order = {"+qid", "+docRank", "+docName", "+listType", "+itemList"})
     public static class CandidateListCorpusWriter implements Processor<TfCandidateList> {
 
         String fileName; // current filename
@@ -169,8 +169,8 @@ public class ExtractCandidateListCorpus extends AppFunction {
      * extract candidate lists.
      */
     @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.DocumentName")
-    @OutputClass(className = "edu.umass.ciir.fws.types.CandidateList")
+    @InputClass(className = "edu.umass.ciir.fws.types.TfDocumentName")
+    @OutputClass(className = "edu.umass.ciir.fws.types.TfCandidateList")
     public static class CandidateListCorpusExtractor extends StandardStep<TfDocumentName, TfCandidateList> {
 
         CandidateListHtmlExtractor cListHtmlExtractor;

@@ -23,8 +23,8 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
  * @author wkong
  */
 @Verified
-@InputClass(className = "edu.umass.ciir.fws.types.Query")
-@OutputClass(className = "edu.umass.ciir.fws.types.CandidateList")
+@InputClass(className = "edu.umass.ciir.fws.types.TfQuery")
+@OutputClass(className = "edu.umass.ciir.fws.types.TfCandidateList")
 public class CandidateListParser extends StandardStep<TfQuery, edu.umass.ciir.fws.types.TfCandidateList> {
 
     String clistDir;

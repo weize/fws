@@ -35,7 +35,7 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
  * @author wkong
  */
 @Verified
-@InputClass(className = "edu.umass.ciir.fws.types.Query")
+@InputClass(className = "edu.umass.ciir.fws.types.TfQuery")
 public class TermFeaturesExtractor implements Processor<TfQuery> {
 
     final static double LOG2BASE = Math.log(2);

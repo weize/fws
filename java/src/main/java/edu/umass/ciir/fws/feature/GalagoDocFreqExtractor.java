@@ -26,8 +26,8 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
  * @author wkong
  */
 @Verified
-@InputClass(className = "edu.umass.ciir.fws.types.Term", order = {"+term"})
-@OutputClass(className = "edu.umass.ciir.fws.types.TermCount", order = {"+term"})
+@InputClass(className = "edu.umass.ciir.fws.types.TfTerm", order = {"+term"})
+@OutputClass(className = "edu.umass.ciir.fws.types.TfTermCount", order = {"+term"})
 public class GalagoDocFreqExtractor extends StandardStep<TfTerm, TfTermCount> {
 
     Retrieval retrieval;

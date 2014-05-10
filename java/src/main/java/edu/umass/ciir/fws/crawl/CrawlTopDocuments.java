@@ -58,7 +58,7 @@ public class CrawlTopDocuments extends ProcessQueryApp {
      * @author wkong
      */
     @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.Query")
+    @InputClass(className = "edu.umass.ciir.fws.types.TfQuery")
     public static class TopDocumentsWriter implements Processor<TfQuery> {
 
         Retrieval retrieval;

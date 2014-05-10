@@ -39,7 +39,7 @@ public class ExtractCandidateLists extends ProcessQueryApp {
      * extract candidate lists.
      */
     @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.Query")
+    @InputClass(className = "edu.umass.ciir.fws.types.TfQuery")
     public static class CandidateListExtractor implements Processor<TfQuery> {
 
         QuerySetResults querySetResults;

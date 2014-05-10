@@ -39,7 +39,7 @@ public class PoolFacets extends ProcessQueryApp {
     }
 
     @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.Query")
+    @InputClass(className = "edu.umass.ciir.fws.types.TfQuery")
     public static class FacetPooler implements Processor<TfQuery> {
 
         String poolDir;

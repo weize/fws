@@ -21,7 +21,7 @@ import org.lemurproject.galago.tupleflow.types.FileName;
  */
 @Verified
 @InputClass(className = "org.lemurproject.galago.tupleflow.types.FileName")
-@OutputClass(className = "edu.umass.ciir.fws.types.Query")
+@OutputClass(className = "edu.umass.ciir.fws.types.TfQuery")
 public class QueryFileParser extends StandardStep<FileName, TfQuery> {
 
     @Override

@@ -115,8 +115,8 @@ public class NlpParseDocumentsFix extends AppFunction {
     }
 
     @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.QueryDocumentName")
-    @OutputClass(className = "edu.umass.ciir.fws.types.QueryDocumentName")
+    @InputClass(className = "edu.umass.ciir.fws.types.TfQueryDocumentName")
+    @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryDocumentName")
     public static class QueryDocumentNameFilter extends StandardStep<TfQueryDocumentName, TfQueryDocumentName> {
 
         StanfordCoreNLPParser stanfordParser;
@@ -168,7 +168,7 @@ public class NlpParseDocumentsFix extends AppFunction {
     }
 
     @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.QueryDocumentName")
+    @InputClass(className = "edu.umass.ciir.fws.types.TfQueryDocumentName")
     public static class DoNonething implements Processor<TfQueryDocumentName> {
 
         @Override

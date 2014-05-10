@@ -20,7 +20,7 @@ import org.lemurproject.galago.tupleflow.types.FileName;
  */
 @Verified
 @InputClass(className = "org.lemurproject.galago.tupleflow.types.FileName")
-@OutputClass(className = "edu.umass.ciir.fws.types.DocumentName")
+@OutputClass(className = "edu.umass.ciir.fws.types.TfDocumentName")
 public class DocumentNameFileParser extends StandardStep<FileName, TfDocumentName> {
 
     @Override

@@ -23,7 +23,7 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
  * @author wkong
  */
 @Verified
-@InputClass(className = "edu.umass.ciir.fws.types.CandidateList")
+@InputClass(className = "edu.umass.ciir.fws.types.TfCandidateList")
 public class CandidateListDocFreqWriter implements Processor<TfCandidateList> {
 
     private static final int _queryDF = 0;

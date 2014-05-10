@@ -25,7 +25,7 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
  * @author wkong
  */
 @Verified
-@InputClass(className = "edu.umass.ciir.fws.types.QueryParameters")
+@InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
 public class QueryDimensionClusterers implements Processor<TfQueryParameters> {
 
     boolean debug = false;

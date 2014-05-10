@@ -38,7 +38,7 @@ public class CleanCandidateLists extends ProcessQueryApp {
      * @author wkong
      */
     @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.Query")
+    @InputClass(className = "edu.umass.ciir.fws.types.TfQuery")
     public static class CandidateListCleaner implements Processor<TfQuery> {
 
         Set<String> stopwords = new HashSet<>();

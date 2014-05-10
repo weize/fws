@@ -44,8 +44,8 @@ public class PlsaClusterToFacet extends ProcessQueryParametersApp {
      * generate parameters
      */
     @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.Query")
-    @OutputClass(className = "edu.umass.ciir.fws.types.QueryParameters")
+    @InputClass(className = "edu.umass.ciir.fws.types.TfQuery")
+    @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
     public static class GeneratePlsaFacetParameters extends StandardStep<TfQuery, TfQueryParameters> {
 
         List<Long> plsaTopicNums;
@@ -75,7 +75,7 @@ public class PlsaClusterToFacet extends ProcessQueryParametersApp {
      * Use first terms in the cluster as facet terms.
      */
     @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.QueryParameters")
+    @InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
     public static class PlsaClusterToFacetConverter implements Processor<TfQueryParameters> {
 
         String facetDir;

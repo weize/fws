@@ -43,8 +43,8 @@ public class LdaClusterItems extends ProcessQueryParametersApp {
      * @author wkong
      */
     @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.Query")
-    @OutputClass(className = "edu.umass.ciir.fws.types.QueryParameters")
+    @InputClass(className = "edu.umass.ciir.fws.types.TfQuery")
+    @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
     public static class GenerateLdaClusterParameters extends StandardStep<TfQuery, TfQueryParameters> {
 
         List<Long> topicNums;

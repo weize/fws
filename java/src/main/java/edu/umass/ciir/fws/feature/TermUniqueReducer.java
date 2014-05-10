@@ -19,8 +19,8 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
  * @author wkong
  */
 @Verified
-@InputClass(className = "edu.umass.ciir.fws.types.Term", order = {"+term"})
-@OutputClass(className = "edu.umass.ciir.fws.types.Term", order = {"+term"})
+@InputClass(className = "edu.umass.ciir.fws.types.TfTerm", order = {"+term"})
+@OutputClass(className = "edu.umass.ciir.fws.types.TfTerm", order = {"+term"})
 public class TermUniqueReducer extends StandardStep<TfTerm, TfTerm> {
 
     TfTerm last = null;

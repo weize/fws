@@ -46,8 +46,8 @@ public class QdClusterToFacet extends ProcessQueryParametersApp {
     }
 
     @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.Query")
-    @OutputClass(className = "edu.umass.ciir.fws.types.QueryParameters")
+    @InputClass(className = "edu.umass.ciir.fws.types.TfQuery")
+    @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
     public static class GenerateQdFacetParameters extends StandardStep<TfQuery, TfQueryParameters> {
 
         List<Double> distanceMaxs;
@@ -82,7 +82,7 @@ public class QdClusterToFacet extends ProcessQueryParametersApp {
      * itemRatio). See paper "Finding dimensions for queries".
      */
     @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.QueryParameters")
+    @InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
     public static class QdClusterToFacetConverter implements Processor<TfQueryParameters> {
 
         String facetDir;

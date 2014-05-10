@@ -30,7 +30,7 @@ import org.lemurproject.galago.tupleflow.TupleFlowParameters;
 import org.lemurproject.galago.tupleflow.execution.Verified;
 
 @Verified
-@InputClass(className = "edu.umass.ciir.fws.types.QueryParameters")
+@InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
 public class PlsaClusterer implements Processor<TfQueryParameters> {
 
     String clusterDir;

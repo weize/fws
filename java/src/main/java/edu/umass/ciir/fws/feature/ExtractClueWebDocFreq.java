@@ -126,7 +126,7 @@ public class ExtractClueWebDocFreq extends AppFunction {
      * @author wkong
      */
     @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.TermCount")
+    @InputClass(className = "edu.umass.ciir.fws.types.TfTermCount")
     public static class TermCountWriter implements Processor<TfTermCount> {
 
         String clueDfFile;

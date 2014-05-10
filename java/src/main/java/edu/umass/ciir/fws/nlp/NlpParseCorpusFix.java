@@ -118,8 +118,8 @@ public class NlpParseCorpusFix extends AppFunction {
     }
 
     @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.DocumentName")
-    @OutputClass(className = "edu.umass.ciir.fws.types.DocumentName")
+    @InputClass(className = "edu.umass.ciir.fws.types.TfDocumentName")
+    @OutputClass(className = "edu.umass.ciir.fws.types.TfDocumentName")
     public static class DocumentNameFilter extends StandardStep<TfDocumentName, TfDocumentName> {
 
         StanfordCoreNLPParser stanfordParser;
@@ -175,7 +175,7 @@ public class NlpParseCorpusFix extends AppFunction {
     }
     
     @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.DocumentName")
+    @InputClass(className = "edu.umass.ciir.fws.types.TfDocumentName")
     public static class DocumentNameWriter implements Processor<TfDocumentName> {
         String docNameFixFile = "../data/doc-name/doc-name-fix";
         BufferedWriter writer;

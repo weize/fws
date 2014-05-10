@@ -45,8 +45,8 @@ public class LdaClusterToFacet extends ProcessQueryParametersApp {
      * generate parameters
      */
     @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.Query")
-    @OutputClass(className = "edu.umass.ciir.fws.types.QueryParameters")
+    @InputClass(className = "edu.umass.ciir.fws.types.TfQuery")
+    @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
     public static class GenerateLdaFacetParameters extends StandardStep<TfQuery, TfQueryParameters> {
 
         List<Long> ldaTopicNums;
@@ -76,7 +76,7 @@ public class LdaClusterToFacet extends ProcessQueryParametersApp {
      * Use first terms in the cluster as facet terms.
      */
     @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.QueryParameters")
+    @InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
     public static class LdaClusterToFacetConverter implements Processor<TfQueryParameters> {
 
         String facetDir;
