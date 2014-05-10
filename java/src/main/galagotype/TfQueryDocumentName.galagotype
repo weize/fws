@@ -1,6 +1,6 @@
 package edu.umass.ciir.fws.types;
 
-type QueryDocumentName {
+type TfQueryDocumentName {
         String qid;
 	String docName;
 

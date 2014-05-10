@@ -1,6 +1,6 @@
 package edu.umass.ciir.fws.types;
 
-type QueryParameters {
+type TfQueryParameters {
 	String id;
 	String text;
         String parameters;

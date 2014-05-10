@@ -4,7 +4,7 @@
  */
 package edu.umass.ciir.fws.query;
 
-import edu.umass.ciir.fws.types.Query;
+import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.utility.TextProcessing;
 
 /**
@@ -13,9 +13,9 @@ import edu.umass.ciir.fws.utility.TextProcessing;
  */
 public class QueryProcessing {
     
-    public static Query toSDMQuery(Query query) {
+    public static TfQuery toSDMQuery(TfQuery query) {
         String text = "#sdm (" + TextProcessing.clean(query.text) + " )";
-        Query newQuery = new Query(query.id, text);
+        TfQuery newQuery = new TfQuery(query.id, text);
         return newQuery;
     }
     

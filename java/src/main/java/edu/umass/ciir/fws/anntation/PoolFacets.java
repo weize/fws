@@ -8,7 +8,7 @@ package edu.umass.ciir.fws.anntation;
 import edu.emory.mathcs.backport.java.util.Collections;
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.tool.app.ProcessQueryApp;
-import edu.umass.ciir.fws.types.Query;
+import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
@@ -40,7 +40,7 @@ public class PoolFacets extends ProcessQueryApp {
 
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.Query")
-    public static class FacetPooler implements Processor<Query> {
+    public static class FacetPooler implements Processor<TfQuery> {
 
         String poolDir;
         List<List<Object>> runs; // [[dir, param1, param2, ...], ]
@@ -54,7 +54,7 @@ public class PoolFacets extends ProcessQueryApp {
         }
 
         @Override
-        public void process(Query query) throws IOException {
+        public void process(TfQuery query) throws IOException {
             System.err.println("processing " + query.id);
             List<List<ScoredFacet>> facetsList = new ArrayList<>();
             for (List<Object> run : runs) {

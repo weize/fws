@@ -6,7 +6,7 @@
 package edu.umass.ciir.fws.clist;
 
 import edu.umass.ciir.fws.crawl.Document;
-import edu.umass.ciir.fws.types.Query;
+import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -25,14 +25,14 @@ public class CandidateListTextOldExtractor {
     ArrayList<CandidateList> clists; // store the extracted lists
     String parseTreeText;
     String senText;
-    Query query;
+    TfQuery query;
     Document document;
 
     public CandidateListTextOldExtractor() {
         clists = new ArrayList<>();
     }
 
-    public List<CandidateList> extract(Document document, Query query, String parseFileContent) {
+    public List<CandidateList> extract(Document document, TfQuery query, String parseFileContent) {
         this.clists.clear();
         this.query = query;
         this.document = document;

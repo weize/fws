@@ -1,6 +1,6 @@
 package edu.umass.ciir.fws.query;
 
-import edu.umass.ciir.fws.types.Query;
+import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedWriter;
 import java.io.PrintStream;
@@ -44,12 +44,12 @@ public class GenerateQueryParameterFile extends AppFunction {
         queryParams.put("index", p.get("index"));
         queryParams.put("requested", p.get("requested"));
         
-        Query [] queries = QueryFileParser.loadQueryList(inputFile);
+        TfQuery [] queries = QueryFileParser.loadQueryList(inputFile);
         ArrayList<Parameters> queriesParam = new ArrayList<Parameters>();
-        for (Query q : queries) {
+        for (TfQuery q : queries) {
             Parameters queryParam = new Parameters();
             
-            Query newQuery = q;
+            TfQuery newQuery = q;
             if (model.equalsIgnoreCase("sdm")) {
                 newQuery = QueryProcessing.toSDMQuery(q);
             }

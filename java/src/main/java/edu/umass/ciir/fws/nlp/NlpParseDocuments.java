@@ -1,6 +1,6 @@
 package edu.umass.ciir.fws.nlp;
 
-import edu.umass.ciir.fws.types.QueryDocumentName;
+import edu.umass.ciir.fws.types.TfQueryDocumentName;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -63,7 +63,7 @@ public class NlpParseDocuments extends AppFunction {
     private Stage getSplitStage(Parameters parameter) {
         Stage stage = new Stage("split");
 
-        stage.addOutput("queryDocNames", new QueryDocumentName.QidDocNameOrder());
+        stage.addOutput("queryDocNames", new TfQueryDocumentName.QidDocNameOrder());
 
         List<String> inputFiles = parameter.getAsList("queryFile");
 
@@ -75,7 +75,7 @@ public class NlpParseDocuments extends AppFunction {
 
         stage.add(new Step(FileSource.class, p));
         stage.add(new Step(QueryFileDocumentsParser.class, parameter));
-        stage.add(Utility.getSorter(new QueryDocumentName.QidDocNameOrder()));
+        stage.add(Utility.getSorter(new TfQueryDocumentName.QidDocNameOrder()));
         stage.add(new OutputStep("queryDocNames"));
 
         return stage;
@@ -84,7 +84,7 @@ public class NlpParseDocuments extends AppFunction {
     private Stage getProcessStage(Parameters parameters) {
         Stage stage = new Stage("process");
 
-        stage.addInput("queryDocNames", new QueryDocumentName.QidDocNameOrder());
+        stage.addInput("queryDocNames", new TfQueryDocumentName.QidDocNameOrder());
 
         stage.add(new InputStep("queryDocNames"));
         stage.add(new Step(DocumentNLPParser.class, parameters));

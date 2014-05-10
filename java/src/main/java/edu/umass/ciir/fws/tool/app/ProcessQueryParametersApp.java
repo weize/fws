@@ -6,7 +6,7 @@
 package edu.umass.ciir.fws.tool.app;
 
 import edu.umass.ciir.fws.query.QueryFileParser;
-import edu.umass.ciir.fws.types.QueryParameters;
+import edu.umass.ciir.fws.types.TfQueryParameters;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -59,7 +59,7 @@ public abstract class ProcessQueryParametersApp extends AppFunction {
     private Stage getSplitStage(Parameters parameter) {
         Stage stage = new Stage("split");
 
-        stage.addOutput("queryParameters", new QueryParameters.IdParametersOrder());
+        stage.addOutput("queryParameters", new TfQueryParameters.IdParametersOrder());
 
         List<String> inputFiles = parameter.getAsList("queryFile");
 
@@ -73,7 +73,7 @@ public abstract class ProcessQueryParametersApp extends AppFunction {
         stage.add(Utility.getSorter(new FileName.FilenameOrder()));
         stage.add(new Step(QueryFileParser.class));
         stage.add(new Step(getQueryParametersGeneratorClass(), parameter));
-        stage.add(Utility.getSorter(new QueryParameters.IdParametersOrder()));
+        stage.add(Utility.getSorter(new TfQueryParameters.IdParametersOrder()));
         stage.add(new OutputStep("queryParameters"));
 
         return stage;
@@ -82,7 +82,7 @@ public abstract class ProcessQueryParametersApp extends AppFunction {
     private Stage getProcessStage(Parameters parameters) {
         Stage stage = new Stage("process");
 
-        stage.addInput("queryParameters", new QueryParameters.IdParametersOrder());
+        stage.addInput("queryParameters", new TfQueryParameters.IdParametersOrder());
 
         stage.add(new InputStep("queryParameters"));
         stage.add(new Step(getProcessClass(), parameters));

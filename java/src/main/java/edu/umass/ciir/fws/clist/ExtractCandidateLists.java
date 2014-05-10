@@ -3,7 +3,7 @@ package edu.umass.ciir.fws.clist;
 import edu.umass.ciir.fws.crawl.Document;
 import edu.umass.ciir.fws.crawl.QuerySetResults;
 import edu.umass.ciir.fws.tool.app.ProcessQueryApp;
-import edu.umass.ciir.fws.types.Query;
+import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
@@ -40,7 +40,7 @@ public class ExtractCandidateLists extends ProcessQueryApp {
      */
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.Query")
-    public static class CandidateListExtractor implements Processor<Query> {
+    public static class CandidateListExtractor implements Processor<TfQuery> {
 
         QuerySetResults querySetResults;
         CandidateListHtmlExtractor cListHtmlExtractor;
@@ -63,7 +63,7 @@ public class ExtractCandidateLists extends ProcessQueryApp {
         }
 
         @Override
-        public void process(Query query) throws IOException {
+        public void process(TfQuery query) throws IOException {
             List<Document> documents = Document.loadDocumentsFromFiles(querySetResults.get(query.id), docDir, query.id);
             ArrayList<CandidateList> clists = new ArrayList<>();
             for (Document doc : documents) {

@@ -10,7 +10,7 @@ import edu.umass.ciir.fws.clist.CandidateListHtmlExtractor;
 import edu.umass.ciir.fws.clist.CandidateListTextExtractor;
 import edu.umass.ciir.fws.nlp.HtmlContentExtractor;
 import edu.umass.ciir.fws.nlp.StanfordCoreNLPParser;
-import edu.umass.ciir.fws.types.Query;
+import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedWriter;
@@ -226,7 +226,7 @@ public class TestFn extends AppFunction {
 
         String docName = "clueweb09-en0000-03-33663";
         Document document = retrieval.getDocument(docName, new Document.DocumentComponents(true, true, true));
-        Query q = new Query("1", "test");
+        TfQuery q = new TfQuery("1", "test");
         //List<CandidateList> clists = new CandidateListHtmlExtractor().extract(document, q);
 
     }
@@ -261,7 +261,7 @@ public class TestFn extends AppFunction {
 
         CandidateListTextExtractor extractor = new CandidateListTextExtractor();
         String content = Utility.readFileToString(new File("test.parse"));
-        List<CandidateList> clists = extractor.extract(content, new edu.umass.ciir.fws.crawl.Document(), new Query("a", "b"));
+        List<CandidateList> clists = extractor.extract(content, new edu.umass.ciir.fws.crawl.Document(), new TfQuery("a", "b"));
         for (CandidateList clist : clists) {
             output.println(clist);
         }

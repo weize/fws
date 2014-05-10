@@ -23,7 +23,7 @@ import edu.umass.ciir.fws.clustering.plsa.*;
 import edu.umass.ciir.fws.clist.CandidateList;
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.clustering.ScoredItem;
-import edu.umass.ciir.fws.types.QueryParameters;
+import edu.umass.ciir.fws.types.TfQueryParameters;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
@@ -41,7 +41,7 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 
 @Verified
 @InputClass(className = "edu.umass.ciir.fws.types.QueryParameters")
-public class LdaClusterer implements Processor<QueryParameters> {
+public class LdaClusterer implements Processor<TfQueryParameters> {
 
     String clusterDir;
     String clistDir;
@@ -57,7 +57,7 @@ public class LdaClusterer implements Processor<QueryParameters> {
     }
 
     @Override
-    public void process(QueryParameters queryParameters) throws IOException {
+    public void process(TfQueryParameters queryParameters) throws IOException {
         String qid = queryParameters.id;
         System.err.println(String.format("Processing qid:%s parameters:%s", qid, queryParameters.parameters));
 

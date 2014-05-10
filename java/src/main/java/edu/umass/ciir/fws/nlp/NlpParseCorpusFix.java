@@ -1,7 +1,7 @@
 package edu.umass.ciir.fws.nlp;
 
-import edu.umass.ciir.fws.types.DocumentName;
-import edu.umass.ciir.fws.types.QueryDocumentName;
+import edu.umass.ciir.fws.types.TfDocumentName;
+import edu.umass.ciir.fws.types.TfQueryDocumentName;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedWriter;
@@ -76,7 +76,7 @@ public class NlpParseCorpusFix extends AppFunction {
     private Stage getSplitStage(Parameters parameter) {
         Stage stage = new Stage("split");
 
-        stage.addOutput("docNames", new DocumentName.NameOrder());
+        stage.addOutput("docNames", new TfDocumentName.NameOrder());
 
         List<String> inputFiles = parameter.getAsList("docNameFile");
 
@@ -88,7 +88,7 @@ public class NlpParseCorpusFix extends AppFunction {
 
         stage.add(new Step(FileSource.class, p));
         stage.add(new Step(DocumentNameFileParser.class));
-        stage.add(Utility.getSorter(new DocumentName.NameOrder()));
+        stage.add(Utility.getSorter(new TfDocumentName.NameOrder()));
         stage.add(new OutputStep("docNames"));
 
         return stage;
@@ -97,12 +97,12 @@ public class NlpParseCorpusFix extends AppFunction {
     private Stage getFilterStage(Parameters parameters) {
         Stage stage = new Stage("filter");
 
-        stage.addInput("docNames", new DocumentName.NameOrder());
-        stage.addOutput("docNames2", new DocumentName.NameOrder());
+        stage.addInput("docNames", new TfDocumentName.NameOrder());
+        stage.addOutput("docNames2", new TfDocumentName.NameOrder());
 
         stage.add(new InputStep("docNames"));
         stage.add(new Step(DocumentNameFilter.class, parameters));
-        stage.add(Utility.getSorter(new DocumentName.NameOrder()));
+        stage.add(Utility.getSorter(new TfDocumentName.NameOrder()));
         stage.add(new OutputStep("docNames2"));
         return stage;
     }
@@ -110,7 +110,7 @@ public class NlpParseCorpusFix extends AppFunction {
     private Stage getWriteStage(Parameters parameters) {
         Stage stage = new Stage("write");
 
-        stage.addInput("docNames2", new DocumentName.NameOrder());
+        stage.addInput("docNames2", new TfDocumentName.NameOrder());
 
         stage.add(new InputStep("docNames2"));
         stage.add(new Step(DocumentNameWriter.class, parameters));
@@ -120,7 +120,7 @@ public class NlpParseCorpusFix extends AppFunction {
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.DocumentName")
     @OutputClass(className = "edu.umass.ciir.fws.types.DocumentName")
-    public static class DocumentNameFilter extends StandardStep<DocumentName, DocumentName> {
+    public static class DocumentNameFilter extends StandardStep<TfDocumentName, TfDocumentName> {
 
         StanfordCoreNLPParser stanfordParser;
         String parseDir;
@@ -138,7 +138,7 @@ public class NlpParseCorpusFix extends AppFunction {
         }
 
         @Override
-        public void process(DocumentName docName) throws IOException {
+        public void process(TfDocumentName docName) throws IOException {
             System.err.println("Filtering  " + docName.name);
             Document doc = retrieval.getDocument(docName.name, new Document.DocumentComponents(true, false, false));
 
@@ -176,7 +176,7 @@ public class NlpParseCorpusFix extends AppFunction {
     
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.DocumentName")
-    public static class DocumentNameWriter implements Processor<DocumentName> {
+    public static class DocumentNameWriter implements Processor<TfDocumentName> {
         String docNameFixFile = "../data/doc-name/doc-name-fix";
         BufferedWriter writer;
         
@@ -185,7 +185,7 @@ public class NlpParseCorpusFix extends AppFunction {
         }
 
         @Override
-        public void process(DocumentName documentName) throws IOException {
+        public void process(TfDocumentName documentName) throws IOException {
             writer.write(documentName.name);
             writer.newLine();
         }

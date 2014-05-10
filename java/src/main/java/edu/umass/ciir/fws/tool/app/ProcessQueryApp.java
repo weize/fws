@@ -6,7 +6,7 @@
 package edu.umass.ciir.fws.tool.app;
 
 import edu.umass.ciir.fws.query.QueryFileParser;
-import edu.umass.ciir.fws.types.Query;
+import edu.umass.ciir.fws.types.TfQuery;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -58,7 +58,7 @@ public abstract class ProcessQueryApp extends AppFunction {
     private Stage getSplitStage(Parameters parameter) {
         Stage stage = new Stage("split");
 
-        stage.addOutput("queries", new Query.IdOrder());
+        stage.addOutput("queries", new TfQuery.IdOrder());
 
         List<String> inputFiles = parameter.getAsList("queryFile");
 
@@ -71,7 +71,7 @@ public abstract class ProcessQueryApp extends AppFunction {
         stage.add(new Step(FileSource.class, p));
         stage.add(Utility.getSorter(new FileName.FilenameOrder()));
         stage.add(new Step(QueryFileParser.class));
-        stage.add(Utility.getSorter(new Query.IdOrder()));
+        stage.add(Utility.getSorter(new TfQuery.IdOrder()));
         stage.add(new OutputStep("queries"));
 
         return stage;
@@ -80,7 +80,7 @@ public abstract class ProcessQueryApp extends AppFunction {
     private Stage getProcessStage(Parameters parameters) {
         Stage stage = new Stage("process");
 
-        stage.addInput("queries", new Query.IdOrder());
+        stage.addInput("queries", new TfQuery.IdOrder());
 
         stage.add(new InputStep("queries"));
         stage.add(new Step(getProcessClass(), parameters));

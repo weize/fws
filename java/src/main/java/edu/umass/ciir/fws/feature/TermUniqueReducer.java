@@ -5,8 +5,8 @@
  */
 package edu.umass.ciir.fws.feature;
 
-import edu.umass.ciir.fws.types.Term;
-import edu.umass.ciir.fws.types.TermCount;
+import edu.umass.ciir.fws.types.TfTerm;
+import edu.umass.ciir.fws.types.TfTermCount;
 import java.io.IOException;
 import org.lemurproject.galago.tupleflow.InputClass;
 import org.lemurproject.galago.tupleflow.OutputClass;
@@ -21,12 +21,12 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 @Verified
 @InputClass(className = "edu.umass.ciir.fws.types.Term", order = {"+term"})
 @OutputClass(className = "edu.umass.ciir.fws.types.Term", order = {"+term"})
-public class TermUniqueReducer extends StandardStep<Term, Term> {
+public class TermUniqueReducer extends StandardStep<TfTerm, TfTerm> {
 
-    Term last = null;
+    TfTerm last = null;
 
     @Override
-    public void process(Term term) throws IOException {
+    public void process(TfTerm term) throws IOException {
         if (last == null) {
             processor.process(term);
         } else if (!last.term.equals(term.term)) {

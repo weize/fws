@@ -7,7 +7,7 @@ package edu.umass.ciir.fws.feature;
 import edu.umass.ciir.fws.crawl.Document;
 import edu.umass.ciir.fws.clist.CandidateList;
 import edu.umass.ciir.fws.crawl.*;
-import edu.umass.ciir.fws.types.Query;
+import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
@@ -36,7 +36,7 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
  */
 @Verified
 @InputClass(className = "edu.umass.ciir.fws.types.Query")
-public class TermFeaturesExtractor implements Processor<Query> {
+public class TermFeaturesExtractor implements Processor<TfQuery> {
 
     final static double LOG2BASE = Math.log(2);
     final static int MAX_TERM_SIZE = CandidateList.MAX_TERM_SIZE; // used to build map for ngram->count
@@ -52,7 +52,7 @@ public class TermFeaturesExtractor implements Processor<Query> {
     String rankedListFile;
     String docDir;
 
-    Query query;
+    TfQuery query;
     TreeMap<String, TermFeatures> termFeatures;
     CluewebDocFreqMap clueDfs; // clue web document frequency
     double clueCdf;
@@ -84,7 +84,7 @@ public class TermFeaturesExtractor implements Processor<Query> {
     }
 
     @Override
-    public void process(Query query) throws IOException {
+    public void process(TfQuery query) throws IOException {
         this.query = query;
 
         System.err.println(String.format("processing query %s", query.id));

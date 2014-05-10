@@ -3,8 +3,8 @@ package edu.umass.ciir.fws.crawl;
 import edu.umass.ciir.fws.clist.*;
 import edu.umass.ciir.fws.query.QueryFileParser;
 import edu.umass.ciir.fws.tool.app.ProcessQueryApp;
-import edu.umass.ciir.fws.types.CandidateList;
-import edu.umass.ciir.fws.types.Query;
+import edu.umass.ciir.fws.types.TfCandidateList;
+import edu.umass.ciir.fws.types.TfQuery;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -59,7 +59,7 @@ public class CrawlTopDocuments extends ProcessQueryApp {
      */
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.Query")
-    public static class TopDocumentsWriter implements Processor<Query> {
+    public static class TopDocumentsWriter implements Processor<TfQuery> {
 
         Retrieval retrieval;
         QuerySetResults querySetResults;
@@ -80,7 +80,7 @@ public class CrawlTopDocuments extends ProcessQueryApp {
         }
 
         @Override
-        public void process(Query query) throws IOException {
+        public void process(TfQuery query) throws IOException {
             QueryResults docs = querySetResults.get(query.id);
             String dirName = edu.umass.ciir.fws.utility.Utility.getDocFileDir(docDir, query.id);
             edu.umass.ciir.fws.utility.Utility.createDirectory(dirName);

@@ -3,8 +3,8 @@ package edu.umass.ciir.fws.clustering.qd;
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.clustering.ScoredItem;
 import edu.umass.ciir.fws.tool.app.ProcessQueryParametersApp;
-import edu.umass.ciir.fws.types.Query;
-import edu.umass.ciir.fws.types.QueryParameters;
+import edu.umass.ciir.fws.types.TfQuery;
+import edu.umass.ciir.fws.types.TfQueryParameters;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
@@ -48,7 +48,7 @@ public class QdClusterToFacet extends ProcessQueryParametersApp {
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.Query")
     @OutputClass(className = "edu.umass.ciir.fws.types.QueryParameters")
-    public static class GenerateQdFacetParameters extends StandardStep<Query, QueryParameters> {
+    public static class GenerateQdFacetParameters extends StandardStep<TfQuery, TfQueryParameters> {
 
         List<Double> distanceMaxs;
         List<Double> websiteCountMins;
@@ -63,12 +63,12 @@ public class QdClusterToFacet extends ProcessQueryParametersApp {
         }
 
         @Override
-        public void process(Query query) throws IOException {
+        public void process(TfQuery query) throws IOException {
             for (double distanceMax : distanceMaxs) {
                 for (double websiteCountMin : websiteCountMins) {
                     for (double itemRatio : itemRatios) {
                         String parameters = Utility.parametersToString(distanceMax, websiteCountMin, itemRatio);
-                        processor.process(new QueryParameters(query.id, query.text, parameters));
+                        processor.process(new TfQueryParameters(query.id, query.text, parameters));
                     }
                 }
             }
@@ -83,7 +83,7 @@ public class QdClusterToFacet extends ProcessQueryParametersApp {
      */
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.QueryParameters")
-    public static class QdClusterToFacetConverter implements Processor<QueryParameters> {
+    public static class QdClusterToFacetConverter implements Processor<TfQueryParameters> {
 
         String facetDir;
         String clusterDir;
@@ -95,7 +95,7 @@ public class QdClusterToFacet extends ProcessQueryParametersApp {
         }
 
         @Override
-        public void process(QueryParameters queryParameters) throws IOException {
+        public void process(TfQueryParameters queryParameters) throws IOException {
             System.err.println(String.format("Processing qid:%s parameters:%s", queryParameters.id, queryParameters.parameters));
             String qid = queryParameters.id;
             String[] fields = Utility.splitParameters(queryParameters.parameters);

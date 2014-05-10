@@ -4,6 +4,7 @@
  */
 package edu.umass.ciir.fws.clist;
 
+import edu.umass.ciir.fws.types.TfCandidateList;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -71,6 +72,10 @@ public class CandidateList {
         return String.format("%s\t%d\t%s\t%s\t%s", qid, docRank, docName, listType, itemList);
     }
 
+    public static String toString(TfCandidateList clist) {
+        return String.format("%s\t%d\t%s\t%s\t%s", clist.qid, clist.docRank, clist.docName, clist.listType, clist.itemList);
+    }
+
     public static void output(List<CandidateList> clists, File file) throws IOException {
         BufferedWriter writer = Utility.getWriter(file);
         for (CandidateList clist : clists) {
@@ -129,7 +134,7 @@ public class CandidateList {
      * @param candidateList
      * @return
      */
-    public static boolean isHtmlCandidateList(edu.umass.ciir.fws.types.CandidateList candidateList) {
+    public static boolean isHtmlCandidateList(edu.umass.ciir.fws.types.TfCandidateList candidateList) {
         return !candidateList.listType.equals(CandidateListTextExtractor.type);
     }
 }

@@ -2,8 +2,8 @@ package edu.umass.ciir.fws.clustering.lda;
 
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.tool.app.ProcessQueryParametersApp;
-import edu.umass.ciir.fws.types.Query;
-import edu.umass.ciir.fws.types.QueryParameters;
+import edu.umass.ciir.fws.types.TfQuery;
+import edu.umass.ciir.fws.types.TfQueryParameters;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
@@ -47,7 +47,7 @@ public class LdaClusterToFacet extends ProcessQueryParametersApp {
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.Query")
     @OutputClass(className = "edu.umass.ciir.fws.types.QueryParameters")
-    public static class GenerateLdaFacetParameters extends StandardStep<Query, QueryParameters> {
+    public static class GenerateLdaFacetParameters extends StandardStep<TfQuery, TfQueryParameters> {
 
         List<Long> ldaTopicNums;
         List<Long> ldaTermNums;
@@ -59,11 +59,11 @@ public class LdaClusterToFacet extends ProcessQueryParametersApp {
         }
 
         @Override
-        public void process(Query query) throws IOException {
+        public void process(TfQuery query) throws IOException {
             for (long plsaTopicNum : ldaTopicNums) {
                 for (long plsaTermNum : ldaTermNums) {
                     String parameters = Utility.parametersToString(plsaTopicNum, plsaTermNum);
-                    processor.process(new QueryParameters(query.id, query.text, parameters));
+                    processor.process(new TfQueryParameters(query.id, query.text, parameters));
                 }
             }
 
@@ -77,7 +77,7 @@ public class LdaClusterToFacet extends ProcessQueryParametersApp {
      */
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.QueryParameters")
-    public static class LdaClusterToFacetConverter implements Processor<QueryParameters> {
+    public static class LdaClusterToFacetConverter implements Processor<TfQueryParameters> {
 
         String facetDir;
         String clusterDir;
@@ -89,7 +89,7 @@ public class LdaClusterToFacet extends ProcessQueryParametersApp {
         }
 
         @Override
-        public void process(QueryParameters queryParameters) throws IOException {
+        public void process(TfQueryParameters queryParameters) throws IOException {
             System.err.println(String.format("Processing qid:%s parameters:%s", queryParameters.id, queryParameters.parameters));
             String qid = queryParameters.id;
             String[] fields = Utility.splitParameters(queryParameters.parameters);

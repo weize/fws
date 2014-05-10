@@ -1,8 +1,8 @@
 package edu.umass.ciir.fws.clist;
 
 import edu.umass.ciir.fws.nlp.*;
-import edu.umass.ciir.fws.types.CandidateList;
-import edu.umass.ciir.fws.types.DocumentName;
+import edu.umass.ciir.fws.types.TfCandidateList;
+import edu.umass.ciir.fws.types.TfDocumentName;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -71,7 +71,7 @@ public class ExtractCandidateListCorpus extends AppFunction {
     private Stage getSplitStage(Parameters parameter) {
         Stage stage = new Stage("split");
 
-        stage.addOutput("docNames", new DocumentName.NameOrder());
+        stage.addOutput("docNames", new TfDocumentName.NameOrder());
 
         List<String> inputFiles = parameter.getAsList("docNameFile");
 
@@ -83,7 +83,7 @@ public class ExtractCandidateListCorpus extends AppFunction {
 
         stage.add(new Step(FileSource.class, p));
         stage.add(new Step(DocumentNameFileParser.class));
-        stage.add(Utility.getSorter(new DocumentName.NameOrder()));
+        stage.add(Utility.getSorter(new TfDocumentName.NameOrder()));
         stage.add(new OutputStep("docNames"));
 
         return stage;
@@ -92,19 +92,19 @@ public class ExtractCandidateListCorpus extends AppFunction {
     private Stage getProcessStage(Parameters parameters) {
         Stage stage = new Stage("process");
 
-        stage.addInput("docNames", new DocumentName.NameOrder());
-        stage.addOutput("clists", new CandidateList.QidDocRankDocNameListTypeItemListOrder());
+        stage.addInput("docNames", new TfDocumentName.NameOrder());
+        stage.addOutput("clists", new TfCandidateList.QidDocRankDocNameListTypeItemListOrder());
 
         stage.add(new InputStep("docNames"));
         stage.add(new Step(CandidateListCorpusExtractor.class, parameters));
-        stage.add(Utility.getSorter(new CandidateList.QidDocRankDocNameListTypeItemListOrder()));
+        stage.add(Utility.getSorter(new TfCandidateList.QidDocRankDocNameListTypeItemListOrder()));
         stage.add(new OutputStep("clists"));
         return stage;
     }
 
     private Stage getWriteStage(Parameters parameters) {
         Stage stage = new Stage("write");
-        stage.addInput("clists", new CandidateList.QidDocRankDocNameListTypeItemListOrder());
+        stage.addInput("clists", new TfCandidateList.QidDocRankDocNameListTypeItemListOrder());
 
         stage.add(new InputStep("clists"));
         stage.add(new Step(CandidateListCorpusWriter.class, parameters));
@@ -117,7 +117,7 @@ public class ExtractCandidateListCorpus extends AppFunction {
      */
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.CandidateList", order = {"+qid", "+docRank", "+docName", "+listType", "+itemList"})
-    public static class CandidateListCorpusWriter implements Processor<CandidateList> {
+    public static class CandidateListCorpusWriter implements Processor<TfCandidateList> {
 
         String fileName; // current filename
         String clistCorpusDir;
@@ -130,7 +130,7 @@ public class ExtractCandidateListCorpus extends AppFunction {
         }
 
         @Override
-        public void process(CandidateList clist) throws IOException {
+        public void process(TfCandidateList clist) throws IOException {
             String newFileName = Utility.getCorpusCandidateListFileName(clistCorpusDir, clist.docName);
             if (fileName == null) {
                 onNewFile(newFileName);
@@ -151,8 +151,8 @@ public class ExtractCandidateListCorpus extends AppFunction {
             }
         }
 
-        private void writeClist(CandidateList clist) throws IOException {
-            writer.write(clist.toString());
+        private void writeClist(TfCandidateList clist) throws IOException {
+            writer.write(CandidateList.toString(clist));
             writer.newLine();
         }
 
@@ -171,7 +171,7 @@ public class ExtractCandidateListCorpus extends AppFunction {
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.DocumentName")
     @OutputClass(className = "edu.umass.ciir.fws.types.CandidateList")
-    public static class CandidateListCorpusExtractor extends StandardStep<DocumentName, CandidateList> {
+    public static class CandidateListCorpusExtractor extends StandardStep<TfDocumentName, TfCandidateList> {
 
         CandidateListHtmlExtractor cListHtmlExtractor;
         CandidateListTextExtractor cListTextExtractor;
@@ -189,13 +189,13 @@ public class ExtractCandidateListCorpus extends AppFunction {
         }
 
         @Override
-        public void process(DocumentName docName) throws IOException {
+        public void process(TfDocumentName docName) throws IOException {
             System.err.println("processing " + docName.name);
 
             // extract by html patterns
             Document doc = retrieval.getDocument(docName.name, new Document.DocumentComponents(true, false, false));
             for (edu.umass.ciir.fws.clist.CandidateList clist : cListHtmlExtractor.extract(doc.text, docRank, docName.name, qid)) {
-                processor.process(new CandidateList(clist.qid, clist.docRank, clist.docName, clist.listType, clist.itemList));
+                processor.process(new TfCandidateList(clist.qid, clist.docRank, clist.docName, clist.listType, clist.itemList));
             }
             System.err.println("Done html");
 
@@ -203,7 +203,7 @@ public class ExtractCandidateListCorpus extends AppFunction {
             String parseFileName = Utility.getParsedCorpusDocFileName(parseCorpusDir, docName.name);
             String parseFileContent = Utility.readFileToString(new File(parseFileName));
             for (edu.umass.ciir.fws.clist.CandidateList clist : cListTextExtractor.extract(parseFileContent, docRank, docName.name, qid)) {
-                processor.process(new CandidateList(clist.qid, clist.docRank, clist.docName, clist.listType, clist.itemList));
+                processor.process(new TfCandidateList(clist.qid, clist.docRank, clist.docName, clist.listType, clist.itemList));
             }
             System.err.println("Done text");
         }

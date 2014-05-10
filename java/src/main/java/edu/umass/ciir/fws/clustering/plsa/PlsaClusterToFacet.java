@@ -2,8 +2,8 @@ package edu.umass.ciir.fws.clustering.plsa;
 
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.tool.app.ProcessQueryParametersApp;
-import edu.umass.ciir.fws.types.Query;
-import edu.umass.ciir.fws.types.QueryParameters;
+import edu.umass.ciir.fws.types.TfQuery;
+import edu.umass.ciir.fws.types.TfQueryParameters;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
@@ -46,7 +46,7 @@ public class PlsaClusterToFacet extends ProcessQueryParametersApp {
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.Query")
     @OutputClass(className = "edu.umass.ciir.fws.types.QueryParameters")
-    public static class GeneratePlsaFacetParameters extends StandardStep<Query, QueryParameters> {
+    public static class GeneratePlsaFacetParameters extends StandardStep<TfQuery, TfQueryParameters> {
 
         List<Long> plsaTopicNums;
         List<Long> plsaTermNums;
@@ -58,11 +58,11 @@ public class PlsaClusterToFacet extends ProcessQueryParametersApp {
         }
 
         @Override
-        public void process(Query query) throws IOException {
+        public void process(TfQuery query) throws IOException {
             for (long plsaTopicNum : plsaTopicNums) {
                 for (long plsaTermNum : plsaTermNums) {
                     String parameters = edu.umass.ciir.fws.utility.Utility.parametersToString(plsaTopicNum, plsaTermNum);
-                    processor.process(new QueryParameters(query.id, query.text, parameters));
+                    processor.process(new TfQueryParameters(query.id, query.text, parameters));
                 }
             }
 
@@ -76,7 +76,7 @@ public class PlsaClusterToFacet extends ProcessQueryParametersApp {
      */
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.QueryParameters")
-    public static class PlsaClusterToFacetConverter implements Processor<QueryParameters> {
+    public static class PlsaClusterToFacetConverter implements Processor<TfQueryParameters> {
 
         String facetDir;
         String clusterDir;
@@ -88,7 +88,7 @@ public class PlsaClusterToFacet extends ProcessQueryParametersApp {
         }
 
         @Override
-        public void process(QueryParameters queryParameters) throws IOException {
+        public void process(TfQueryParameters queryParameters) throws IOException {
             System.err.println(String.format("Processing qid:%s parameters:%s", queryParameters.id, queryParameters.parameters));
             String qid = queryParameters.id;
             String[] fields = edu.umass.ciir.fws.utility.Utility.splitParameters(queryParameters.parameters);

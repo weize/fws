@@ -1,6 +1,6 @@
 package edu.umass.ciir.fws.types;
 
-type TermCount {
+type TfTermCount {
 	String term;
         long count;
 	

@@ -4,7 +4,7 @@
  */
 package edu.umass.ciir.fws.clist;
 
-import edu.umass.ciir.fws.types.Query;
+import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
@@ -25,7 +25,7 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 @Verified
 @InputClass(className = "edu.umass.ciir.fws.types.Query")
 @OutputClass(className = "edu.umass.ciir.fws.types.CandidateList")
-public class CandidateListParser extends StandardStep<Query, edu.umass.ciir.fws.types.CandidateList> {
+public class CandidateListParser extends StandardStep<TfQuery, edu.umass.ciir.fws.types.TfCandidateList> {
 
     String clistDir;
     String suffix;
@@ -36,12 +36,12 @@ public class CandidateListParser extends StandardStep<Query, edu.umass.ciir.fws.
     }
 
     @Override
-    public void process(Query query) throws IOException {
+    public void process(TfQuery query) throws IOException {
         File clistFile = new File(Utility.getCandidateListCleanFileName(clistDir, query.id));
         List<CandidateList> clists = CandidateList.loadCandidateLists(clistFile);
 
         for (CandidateList clist : clists) {
-            processor.process(new edu.umass.ciir.fws.types.CandidateList(clist.qid,
+            processor.process(new edu.umass.ciir.fws.types.TfCandidateList(clist.qid,
                     clist.docRank, clist.docName, clist.listType, clist.itemList));
         }
     }

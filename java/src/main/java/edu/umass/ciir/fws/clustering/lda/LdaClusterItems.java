@@ -6,8 +6,8 @@
 package edu.umass.ciir.fws.clustering.lda;
 
 import edu.umass.ciir.fws.tool.app.ProcessQueryParametersApp;
-import edu.umass.ciir.fws.types.Query;
-import edu.umass.ciir.fws.types.QueryParameters;
+import edu.umass.ciir.fws.types.TfQuery;
+import edu.umass.ciir.fws.types.TfQueryParameters;
 import java.io.IOException;
 import java.util.List;
 import org.lemurproject.galago.tupleflow.InputClass;
@@ -45,7 +45,7 @@ public class LdaClusterItems extends ProcessQueryParametersApp {
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.Query")
     @OutputClass(className = "edu.umass.ciir.fws.types.QueryParameters")
-    public static class GenerateLdaClusterParameters extends StandardStep<Query, QueryParameters> {
+    public static class GenerateLdaClusterParameters extends StandardStep<TfQuery, TfQueryParameters> {
 
         List<Long> topicNums;
 
@@ -55,10 +55,10 @@ public class LdaClusterItems extends ProcessQueryParametersApp {
         }
 
         @Override
-        public void process(Query query) throws IOException {
+        public void process(TfQuery query) throws IOException {
             for (long topicNum : topicNums) {
                 String parameters = edu.umass.ciir.fws.utility.Utility.parametersToString(topicNum);
-                processor.process(new QueryParameters(query.id, query.text, parameters));
+                processor.process(new TfQueryParameters(query.id, query.text, parameters));
             }
 
         }

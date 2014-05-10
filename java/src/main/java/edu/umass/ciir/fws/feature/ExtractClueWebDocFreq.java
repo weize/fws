@@ -2,9 +2,9 @@ package edu.umass.ciir.fws.feature;
 
 import edu.umass.ciir.fws.clist.CandidateListParser;
 import edu.umass.ciir.fws.query.QueryFileParser;
-import edu.umass.ciir.fws.types.CandidateList;
-import edu.umass.ciir.fws.types.Term;
-import edu.umass.ciir.fws.types.TermCount;
+import edu.umass.ciir.fws.types.TfCandidateList;
+import edu.umass.ciir.fws.types.TfTerm;
+import edu.umass.ciir.fws.types.TfTermCount;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
@@ -75,7 +75,7 @@ public class ExtractClueWebDocFreq extends AppFunction {
     private Stage getSplitStage(Parameters parameter) {
         Stage stage = new Stage("split");
 
-        stage.addOutput("terms", new Term.TermOrder());
+        stage.addOutput("terms", new TfTerm.TermOrder());
 
         List<String> inputFiles = parameter.getAsList("queryFile");
 
@@ -89,7 +89,7 @@ public class ExtractClueWebDocFreq extends AppFunction {
         stage.add(new Step(QueryFileParser.class));
         stage.add(new Step(CandidateListParser.class, parameter));
         stage.add(new Step(CandidateListToTerms.class));
-        stage.add(Utility.getSorter(new Term.TermOrder()));
+        stage.add(Utility.getSorter(new TfTerm.TermOrder()));
         stage.add(new Step(TermUniqueReducer.class));
         stage.add(new OutputStep("terms"));
 
@@ -99,8 +99,8 @@ public class ExtractClueWebDocFreq extends AppFunction {
     private Stage getProcessStage(Parameters parameters) {
         Stage stage = new Stage("process");
 
-        stage.addInput("terms", new Term.TermOrder());
-        stage.addOutput("termCounts", new TermCount.TermOrder());
+        stage.addInput("terms", new TfTerm.TermOrder());
+        stage.addOutput("termCounts", new TfTermCount.TermOrder());
 
         stage.add(new InputStep("terms"));
         stage.add(new Step(GalagoDocFreqExtractor.class, parameters));
@@ -112,7 +112,7 @@ public class ExtractClueWebDocFreq extends AppFunction {
     private Stage getWriteStage(Parameters parameters) {
         Stage stage = new Stage("write");
 
-        stage.addInput("termCounts", new TermCount.TermOrder());
+        stage.addInput("termCounts", new TfTermCount.TermOrder());
 
         stage.add(new InputStep("termCounts"));
         stage.add(new Step(TermCountWriter.class, parameters));
@@ -127,10 +127,10 @@ public class ExtractClueWebDocFreq extends AppFunction {
      */
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.TermCount")
-    public static class TermCountWriter implements Processor<TermCount> {
+    public static class TermCountWriter implements Processor<TfTermCount> {
 
         String clueDfFile;
-        CandidateList last = null;
+        TfCandidateList last = null;
         BufferedWriter writer;
         String suffix;
 
@@ -141,7 +141,7 @@ public class ExtractClueWebDocFreq extends AppFunction {
         }
 
         @Override
-        public void process(TermCount termCount) throws IOException {
+        public void process(TfTermCount termCount) throws IOException {
             writer.write(String.format("%s\t%d\n", termCount.term, termCount.count));
         }
 

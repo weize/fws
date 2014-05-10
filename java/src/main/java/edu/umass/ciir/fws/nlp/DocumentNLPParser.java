@@ -4,7 +4,7 @@
  */
 package edu.umass.ciir.fws.nlp;
 
-import edu.umass.ciir.fws.types.QueryDocumentName;
+import edu.umass.ciir.fws.types.TfQueryDocumentName;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
@@ -22,7 +22,7 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
  */
 @Verified
 @InputClass(className = "edu.umass.ciir.fws.types.QueryDocumentName")
-public class DocumentNLPParser implements Processor<QueryDocumentName> {
+public class DocumentNLPParser implements Processor<TfQueryDocumentName> {
 
     Logger logger;
     Parameters parameters;
@@ -39,7 +39,7 @@ public class DocumentNLPParser implements Processor<QueryDocumentName> {
     }
 
     @Override
-    public void process(QueryDocumentName queryDocName) throws IOException {
+    public void process(TfQueryDocumentName queryDocName) throws IOException {
 
         String outputFileName = Utility.getParsedDocFileName(
                 parseDir, queryDocName.qid, queryDocName.docName);

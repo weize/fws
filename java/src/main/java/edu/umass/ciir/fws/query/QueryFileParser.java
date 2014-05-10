@@ -4,7 +4,7 @@
  */
 package edu.umass.ciir.fws.query;
 
-import edu.umass.ciir.fws.types.Query;
+import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,28 +22,28 @@ import org.lemurproject.galago.tupleflow.types.FileName;
 @Verified
 @InputClass(className = "org.lemurproject.galago.tupleflow.types.FileName")
 @OutputClass(className = "edu.umass.ciir.fws.types.Query")
-public class QueryFileParser extends StandardStep<FileName, Query> {
+public class QueryFileParser extends StandardStep<FileName, TfQuery> {
 
     @Override
     public void process(FileName fileName) throws IOException {
-        Query [] queries = QueryFileParser.loadQueryList(fileName.filename);
-        for(Query q : queries) {
+        TfQuery [] queries = QueryFileParser.loadQueryList(fileName.filename);
+        for(TfQuery q : queries) {
             processor.process(q);
         }
     }
 
-    public static Query[] loadQueryList(String inputFile) throws IOException {
+    public static TfQuery[] loadQueryList(String inputFile) throws IOException {
         BufferedReader reader = Utility.getReader(inputFile);
         String line;
-        ArrayList<Query> queries = new ArrayList<>();
+        ArrayList<TfQuery> queries = new ArrayList<>();
         while ((line = reader.readLine()) != null) {
             String[] fields = line.split("\t");
             String qid = fields[0];
             String text = fields[1];
-            queries.add(new Query(qid, text));
+            queries.add(new TfQuery(qid, text));
 
         }
         reader.close();
-        return queries.toArray(new Query[0]);
+        return queries.toArray(new TfQuery[0]);
     }
 }

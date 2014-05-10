@@ -6,7 +6,7 @@ package edu.umass.ciir.fws.clustering.qd;
 
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.clustering.ScoredItem;
-import edu.umass.ciir.fws.types.QueryParameters;
+import edu.umass.ciir.fws.types.TfQueryParameters;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.IOException;
@@ -26,7 +26,7 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
  */
 @Verified
 @InputClass(className = "edu.umass.ciir.fws.types.QueryParameters")
-public class QueryDimensionClusterers implements Processor<QueryParameters> {
+public class QueryDimensionClusterers implements Processor<TfQueryParameters> {
 
     boolean debug = false;
     // lists
@@ -63,7 +63,7 @@ public class QueryDimensionClusterers implements Processor<QueryParameters> {
     }
 
     @Override
-    public void process(QueryParameters queryParameters) throws IOException {
+    public void process(TfQueryParameters queryParameters) throws IOException {
         //setQueryParameters
         System.err.println(String.format("Processing qid:%s parameters:%s", queryParameters.id, queryParameters.parameters));
         qid = queryParameters.id;

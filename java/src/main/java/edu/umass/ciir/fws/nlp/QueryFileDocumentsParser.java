@@ -6,8 +6,8 @@ package edu.umass.ciir.fws.nlp;
 
 import edu.umass.ciir.fws.crawl.QuerySetResults;
 import edu.umass.ciir.fws.query.QueryFileParser;
-import edu.umass.ciir.fws.types.Query;
-import edu.umass.ciir.fws.types.QueryDocumentName;
+import edu.umass.ciir.fws.types.TfQuery;
+import edu.umass.ciir.fws.types.TfQueryDocumentName;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -29,7 +29,7 @@ import org.lemurproject.galago.tupleflow.types.FileName;
 @Verified
 @InputClass(className = "org.lemurproject.galago.tupleflow.types.FileName")
 @OutputClass(className = "edu.umass.ciir.fws.types.QueryDocumentName")
-public class QueryFileDocumentsParser extends StandardStep<FileName, QueryDocumentName> {
+public class QueryFileDocumentsParser extends StandardStep<FileName, TfQueryDocumentName> {
 
     Logger logger;
     QuerySetResults querySetResults;
@@ -47,10 +47,10 @@ public class QueryFileDocumentsParser extends StandardStep<FileName, QueryDocume
 
     @Override
     public void process(FileName fileName) throws IOException {
-        Query[] queries = QueryFileParser.loadQueryList(fileName.filename);
-        for (Query q : queries) {
+        TfQuery[] queries = QueryFileParser.loadQueryList(fileName.filename);
+        for (TfQuery q : queries) {
             for (ScoredDocument doc : querySetResults.get(q.id).getIterator()) {
-                processor.process(new QueryDocumentName(q.id, doc.documentName));
+                processor.process(new TfQueryDocumentName(q.id, doc.documentName));
             }
         }
     }

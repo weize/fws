@@ -6,7 +6,7 @@ package edu.umass.ciir.fws.clist;
 
 import edu.umass.ciir.fws.crawl.Document;
 import edu.umass.ciir.fws.nlp.HtmlContentExtractor;
-import edu.umass.ciir.fws.types.Query;
+import edu.umass.ciir.fws.types.TfQuery;
 import java.util.ArrayList;
 import java.util.List;
 import org.jsoup.Jsoup;
@@ -42,7 +42,7 @@ public class CandidateListHtmlExtractor {
 
     ArrayList<CandidateList> clists;
     org.jsoup.nodes.Document htmlDoc;
-    Query query;
+    TfQuery query;
     Document document;
 
     public CandidateListHtmlExtractor() {
@@ -54,11 +54,11 @@ public class CandidateListHtmlExtractor {
         doc.html = docHtml;
         doc.rank = docRank;
         doc.name = docName;
-        Query q = new Query(queryID, "");
+        TfQuery q = new TfQuery(queryID, "");
         return extract(doc, q);
     }
 
-    public List<CandidateList> extract(Document document, Query query) {
+    public List<CandidateList> extract(Document document, TfQuery query) {
         this.clists.clear();
         this.query = query;
         this.document = document;

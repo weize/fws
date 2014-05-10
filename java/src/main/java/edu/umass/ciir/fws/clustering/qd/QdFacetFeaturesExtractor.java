@@ -9,7 +9,7 @@ import edu.umass.ciir.fws.crawl.Document;
 import edu.umass.ciir.fws.crawl.QuerySetResults;
 import edu.umass.ciir.fws.feature.CluewebDocFreqMap;
 import edu.umass.ciir.fws.feature.TermFeaturesExtractor;
-import edu.umass.ciir.fws.types.Query;
+import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
@@ -32,7 +32,7 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
  */
 @Verified
 @InputClass(className = "edu.umass.ciir.fws.types.Query")
-public class QdFacetFeaturesExtractor implements Processor<Query> {
+public class QdFacetFeaturesExtractor implements Processor<TfQuery> {
 
     /**
      * Need to extract some basic features for term first. Then combine the term
@@ -55,7 +55,7 @@ public class QdFacetFeaturesExtractor implements Processor<Query> {
     QuerySetResults querySetResults;
     List<Document> docs;
     List<FacetFeatures> facetFeatures;
-    Query query;
+    TfQuery query;
     long topNum;
     String rankedListFile;
     String docDir;
@@ -81,7 +81,7 @@ public class QdFacetFeaturesExtractor implements Processor<Query> {
     }
 
     @Override
-    public void process(Query query) throws IOException {
+    public void process(TfQuery query) throws IOException {
         this.query = query;
 
         System.err.println(String.format("processing query %s", query.id));

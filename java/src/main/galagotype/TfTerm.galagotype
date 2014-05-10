@@ -1,6 +1,6 @@
 package edu.umass.ciir.fws.types;
 
-type Term {
+type TfTerm {
 	String term;
 	
 	order: +term;

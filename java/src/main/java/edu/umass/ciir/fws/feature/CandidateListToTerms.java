@@ -4,8 +4,8 @@
  */
 package edu.umass.ciir.fws.feature;
 
-import edu.umass.ciir.fws.types.CandidateList;
-import edu.umass.ciir.fws.types.Term;
+import edu.umass.ciir.fws.types.TfCandidateList;
+import edu.umass.ciir.fws.types.TfTerm;
 import java.io.IOException;
 import org.lemurproject.galago.tupleflow.InputClass;
 import org.lemurproject.galago.tupleflow.OutputClass;
@@ -20,13 +20,13 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 @Verified
 @InputClass(className = "edu.umass.ciir.fws.types.CandidateList")
 @OutputClass(className = "edu.umass.ciir.fws.types.Term")
-public class CandidateListToTerms extends StandardStep<CandidateList, Term> {
+public class CandidateListToTerms extends StandardStep<TfCandidateList, TfTerm> {
 
     @Override
-    public void process(CandidateList clist) throws IOException {
+    public void process(TfCandidateList clist) throws IOException {
         String[] items = edu.umass.ciir.fws.clist.CandidateList.splitItemList(clist.itemList);
         for (String item : items) {
-            processor.process(new Term(item));
+            processor.process(new TfTerm(item));
         }
     }
 }

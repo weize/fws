@@ -2,7 +2,7 @@ package edu.umass.ciir.fws.feature;
 
 import edu.umass.ciir.fws.clist.CandidateListParser;
 import edu.umass.ciir.fws.query.QueryFileParser;
-import edu.umass.ciir.fws.types.CandidateList;
+import edu.umass.ciir.fws.types.TfCandidateList;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.PrintStream;
@@ -66,7 +66,7 @@ public class ExtractCandidateListDocFreq extends AppFunction {
     private Stage getSplitStage(Parameters parameter) {
         Stage stage = new Stage("split");
 
-        stage.addOutput("clists", new CandidateList.QidDocRankDocNameListTypeItemListOrder());
+        stage.addOutput("clists", new TfCandidateList.QidDocRankDocNameListTypeItemListOrder());
 
         List<String> inputFiles = parameter.getAsList("queryFile");
 
@@ -80,7 +80,7 @@ public class ExtractCandidateListDocFreq extends AppFunction {
         stage.add(new Step(QueryFileParser.class));
         parameter.set("suffix", "clean.clist");
         stage.add(new Step(CandidateListParser.class, parameter));
-        stage.add(Utility.getSorter(new CandidateList.QidDocRankDocNameListTypeItemListOrder()));
+        stage.add(Utility.getSorter(new TfCandidateList.QidDocRankDocNameListTypeItemListOrder()));
         stage.add(new OutputStep("clists"));
 
         return stage;
@@ -89,7 +89,7 @@ public class ExtractCandidateListDocFreq extends AppFunction {
     private Stage getWriteStage(Parameters parameters) {
         Stage stage = new Stage("write");
 
-        stage.addInput("clists", new CandidateList.QidDocRankDocNameListTypeItemListOrder());
+        stage.addInput("clists", new TfCandidateList.QidDocRankDocNameListTypeItemListOrder());
 
         stage.add(new InputStep("clists"));
         stage.add(new Step(CandidateListDocFreqWriter.class, parameters));

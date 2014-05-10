@@ -2,8 +2,8 @@ package edu.umass.ciir.fws.clustering.plsa;
 
 import edu.umass.ciir.fws.query.QueryFileParser;
 import edu.umass.ciir.fws.tool.app.ProcessQueryParametersApp;
-import edu.umass.ciir.fws.types.Query;
-import edu.umass.ciir.fws.types.QueryParameters;
+import edu.umass.ciir.fws.types.TfQuery;
+import edu.umass.ciir.fws.types.TfQueryParameters;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -56,7 +56,7 @@ public class PlsaClusterItems extends ProcessQueryParametersApp {
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.Query")
     @OutputClass(className = "edu.umass.ciir.fws.types.QueryParameters")
-    public static class GeneratePlsaClusterParameters extends StandardStep<Query, QueryParameters> {
+    public static class GeneratePlsaClusterParameters extends StandardStep<TfQuery, TfQueryParameters> {
 
         List<Long> plsaTopicNums;
 
@@ -66,10 +66,10 @@ public class PlsaClusterItems extends ProcessQueryParametersApp {
         }
 
         @Override
-        public void process(Query query) throws IOException {
+        public void process(TfQuery query) throws IOException {
             for (long plsaTopicNum : plsaTopicNums) {
                 String parameters = edu.umass.ciir.fws.utility.Utility.parametersToString(plsaTopicNum);
-                processor.process(new QueryParameters(query.id, query.text, parameters));
+                processor.process(new TfQueryParameters(query.id, query.text, parameters));
             }
 
         }

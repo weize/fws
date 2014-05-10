@@ -1,7 +1,7 @@
 package edu.umass.ciir.fws.nlp;
 
-import edu.umass.ciir.fws.types.DocumentName;
-import edu.umass.ciir.fws.types.QueryDocumentName;
+import edu.umass.ciir.fws.types.TfDocumentName;
+import edu.umass.ciir.fws.types.TfQueryDocumentName;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -62,7 +62,7 @@ public class NlpParseCorpus extends AppFunction {
     private Stage getSplitStage(Parameters parameter) {
         Stage stage = new Stage("split");
 
-        stage.addOutput("docNames", new DocumentName.NameOrder());
+        stage.addOutput("docNames", new TfDocumentName.NameOrder());
 
         List<String> inputFiles = parameter.getAsList("docNameFile");
 
@@ -74,7 +74,7 @@ public class NlpParseCorpus extends AppFunction {
 
         stage.add(new Step(FileSource.class, p));
         stage.add(new Step(DocumentNameFileParser.class));
-        stage.add(Utility.getSorter(new DocumentName.NameOrder()));
+        stage.add(Utility.getSorter(new TfDocumentName.NameOrder()));
         stage.add(new OutputStep("docNames"));
 
         return stage;
@@ -83,7 +83,7 @@ public class NlpParseCorpus extends AppFunction {
     private Stage getProcessStage(Parameters parameters) {
         Stage stage = new Stage("process");
 
-        stage.addInput("docNames", new DocumentName.NameOrder());
+        stage.addInput("docNames", new TfDocumentName.NameOrder());
 
         stage.add(new InputStep("docNames"));
         stage.add(new Step(DocumentCorpusNLPParser.class, parameters));

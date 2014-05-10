@@ -5,7 +5,7 @@
  */
 package edu.umass.ciir.fws.feature;
 
-import edu.umass.ciir.fws.types.CandidateList;
+import edu.umass.ciir.fws.types.TfCandidateList;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedWriter;
@@ -24,7 +24,7 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
  */
 @Verified
 @InputClass(className = "edu.umass.ciir.fws.types.CandidateList")
-public class CandidateListDocFreqWriter implements Processor<CandidateList> {
+public class CandidateListDocFreqWriter implements Processor<TfCandidateList> {
 
     private static final int _queryDF = 0;
     private static final int _queryHLDF = 1;
@@ -34,8 +34,8 @@ public class CandidateListDocFreqWriter implements Processor<CandidateList> {
     private static final int _listHLDF = 5;
     private static final int _size = 6;
 
-    CandidateList last; // previous candidate list
-    CandidateList lastHtml; // previous candidate list that are extracted by html patterns
+    TfCandidateList last; // previous candidate list
+    TfCandidateList lastHtml; // previous candidate list that are extracted by html patterns
 
     // if current candidate list is html type
     boolean isHtmlType;
@@ -70,7 +70,7 @@ public class CandidateListDocFreqWriter implements Processor<CandidateList> {
      * @throws IOException
      */
     @Override
-    public void process(CandidateList clist) throws IOException {
+    public void process(TfCandidateList clist) throws IOException {
         isHtmlType = edu.umass.ciir.fws.clist.CandidateList.isHtmlCandidateList(clist);
 
         if (last == null) {

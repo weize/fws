@@ -1,7 +1,7 @@
 package edu.umass.ciir.fws.clist;
 
 import edu.umass.ciir.fws.tool.app.ProcessQueryApp;
-import edu.umass.ciir.fws.types.Query;
+import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
@@ -39,7 +39,7 @@ public class CleanCandidateLists extends ProcessQueryApp {
      */
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.Query")
-    public static class CandidateListCleaner implements Processor<Query> {
+    public static class CandidateListCleaner implements Processor<TfQuery> {
 
         Set<String> stopwords = new HashSet<>();
         String clistDir;
@@ -54,7 +54,7 @@ public class CleanCandidateLists extends ProcessQueryApp {
         }
 
         @Override
-        public void process(Query query) throws IOException {
+        public void process(TfQuery query) throws IOException {
             File clistFile = new File(Utility.getCandidateListRawFileName(clistDir, query.id));
 
             List<CandidateList> clists = CandidateList.loadCandidateLists(clistFile);

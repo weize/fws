@@ -1,6 +1,6 @@
 package edu.umass.ciir.fws.nlp;
 
-import edu.umass.ciir.fws.types.QueryDocumentName;
+import edu.umass.ciir.fws.types.TfQueryDocumentName;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
@@ -73,7 +73,7 @@ public class NlpParseDocumentsFix extends AppFunction {
     private Stage getSplitStage(Parameters parameter) {
         Stage stage = new Stage("split");
 
-        stage.addOutput("queryDocNames", new QueryDocumentName.QidDocNameOrder());
+        stage.addOutput("queryDocNames", new TfQueryDocumentName.QidDocNameOrder());
 
         List<String> inputFiles = parameter.getAsList("queryFile");
 
@@ -85,7 +85,7 @@ public class NlpParseDocumentsFix extends AppFunction {
 
         stage.add(new Step(FileSource.class, p));
         stage.add(new Step(QueryFileDocumentsParser.class, parameter));
-        stage.add(Utility.getSorter(new QueryDocumentName.QidDocNameOrder()));
+        stage.add(Utility.getSorter(new TfQueryDocumentName.QidDocNameOrder()));
         stage.add(new OutputStep("queryDocNames"));
 
         return stage;
@@ -94,12 +94,12 @@ public class NlpParseDocumentsFix extends AppFunction {
     private Stage getFilterStage(Parameters parameters) {
         Stage stage = new Stage("filter");
 
-        stage.addInput("queryDocNames", new QueryDocumentName.QidDocNameOrder());
-        stage.addOutput("queryDocNames2", new QueryDocumentName.QidDocNameOrder());
+        stage.addInput("queryDocNames", new TfQueryDocumentName.QidDocNameOrder());
+        stage.addOutput("queryDocNames2", new TfQueryDocumentName.QidDocNameOrder());
 
         stage.add(new InputStep("queryDocNames"));
         stage.add(new Step(QueryDocumentNameFilter.class, parameters));
-        stage.add(Utility.getSorter(new QueryDocumentName.QidDocNameOrder()));
+        stage.add(Utility.getSorter(new TfQueryDocumentName.QidDocNameOrder()));
         stage.add(new OutputStep("queryDocNames2"));
         return stage;
     }
@@ -107,7 +107,7 @@ public class NlpParseDocumentsFix extends AppFunction {
     private Stage getProcessStage(Parameters parameters) {
         Stage stage = new Stage("process");
 
-        stage.addInput("queryDocNames2", new QueryDocumentName.QidDocNameOrder());
+        stage.addInput("queryDocNames2", new TfQueryDocumentName.QidDocNameOrder());
 
         stage.add(new InputStep("queryDocNames2"));
         stage.add(new Step(DocumentNLPParser.class, parameters));
@@ -117,7 +117,7 @@ public class NlpParseDocumentsFix extends AppFunction {
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.QueryDocumentName")
     @OutputClass(className = "edu.umass.ciir.fws.types.QueryDocumentName")
-    public static class QueryDocumentNameFilter extends StandardStep<QueryDocumentName, QueryDocumentName> {
+    public static class QueryDocumentNameFilter extends StandardStep<TfQueryDocumentName, TfQueryDocumentName> {
 
         StanfordCoreNLPParser stanfordParser;
         String parseDir;
@@ -131,7 +131,7 @@ public class NlpParseDocumentsFix extends AppFunction {
         }
 
         @Override
-        public void process(QueryDocumentName queryDocName) throws IOException {
+        public void process(TfQueryDocumentName queryDocName) throws IOException {
             String inputFileName = Utility.getDocHtmlFileName(
                     docDir, queryDocName.qid, queryDocName.docName);
             System.err.println("Filtering " + inputFileName);
@@ -169,14 +169,14 @@ public class NlpParseDocumentsFix extends AppFunction {
 
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.QueryDocumentName")
-    public static class DoNonething implements Processor<QueryDocumentName> {
+    public static class DoNonething implements Processor<TfQueryDocumentName> {
 
         @Override
         public void close() throws IOException {
         }
 
         @Override
-        public void process(QueryDocumentName queryDocumentName) throws IOException {
+        public void process(TfQueryDocumentName queryDocumentName) throws IOException {
         }
     }
 }

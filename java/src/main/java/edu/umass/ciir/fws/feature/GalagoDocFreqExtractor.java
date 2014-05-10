@@ -5,8 +5,8 @@
  */
 package edu.umass.ciir.fws.feature;
 
-import edu.umass.ciir.fws.types.Term;
-import edu.umass.ciir.fws.types.TermCount;
+import edu.umass.ciir.fws.types.TfTerm;
+import edu.umass.ciir.fws.types.TfTermCount;
 import java.io.File;
 import java.io.IOException;
 import org.lemurproject.galago.core.retrieval.Retrieval;
@@ -28,7 +28,7 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 @Verified
 @InputClass(className = "edu.umass.ciir.fws.types.Term", order = {"+term"})
 @OutputClass(className = "edu.umass.ciir.fws.types.TermCount", order = {"+term"})
-public class GalagoDocFreqExtractor extends StandardStep<Term, TermCount> {
+public class GalagoDocFreqExtractor extends StandardStep<TfTerm, TfTermCount> {
 
     Retrieval retrieval;
     CluewebDocFreqMap clueDfs;
@@ -48,10 +48,10 @@ public class GalagoDocFreqExtractor extends StandardStep<Term, TermCount> {
     }
 
     @Override
-    public void process(Term term) throws IOException {
+    public void process(TfTerm term) throws IOException {
         if (existsClueDfs && clueDfs.contains(term.term)) {
             long count = clueDfs.getDf(term.term);
-            processor.process(new TermCount(term.term, count));
+            processor.process(new TfTermCount(term.term, count));
         } else {
             String query = String.format("#od:1( %s )", term.term);
             Node parsed = StructuredQuery.parse(query);
@@ -59,7 +59,7 @@ public class GalagoDocFreqExtractor extends StandardStep<Term, TermCount> {
             try {
                 Node transformed = retrieval.transformQuery(parsed, new Parameters());
                 long count = retrieval.getNodeStatistics(transformed).nodeDocumentCount;
-                processor.process(new TermCount(term.term, count));
+                processor.process(new TfTermCount(term.term, count));
 
             } catch (Exception ex) {
                 System.err.println("warning: failed to get docFreq for " + term.term);

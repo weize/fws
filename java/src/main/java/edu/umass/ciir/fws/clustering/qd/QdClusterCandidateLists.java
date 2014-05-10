@@ -1,8 +1,8 @@
 package edu.umass.ciir.fws.clustering.qd;
 
 import edu.umass.ciir.fws.tool.app.ProcessQueryParametersApp;
-import edu.umass.ciir.fws.types.Query;
-import edu.umass.ciir.fws.types.QueryParameters;
+import edu.umass.ciir.fws.types.TfQuery;
+import edu.umass.ciir.fws.types.TfQueryParameters;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.IOException;
 import java.util.List;
@@ -43,7 +43,7 @@ public class QdClusterCandidateLists extends ProcessQueryParametersApp {
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.Query")
     @OutputClass(className = "edu.umass.ciir.fws.types.QueryParameters")
-    public static class GenerateQdClusterParameters extends StandardStep<Query, QueryParameters> {
+    public static class GenerateQdClusterParameters extends StandardStep<TfQuery, TfQueryParameters> {
 
         List<Double> distanceMaxs;
         List<Double> websiteCountMins;
@@ -56,11 +56,11 @@ public class QdClusterCandidateLists extends ProcessQueryParametersApp {
         }
 
         @Override
-        public void process(Query query) throws IOException {
+        public void process(TfQuery query) throws IOException {
             for (double distanceMax : distanceMaxs) {
                 for (double websiteCountMin : websiteCountMins) {
                     String parameters = Utility.parametersToString(distanceMax, websiteCountMin);
-                    processor.process(new QueryParameters(query.id, query.text, parameters));
+                    processor.process(new TfQueryParameters(query.id, query.text, parameters));
                 }
             }
 
