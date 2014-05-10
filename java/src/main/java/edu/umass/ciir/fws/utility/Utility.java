@@ -121,11 +121,11 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         return getFileNameWithSuffix(corpusDocDir, subDirNames[1], subDirNames[2], docName, "parse.gz");
     }
 
-    public static String getCorpusCandidateListFileName(String clistCorpusDir, String docName) {
+    public static String getCorpusCandidateListFileName(String clistCorpusDir, String docName, String suffix) {
         //clueweb09-en0009-30-02610
         //<clistCorpusDir>/en0009/clueweb09-en0009-30.clist.gz
         String[] subDirNames = docName.split("-");
-        String name = String.format("%s-%s-%s.clist.gz", subDirNames[0],subDirNames[1], subDirNames[2]);
+        String name = String.format("%s-%s-%s.%s.gz", subDirNames[0],subDirNames[1], subDirNames[2], suffix);
         return getFileName(clistCorpusDir, subDirNames[1], name);
     }
 

@@ -6,6 +6,7 @@ package edu.umass.ciir.fws.clist;
 
 import edu.umass.ciir.fws.types.TfCandidateList;
 import edu.umass.ciir.fws.utility.Utility;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
@@ -85,35 +86,57 @@ public class CandidateList {
     }
 
     public static List<CandidateList> loadCandidateLists(File clistFile) throws IOException {
-        ArrayList<CandidateList> clist = new ArrayList<>();
-        String[] lines = Utility.readFileToString(clistFile).split("\n");
-        for (String line : lines) {
-            String[] fields = line.split("\t");
-            String qid = fields[0];
-            long docRank = Long.parseLong(fields[1]);
-            String docName = fields[2];
-            String listType = fields[3];
-            String itemList = fields[4];
-            clist.add(new CandidateList(qid, docRank, docName, listType, itemList));
+        ArrayList<CandidateList> clists = new ArrayList<>();
+        BufferedReader reader = Utility.getReader(clistFile);
+        while (true) {
+            CandidateList clist = readOne(reader);
+            if (clist == null) {
+                break;
+            } else {
+                clists.add(clist);
+            }
         }
-        return clist;
+        reader.close();
+        return clists;
     }
 
     public static List<CandidateList> loadCandidateLists(File clistFile, long topNum) throws IOException {
-        ArrayList<CandidateList> clist = new ArrayList<>();
-        String[] lines = Utility.readFileToString(clistFile).split("\n");
-        for (String line : lines) {
+        ArrayList<CandidateList> clists = new ArrayList<>();
+        BufferedReader reader = Utility.getReader(clistFile);
+        while (true) {
+            CandidateList clist = readOne(reader);
+            if (clist == null) {
+                break;
+            } else {
+                if (clist.docRank <= topNum) {
+                    clists.add(clist);
+                }
+            }
+        }
+        reader.close();
+        return clists;
+    }
+
+    /**
+     * Read one candidate list from reader.
+     *
+     * @param reader
+     * @return
+     * @throws IOException
+     */
+    public static CandidateList readOne(BufferedReader reader) throws IOException {
+        String line = reader.readLine();
+        if (line == null) {
+            return null;
+        } else {
             String[] fields = line.split("\t");
             String qid = fields[0];
             long docRank = Long.parseLong(fields[1]);
             String docName = fields[2];
             String listType = fields[3];
             String itemList = fields[4];
-            if (docRank <= topNum) {
-                clist.add(new CandidateList(qid, docRank, docName, listType, itemList));
-            }
+            return new CandidateList(qid, docRank, docName, listType, itemList);
         }
-        return clist;
     }
 
     public static String[] splitItemList(String itemList) {
@@ -136,5 +159,9 @@ public class CandidateList {
      */
     public static boolean isHtmlCandidateList(edu.umass.ciir.fws.types.TfCandidateList candidateList) {
         return !candidateList.listType.equals(CandidateListTextExtractor.type);
+    }
+
+    TfCandidateList toTfCandidateList() {
+        return new TfCandidateList(this.qid, this.docRank, this.docName, this.listType, this.itemList);
     }
 }

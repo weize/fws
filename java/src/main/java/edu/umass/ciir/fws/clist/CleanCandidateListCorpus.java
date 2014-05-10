@@ -1,24 +1,18 @@
 package edu.umass.ciir.fws.clist;
 
-import edu.umass.ciir.fws.nlp.*;
 import edu.umass.ciir.fws.types.TfCandidateList;
-import edu.umass.ciir.fws.types.TfDocumentName;
 import edu.umass.ciir.fws.utility.Utility;
-import java.io.BufferedWriter;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-import org.lemurproject.galago.core.parse.Document;
-import org.lemurproject.galago.core.retrieval.Retrieval;
-import org.lemurproject.galago.core.retrieval.RetrievalFactory;
 import org.lemurproject.galago.core.tools.AppFunction;
 import org.lemurproject.galago.tupleflow.FileSource;
 import org.lemurproject.galago.tupleflow.InputClass;
 import org.lemurproject.galago.tupleflow.OutputClass;
 import org.lemurproject.galago.tupleflow.Parameters;
-import org.lemurproject.galago.tupleflow.Processor;
 import org.lemurproject.galago.tupleflow.StandardStep;
 import org.lemurproject.galago.tupleflow.TupleFlowParameters;
 import org.lemurproject.galago.tupleflow.execution.ConnectionAssignmentType;
@@ -28,15 +22,16 @@ import org.lemurproject.galago.tupleflow.execution.OutputStep;
 import org.lemurproject.galago.tupleflow.execution.Stage;
 import org.lemurproject.galago.tupleflow.execution.Step;
 import org.lemurproject.galago.tupleflow.execution.Verified;
+import org.lemurproject.galago.tupleflow.types.FileName;
 
 /**
  * Tupleflow application for parsing documents in the corpus.
  *
  * @author wkong
  */
-public class ExtractCandidateListCorpus extends AppFunction {
+public class CleanCandidateListCorpus extends AppFunction {
 
-    private static final String name = "extract-clist-corpus";
+    private static final String name = "clean-clist-corpus";
 
     @Override
     public String getName() {
@@ -71,9 +66,9 @@ public class ExtractCandidateListCorpus extends AppFunction {
     private Stage getSplitStage(Parameters parameter) {
         Stage stage = new Stage("split");
 
-        stage.addOutput("docNames", new TfDocumentName.NameOrder());
+        stage.addOutput("fileNames", new FileName.FilenameOrder());
 
-        List<String> inputFiles = parameter.getAsList("docNameFile");
+        List<String> inputFiles = parameter.getAsList("clistCorpusDir");
 
         Parameters p = new Parameters();
         p.set("input", new ArrayList());
@@ -82,9 +77,8 @@ public class ExtractCandidateListCorpus extends AppFunction {
         }
 
         stage.add(new Step(FileSource.class, p));
-        stage.add(new Step(DocumentNameFileParser.class));
-        stage.add(Utility.getSorter(new TfDocumentName.NameOrder()));
-        stage.add(new OutputStep("docNames"));
+        stage.add(Utility.getSorter(new FileName.FilenameOrder()));
+        stage.add(new OutputStep("fileNames"));
 
         return stage;
     }
@@ -92,11 +86,10 @@ public class ExtractCandidateListCorpus extends AppFunction {
     private Stage getProcessStage(Parameters parameters) {
         Stage stage = new Stage("process");
 
-        stage.addInput("docNames", new TfDocumentName.NameOrder());
-        stage.addOutput("clists", new TfCandidateList.QidDocRankDocNameListTypeItemListOrder());
+        stage.addInput("fileNames", new FileName.FilenameOrder());
 
-        stage.add(new InputStep("docNames"));
-        stage.add(new Step(CandidateListCorpusExtractor.class, parameters));
+        stage.add(new InputStep("fileNames"));
+        stage.add(new Step(CandidateListCorpusCleaner.class, parameters));
         stage.add(Utility.getSorter(new TfCandidateList.QidDocRankDocNameListTypeItemListOrder()));
         stage.add(new OutputStep("clists"));
         return stage;
@@ -107,53 +100,44 @@ public class ExtractCandidateListCorpus extends AppFunction {
         stage.addInput("clists", new TfCandidateList.QidDocRankDocNameListTypeItemListOrder());
 
         stage.add(new InputStep("clists"));
-        parameters.set("suffix", "clist");
+        parameters.set("suffix", "clean.clist");
         stage.add(new Step(CandidateListCorpusWriter.class, parameters));
         return stage;
     }
 
     /**
-     * Candidate lists extractor that will be called by Tupleflow jobs to
-     * extract candidate lists.
+     * clean corpus candidate list
      */
     @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.TfDocumentName")
+    @InputClass(className = "org.lemurproject.galago.tupleflow.types.FileName")
     @OutputClass(className = "edu.umass.ciir.fws.types.TfCandidateList")
-    public static class CandidateListCorpusExtractor extends StandardStep<TfDocumentName, TfCandidateList> {
+    public static class CandidateListCorpusCleaner extends StandardStep<FileName, TfCandidateList> {
 
-        CandidateListHtmlExtractor cListHtmlExtractor;
-        CandidateListTextExtractor cListTextExtractor;
-        String parseCorpusDir;
-        Retrieval retrieval;
-        final static long docRank = 0; // dummy docRank
-        final static String qid = "0"; // dummy qid
+        CandidateListCleaner cleaner;
 
-        public CandidateListCorpusExtractor(TupleFlowParameters parameters) throws Exception {
+        public CandidateListCorpusCleaner(TupleFlowParameters parameters) throws Exception {
             Parameters p = parameters.getJSON();
-            parseCorpusDir = p.getString("parseCorpusDir");
-            retrieval = RetrievalFactory.instance(p);
-            cListHtmlExtractor = new CandidateListHtmlExtractor();
-            cListTextExtractor = new CandidateListTextExtractor();
+            cleaner = new CandidateListCleaner(p);
         }
 
         @Override
-        public void process(TfDocumentName docName) throws IOException {
-            System.err.println("processing " + docName.name);
-
-            // extract by html patterns
-            Document doc = retrieval.getDocument(docName.name, new Document.DocumentComponents(true, false, false));
-            for (edu.umass.ciir.fws.clist.CandidateList clist : cListHtmlExtractor.extract(doc.text, docRank, docName.name, qid)) {
-                processor.process(new TfCandidateList(clist.qid, clist.docRank, clist.docName, clist.listType, clist.itemList));
+        public void process(FileName fileName) throws IOException {
+            if (fileName.filename.endsWith(".clist.gz") && !fileName.filename.endsWith(".clean.clist.gz")) {
+                BufferedReader reader = Utility.getReader(fileName.filename);
+                while (true) {
+                    CandidateList clist = CandidateList.readOne(reader);
+                    if (clist == null) { // end of file
+                        break;
+                    } else {
+                        // clean
+                        CandidateList cleaned = cleaner.clean(clist);
+                        if (cleaned != null) {
+                            processor.process(cleaned.toTfCandidateList());
+                        }
+                    }
+                }
+                reader.close();
             }
-            System.err.println("Done html");
-
-            // extract by text patterns
-            String parseFileName = Utility.getParsedCorpusDocFileName(parseCorpusDir, docName.name);
-            String parseFileContent = Utility.readFileToString(new File(parseFileName));
-            for (edu.umass.ciir.fws.clist.CandidateList clist : cListTextExtractor.extract(parseFileContent, docRank, docName.name, qid)) {
-                processor.process(new TfCandidateList(clist.qid, clist.docRank, clist.docName, clist.listType, clist.itemList));
-            }
-            System.err.println("Done text");
         }
     }
 
