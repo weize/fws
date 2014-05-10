@@ -25,7 +25,7 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 import org.lemurproject.galago.tupleflow.types.FileName;
 
 /**
- * Tupleflow application for parsing documents in the corpus.
+ * Tupleflow application for clean corpus candidate list.
  *
  * @author wkong
  */
@@ -87,6 +87,7 @@ public class CleanCandidateListCorpus extends AppFunction {
         Stage stage = new Stage("process");
 
         stage.addInput("fileNames", new FileName.FilenameOrder());
+        stage.addOutput("clists", new TfCandidateList.QidDocRankDocNameListTypeItemListOrder());
 
         stage.add(new InputStep("fileNames"));
         stage.add(new Step(CandidateListCorpusCleaner.class, parameters));
