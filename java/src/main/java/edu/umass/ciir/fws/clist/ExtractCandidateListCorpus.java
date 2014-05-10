@@ -96,7 +96,7 @@ public class ExtractCandidateListCorpus extends AppFunction {
         stage.addOutput("clists", new CandidateList.QidDocRankDocNameListTypeItemListOrder());
 
         stage.add(new InputStep("docNames"));
-        stage.add(new Step(DocumentCorpusNLPParser.class, parameters));
+        stage.add(new Step(CandidateListCorpusExtractor.class, parameters));
         stage.add(Utility.getSorter(new CandidateList.QidDocRankDocNameListTypeItemListOrder()));
         stage.add(new OutputStep("clists"));
         return stage;
@@ -119,51 +119,47 @@ public class ExtractCandidateListCorpus extends AppFunction {
     @InputClass(className = "edu.umass.ciir.fws.types.CandidateList", order = {"+qid", "+docRank", "+docName", "+listType", "+itemList"})
     public static class CandidateListCorpusWriter implements Processor<CandidateList> {
 
-        CandidateList lastClist;
-        CandidateList curClist;
-        String fileName;
+        String fileName; // current filename
         String clistCorpusDir;
         BufferedWriter writer;
 
         public CandidateListCorpusWriter(TupleFlowParameters parameters) {
             Parameters p = parameters.getJSON();
             clistCorpusDir = p.getString("clistCorpusDir");
-            lastClist = null;
+            fileName = null;
         }
 
         @Override
         public void process(CandidateList clist) throws IOException {
-            curClist = clist;
-            if (lastClist == null) {
-                newWriter();
-                writeClist();
+            String newFileName = Utility.getCorpusCandidateListFileName(clistCorpusDir, clist.docName);
+            if (fileName == null) {
+                onNewFile(newFileName);
             } else {
-                if (inSameFile()) {
-
-                } else {
+                if (!newFileName.equals(fileName)) {
                     writer.close();
+                    onNewFile(newFileName);
                 }
             }
+
+            writeClist(clist);
         }
 
         @Override
         public void close() throws IOException {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            if (writer != null) {
+                writer.close();
+            }
         }
 
-        private void newWriter() throws IOException {
-            fileName = Utility.getCorpusCandidateListFileName(clistCorpusDir, curClist.docName);
-            writer = Utility.getGzipWriter(fileName);
-        }
-
-        private boolean inSameFile() {
-            //String fileName2 = Utility.getCorpusCandidateListFileName(clistCorpusDir, clist.docName)
-            return false;
-        }
-
-        private void writeClist() throws IOException {
-            writer.write(curClist.toString());
+        private void writeClist(CandidateList clist) throws IOException {
+            writer.write(clist.toString());
             writer.newLine();
+        }
+
+        private void onNewFile(String newFileName) throws IOException {
+            fileName = newFileName;
+            Utility.createDirectoryForFile(fileName);
+            writer = Utility.getGzipWriter(fileName);
         }
 
     }
