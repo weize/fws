@@ -5,6 +5,7 @@
  */
 package edu.umass.ciir.fws.feature;
 
+import edu.umass.ciir.fws.clist.CandidateList;
 import edu.umass.ciir.fws.types.TfCandidateList;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
@@ -23,16 +24,14 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
  * @author wkong
  */
 @Verified
-@InputClass(className = "edu.umass.ciir.fws.types.TfCandidateList")
+@InputClass(className = "edu.umass.ciir.fws.types.TfCandidateList", order = {"+qid", "+docRank", "+docName", "+listType", "+itemList"})
 public class CandidateListDocFreqWriter implements Processor<TfCandidateList> {
 
-    private static final int _queryDF = 0;
-    private static final int _queryHLDF = 1;
-    private static final int _docDF = 2;
-    private static final int _docHLDF = 3;
-    private static final int _listDF = 4;
-    private static final int _listHLDF = 5;
-    private static final int _size = 6;
+    private static final int _docDF = 0;
+    private static final int _docHLDF = 1;
+    private static final int _listDF = 2;
+    private static final int _listHLDF = 3;
+    private static final int _size = 4;
 
     TfCandidateList last; // previous candidate list
     TfCandidateList lastHtml; // previous candidate list that are extracted by html patterns
@@ -71,49 +70,29 @@ public class CandidateListDocFreqWriter implements Processor<TfCandidateList> {
      */
     @Override
     public void process(TfCandidateList clist) throws IOException {
-        isHtmlType = edu.umass.ciir.fws.clist.CandidateList.isHtmlCandidateList(clist);
+        isHtmlType = CandidateList.isHtmlCandidateList(clist);
 
-        if (last == null) {
-            totals[_queryDF]++;
+        // new doc
+        if (last == null || !last.docName.equals(clist.docName)) {
+            docTermSet.clear();
             totals[_docDF]++;
-        } else {
-            if (!last.qid.equals(clist.qid)) { // new query
-                queryTermSet.clear();
-                totals[_queryDF]++;
-            }
-            if (last.docRank != clist.docRank) { // new doc
-                docTermSet.clear();
-                totals[_docDF]++;
-            }
         }
         last = clist;
         totals[_listDF]++;
 
         if (isHtmlType) {
-            if (lastHtml == null) {
-                totals[_queryHLDF]++;
+            // new doc for html candidate list
+            if (lastHtml == null || !lastHtml.docName.equals(clist.docName)) {
+                docTermHtmlSet.clear();
                 totals[_docHLDF]++;
-            } else {
-                if (!lastHtml.qid.equals(clist.qid)) {
-                    queryTermHtmlSet.clear();
-                    totals[_queryHLDF]++;
-                }
-                if (lastHtml.docRank != clist.docRank) {
-                    docTermHtmlSet.clear();
-                    totals[_docHLDF]++;
-                }
             }
             lastHtml = clist;
             totals[_listHLDF]++;
         }
 
-        for (String item : edu.umass.ciir.fws.clist.CandidateList.splitItemList(clist.itemList)) {
+        for (String item : CandidateList.splitItemList(clist.itemList)) {
             Long[] counts = termDfs.containsKey(item) ? termDfs.get(item) : getZeros();
 
-            if (!queryTermSet.contains(item)) {
-                counts[_queryDF]++;
-                queryTermSet.add(item);
-            }
             if (!docTermSet.contains(item)) {
                 counts[_docDF]++;
                 docTermSet.add(item);
@@ -122,10 +101,6 @@ public class CandidateListDocFreqWriter implements Processor<TfCandidateList> {
 
             // for html type
             if (isHtmlType) {
-                if (!queryTermHtmlSet.contains(item)) {
-                    counts[_queryHLDF]++;
-                    queryTermHtmlSet.add(item);
-                }
                 if (!docTermHtmlSet.contains(item)) {
                     counts[_docHLDF]++;
                     docTermHtmlSet.add(item);
@@ -140,10 +115,11 @@ public class CandidateListDocFreqWriter implements Processor<TfCandidateList> {
     @Override
     public void close() throws IOException {
         BufferedWriter writer = Utility.getGzipWriter(this.clistDfFile);
-        writer.write("#term\tqueryDF\tqueryDFHtml\tdocDF\tdocDFHtml\tlistDF\tlistDFHtml\n");
+        writer.write("#term\tdocDF\tdocDFHtml\tlistDF\tlistDFHtml\n");
         writer.write("#collection\t" + TextProcessing.join(totals, "\t") + "\n");
         for (String item : termDfs.keySet()) {
-            writer.write(item + "\t" + TextProcessing.join(termDfs.get(item), "\t") + "\n");
+            writer.write(item + "\t" + TextProcessing.join(termDfs.get(item), "\t"));
+            writer.newLine();
         }
         writer.close();
         System.err.println("Written in " + clistDfFile);
@@ -156,4 +132,5 @@ public class CandidateListDocFreqWriter implements Processor<TfCandidateList> {
         }
         return zeros;
     }
+
 }

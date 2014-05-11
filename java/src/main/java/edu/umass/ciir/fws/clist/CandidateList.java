@@ -161,7 +161,7 @@ public class CandidateList {
         return !candidateList.listType.equals(CandidateListTextExtractor.type);
     }
 
-    TfCandidateList toTfCandidateList() {
+    public TfCandidateList toTfCandidateList() {
         return new TfCandidateList(this.qid, this.docRank, this.docName, this.listType, this.itemList);
     }
 }
