@@ -204,6 +204,7 @@ public class ExtractCandidateListDocFreqFromCorpus extends AppFunction {
             if (last != null) {
                 writeCounts();
             }
+            writer.close();
         }
 
         private void addOne(HashMap<String, Long> map, String type) {
