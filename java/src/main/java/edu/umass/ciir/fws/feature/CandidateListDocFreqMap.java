@@ -5,7 +5,6 @@
  */
 package edu.umass.ciir.fws.feature;
 
-import edu.umass.ciir.fws.clist.CandidateList;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
 import java.io.File;

@@ -312,11 +312,6 @@ public class TermFeaturesExtractor implements Processor<TfQuery> {
     }
 
     private void extractCandidateListIDF() {
-        long[] ones = new long[6];
-        for (int i = 0; i < ones.length; i++) {
-            ones[i] = 1;
-        }
-
         for (String term : termFeatures.keySet()) {
             TermFeatures termFeature = termFeatures.get(term);
 
