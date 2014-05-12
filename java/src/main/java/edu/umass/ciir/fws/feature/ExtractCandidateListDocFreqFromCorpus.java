@@ -96,7 +96,7 @@ public class ExtractCandidateListDocFreqFromCorpus extends AppFunction {
         Stage stage = new Stage("process");
 
         stage.addInput("fileNames", new FileName.FilenameOrder());
-        stage.addOutput("items", new TfCandidateList.QidDocRankDocNameListTypeItemListOrder());
+        stage.addOutput("items", new TfListItem.TermDocNameListTypeOrder());
 
         stage.add(new InputStep("fileNames"));
         stage.add(new Step(CandidateListCorpusParser.class, parameters));
