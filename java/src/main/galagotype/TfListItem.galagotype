@@ -6,4 +6,5 @@ type TfListItem {
         String listType;
 	
 	order: +term +docName +listType;
+        order: +docName +listType;
 }
