@@ -63,6 +63,7 @@ public class TermFeaturesExtractor implements Processor<TfQuery> {
         featureDir = p.getString("featureDir");
         String clueDfFile = p.getString("clueDfFile");
         String clistDfFile = p.getString("clistDfFile");
+        String clistDfMetaFile = p.getString("clistDfMetaFile");
         double clueCdf = p.getLong("clueCdf");
         topNum = p.getLong("topNum");
         rankedListFile = p.getString("rankedListFile");
@@ -70,7 +71,7 @@ public class TermFeaturesExtractor implements Processor<TfQuery> {
 
         termFeatures = new TreeMap<>();
         clueDfs = new CluewebDocFreqMap(new File(clueDfFile), clueCdf); // load clueWebDocFreqs
-        clistDfs = new CandidateListDocFreqMap(new File(clistDfFile));
+        clistDfs = new CandidateListDocFreqMap(new File(clistDfFile), new File(clistDfMetaFile));
 
         loadQuerySetResults();
 

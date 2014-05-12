@@ -37,11 +37,11 @@ public class CandidateListDocFreqMap {
 
     HashMap<String, long[]> clistDfs;
     long[] clistCdfs;
-    
 
-    public CandidateListDocFreqMap(File clistDfFile) throws IOException {
+    public CandidateListDocFreqMap(File clistDfFile, File clistDfMetaFile) throws IOException {
         clistCdfs = new long[size];
         clistDfs = new HashMap<>();
+        loadMeta(clistDfMetaFile);
         loadCandidateListDocFreqs(clistDfFile);
     }
 
@@ -50,25 +50,20 @@ public class CandidateListDocFreqMap {
         clistDfs.clear();
 
         BufferedReader reader = Utility.getReader(file);
-        String line;
-        reader.readLine(); // read header
-        line = reader.readLine(); // read col freqs
+        String line = reader.readLine();
         String[] elems = line.split("\t");
         assert elems.length == size + 1;
-
-        for (int i = 1; i < elems.length; i++) {
-            clistCdfs[i - 1] = Integer.parseInt(elems[i]);
-        }
-
-        while ((line = reader.readLine()) != null) {
-            String[] elems2 = line.split("\t");
-            String term = elems2[0];
+        
+        do {
+            elems = line.split("\t");
+            String term = elems[0];
             long[] curDFs = new long[size];
-            for (int i = 1; i < elems2.length; i++) {
-                curDFs[i - 1] = Integer.parseInt(elems2[i]);
+            for (int i = 1; i < elems.length; i++) {
+                curDFs[i - 1] = Integer.parseInt(elems[i]);
             }
             clistDfs.put(term, curDFs);
-        }
+        } while ((line = reader.readLine()) != null);
+
         reader.close();
     }
 
@@ -79,5 +74,19 @@ public class CandidateListDocFreqMap {
 
     double getCdf(int index) {
         return clistCdfs[index];
+    }
+
+    private void loadMeta(File file) throws IOException {
+        BufferedReader reader = Utility.getReader(file);
+        String line;
+        reader.readLine(); // read header
+        line = reader.readLine(); // read col freqs
+        String[] elems = line.split("\t");
+        assert elems.length == size + 1;
+
+        for (int i = 1; i < elems.length; i++) {
+            clistCdfs[i - 1] = Integer.parseInt(elems[i]);
+        }
+        reader.close();
     }
 }
