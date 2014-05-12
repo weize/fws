@@ -37,10 +37,11 @@ public class GalagoDocFreqExtractor extends StandardStep<TfTerm, TfTermCount> {
     public GalagoDocFreqExtractor(TupleFlowParameters parameters) throws Exception {
         Parameters p = parameters.getJSON();
         retrieval = RetrievalFactory.instance(p);
+        double clueCdf = p.getLong("clueCdf");
         if (p.containsKey("clueDfOldFile")) {
             existsClueDfs = true;
             File clueDfOldFile = new File(p.getString("clueDfOldFile"));
-            clueDfs = new CluewebDocFreqMap(clueDfOldFile);
+            clueDfs = new CluewebDocFreqMap(clueDfOldFile, clueCdf);
             System.err.println("Load old clue dfs from " + clueDfOldFile.getAbsolutePath());
         } else {
             existsClueDfs = false;

@@ -74,7 +74,7 @@ public class QdFacetFeaturesExtractor implements Processor<TfQuery> {
         rankedListFile = p.getString("rankedListFile");
         docDir = p.getString("docDir");
         termFeatures = new HashMap<>();
-        clueDfs = new CluewebDocFreqMap(new File(clueDfFile));
+        clueDfs = new CluewebDocFreqMap(new File(clueDfFile), clueCdf);
 
         loadQuerySetResults();
 

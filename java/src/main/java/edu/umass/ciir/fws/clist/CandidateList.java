@@ -28,6 +28,7 @@ public class CandidateList {
     public String itemList;
     public String[] items; // candidate list items
     public final static int MAX_TERM_SIZE = 10; // maxium number of word in an candidate item/a facet term
+    public static String[] clistTypes = {"all", "ul", "ol", "select", "tr", "td", "tx"};
 
     public CandidateList() {
 

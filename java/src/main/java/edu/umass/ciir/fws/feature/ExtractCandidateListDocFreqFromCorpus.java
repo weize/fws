@@ -2,19 +2,24 @@ package edu.umass.ciir.fws.feature;
 
 import edu.umass.ciir.fws.clist.CandidateList;
 import edu.umass.ciir.fws.types.TfCandidateList;
+import edu.umass.ciir.fws.types.TfListItem;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import org.lemurproject.galago.core.tools.AppFunction;
 import org.lemurproject.galago.tupleflow.FileSource;
 import org.lemurproject.galago.tupleflow.InputClass;
 import org.lemurproject.galago.tupleflow.OutputClass;
 import org.lemurproject.galago.tupleflow.Parameters;
+import org.lemurproject.galago.tupleflow.Processor;
 import org.lemurproject.galago.tupleflow.StandardStep;
+import org.lemurproject.galago.tupleflow.TupleFlowParameters;
 import org.lemurproject.galago.tupleflow.execution.ConnectionAssignmentType;
 import org.lemurproject.galago.tupleflow.execution.InputStep;
 import org.lemurproject.galago.tupleflow.execution.Job;
@@ -91,21 +96,22 @@ public class ExtractCandidateListDocFreqFromCorpus extends AppFunction {
         Stage stage = new Stage("process");
 
         stage.addInput("fileNames", new FileName.FilenameOrder());
-        stage.addOutput("clists", new TfCandidateList.QidDocRankDocNameListTypeItemListOrder());
+        stage.addOutput("items", new TfCandidateList.QidDocRankDocNameListTypeItemListOrder());
 
         stage.add(new InputStep("fileNames"));
         stage.add(new Step(CandidateListCorpusParser.class, parameters));
-        stage.add(Utility.getSorter(new TfCandidateList.QidDocRankDocNameListTypeItemListOrder()));
-        stage.add(new OutputStep("clists"));
+        stage.add(new Step(CandidateListToListItem.class));
+        stage.add(Utility.getSorter(new TfListItem.TermDocNameListTypeOrder()));
+        stage.add(new OutputStep("items"));
         return stage;
     }
 
     private Stage getWriteStage(Parameters parameters) {
         Stage stage = new Stage("write");
 
-        stage.addInput("clists", new TfCandidateList.QidDocRankDocNameListTypeItemListOrder());
+        stage.addInput("items", new TfListItem.TermDocNameListTypeOrder());
 
-        stage.add(new InputStep("clists"));
+        stage.add(new InputStep("items"));
         stage.add(new Step(CandidateListDocFreqWriter.class, parameters));
 
         return stage;
@@ -134,5 +140,92 @@ public class ExtractCandidateListDocFreqFromCorpus extends AppFunction {
                 reader.close();
             }
         }
+    }
+
+    @Verified
+    @InputClass(className = "edu.umass.ciir.fws.types.TfCandidateList")
+    @OutputClass(className = "edu.umass.ciir.fws.types.TfListItem")
+    public static class CandidateListToListItem extends StandardStep<TfCandidateList, TfListItem> {
+
+        @Override
+        public void process(TfCandidateList clist) throws IOException {
+            for (String term : CandidateList.splitItemList(clist.itemList)) {
+                TfListItem item = new TfListItem(term, clist.docName, clist.listType);
+                processor.process(item);
+            }
+
+        }
+    }
+
+    @Verified
+    @InputClass(className = "edu.umass.ciir.fws.types.TfListItem", order = {"+term", "+docName", "+listType"})
+    public static class CandidateListDocFreqWriter implements Processor<TfListItem> {
+
+        BufferedWriter writer;
+        TfListItem last;
+        HashMap<String, String> lastDocNames;
+        HashMap<String, Long> tfs; // term freq
+        HashMap<String, Long> dfs; // doc freq
+
+        public CandidateListDocFreqWriter(TupleFlowParameters parameters) throws IOException {
+            Parameters p = parameters.getJSON();
+            String clistDfFile = p.getString("clistDfFile");
+            writer = Utility.getWriter(clistDfFile);
+            lastDocNames = new HashMap<>();
+            tfs = new HashMap<>();
+            dfs = new HashMap<>();
+        }
+
+        @Override
+        public void process(TfListItem item) throws IOException {
+            // a new term
+            if (last != null && !item.term.equals(last.term)) {
+                writeCounts();
+                lastDocNames.clear();
+                tfs.clear();
+                dfs.clear();
+            }
+
+            for (String type : new String[]{"all", item.listType}) {
+                addOne(tfs, type);  // tf
+
+                String lastDocName = lastDocNames.get(type);
+                if (lastDocName == null || !lastDocName.equals(item.docName)) {
+                    // new doc
+                    addOne(dfs, type);
+                    lastDocNames.put(type, item.docName);
+                }
+            }
+            last = item;
+        }
+
+        @Override
+        public void close() throws IOException {
+            if (last != null) {
+                writeCounts();
+            }
+        }
+
+        private void addOne(HashMap<String, Long> map, String type) {
+            long count = map.containsKey(type) ? map.get(type) : 0;
+            map.put(type, count + 1);
+        }
+
+        private void onNewDoc(String type, String docName) {
+            addOne(dfs, type);
+            lastDocNames.put(type, docName);
+        }
+
+        private void writeCounts() throws IOException {
+            // term tf df
+            writer.write(last.term);
+            for (String type : CandidateList.clistTypes) {
+                long tf = tfs.containsKey(type) ? tfs.get(type) : 0;
+                long df = dfs.containsKey(type) ? dfs.get(type) : 0;
+                writer.write("\t" + tf + "\t" + df);
+            }
+            writer.newLine();
+        }
+
     }
 }

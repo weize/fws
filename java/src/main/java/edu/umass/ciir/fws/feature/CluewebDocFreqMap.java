@@ -19,9 +19,11 @@ import java.util.HashMap;
 public class CluewebDocFreqMap {
     
     HashMap<String, Long> termDf; // term -> docFreq
+    double clueCdf;
     
-    public CluewebDocFreqMap(File clueDfFile) throws IOException {
+    public CluewebDocFreqMap(File clueDfFile, double clueCdf) throws IOException {
         termDf = new HashMap<>();
+        this.clueCdf = clueCdf;
         loadClueWebDocFreqs(clueDfFile);
     }
     

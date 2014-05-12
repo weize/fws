@@ -36,7 +36,7 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
  */
 @Verified
 @InputClass(className = "edu.umass.ciir.fws.types.TfQuery")
-public class TermFeaturesExtractor implements Processor<TfQuery> {
+public class TermFeaturesExtractorOld implements Processor<TfQuery> {
 
     final static double LOG2BASE = Math.log(2);
     final static int MAX_TERM_SIZE = CandidateList.MAX_TERM_SIZE; // used to build map for ngram->count
@@ -55,26 +55,32 @@ public class TermFeaturesExtractor implements Processor<TfQuery> {
     TfQuery query;
     TreeMap<String, TermFeatures> termFeatures;
     CluewebDocFreqMap clueDfs; // clue web document frequency
-    CandidateListDocFreqMap clistDfs; // Candidate list document frequency in a gloabl candidate list set.
+    double clueCdf;
 
-    public TermFeaturesExtractor(TupleFlowParameters parameters) throws Exception {
+    // Candidate list document frequency in a gloabl candidate list set.
+    // There are 6 types of "df" here.
+    HashMap<String, long[]> clistDfs;
+    long[] clistCdfs; // number of "document" in the gloabl candidate list set.
+
+    public TermFeaturesExtractorOld(TupleFlowParameters parameters) throws Exception {
         Parameters p = parameters.getJSON();
         clistDir = p.getString("clistDir");
         featureDir = p.getString("featureDir");
         String clueDfFile = p.getString("clueDfFile");
         String clistDfFile = p.getString("clistDfFile");
-        double clueCdf = p.getLong("clueCdf");
+        clueCdf = p.getLong("clueCdf");
         topNum = p.getLong("topNum");
         rankedListFile = p.getString("rankedListFile");
         docDir = p.getString("docDir");
 
         termFeatures = new TreeMap<>();
         clueDfs = new CluewebDocFreqMap(new File(clueDfFile), clueCdf); // load clueWebDocFreqs
-        clistDfs = new CandidateListDocFreqMap(new File(clistDfFile));
+        clistDfs = new HashMap<>();
 
         loadQuerySetResults();
+        loadCandidateListDocFreqs(clistDfFile);
 
-        logger = Logger.getLogger(TermFeaturesExtractor.class.toString());
+        logger = Logger.getLogger(TermFeaturesExtractorOld.class.toString());
     }
 
     @Override
@@ -92,10 +98,10 @@ public class TermFeaturesExtractor implements Processor<TfQuery> {
         extractDocFeaturesInContentField();
         extractDocFeaturesInTitleField();
 
-        // extrac list features based on different set of candidates lists
-        for (String type : CandidateList.clistTypes) {
-            extractListFeatures(type);
-        }
+        // extrac list features based on all candidates lists
+        extractListFeatures(false);
+        // extract list features based only on html candidate lists
+        extractListFeatures(true);
 
         extractClueWebIDF();
         extractCandidateListIDF();
@@ -131,6 +137,31 @@ public class TermFeaturesExtractor implements Processor<TfQuery> {
 
     private void loadQuerySetResults() throws Exception {
         querySetResults = new QuerySetResults(rankedListFile, topNum);
+    }
+
+    private void loadCandidateListDocFreqs(String fileName) throws IOException {
+        clistCdfs = new long[6];
+        clistDfs.clear();
+
+        BufferedReader reader = Utility.getReader(fileName);
+        String line;
+        reader.readLine(); // read header
+        line = reader.readLine(); // read col freqs
+        String[] elems = line.split("\t");
+        for (int i = 1; i < elems.length; i++) {
+            this.clistCdfs[i - 1] = Integer.parseInt(elems[i]);
+        }
+
+        while ((line = reader.readLine()) != null) {
+            String[] elems2 = line.split("\t");
+            String term = elems2[0];
+            long[] curDFs = new long[6];
+            for (int i = 1; i < elems2.length; i++) {
+                curDFs[i - 1] = Integer.parseInt(elems2[i]);
+            }
+            clistDfs.put(term, curDFs);
+        }
+        reader.close();
     }
 
     private void extractDocFeaturesInContentField() {
@@ -245,30 +276,32 @@ public class TermFeaturesExtractor implements Processor<TfQuery> {
     }
 
     /**
-     * *
      *
-     * @param clistListType the set of candidate lists used for extract
-     * feature.（"all", "ul", "ol", "select", "tr", "td", "tx"）
+     * @param filterTextCandidateList whether filter out candidate lists
+     * extracted based on textual patterns.
      */
-    private void extractListFeatures(String clistListType) {
+    private void extractListFeatures(boolean filterTextCandidateList) {
         // collect lists for each doc
         HashMap<Long, ArrayList<CandidateList>> docidListsMap = new HashMap<>();
         for (CandidateList clist : this.clists) {
-            if (clistListType.equals("all") || clistListType.equals(clist.listType)) {
-                ArrayList<CandidateList> docLists;
-                if (docidListsMap.containsKey(clist.docRank)) {
-                    docLists = docidListsMap.get(clist.docRank);
-                } else {
-                    docLists = new ArrayList<>();
-                }
-                docLists.add(clist);
-                docidListsMap.put(clist.docRank, docLists);
+            // filter text candidate lists if specified
+            if (filterTextCandidateList && clist.isTextType()) {
+                continue;
             }
+
+            ArrayList<CandidateList> docLists;
+            if (docidListsMap.containsKey(clist.docRank)) {
+                docLists = docidListsMap.get(clist.docRank);
+            } else {
+                docLists = new ArrayList<>();
+            }
+            docLists.add(clist);
+            docidListsMap.put(clist.docRank, docLists);
         }
 
         // build a term-> count map for each doc
         for (Document doc : docs) {
-            HashMap<String, Integer> ngramMap = doc.ngramMap; // renaming for convience
+            HashMap<String, Integer> ngramMap = doc.ngramMap; // just renaming for convience
             ngramMap.clear();
             if (docidListsMap.containsKey(doc.rank)) {
                 for (CandidateList list : docidListsMap.get(doc.rank)) {
@@ -289,9 +322,13 @@ public class TermFeaturesExtractor implements Processor<TfQuery> {
             }
         }
 
-        int[] indices = TermFeatures.getIndicesForListTFs(clistListType);
-        extractTfDfSfFromNgramMap(indices[0], indices[1], indices[2], -1);
-
+        if (filterTextCandidateList) {
+            extractTfDfSfFromNgramMap(
+                    TermFeatures._listHlTf, TermFeatures._listHlDf, TermFeatures._listHlSf, -1);
+        } else {
+            extractTfDfSfFromNgramMap(
+                    TermFeatures._listTf, TermFeatures._listDf, TermFeatures._listSf, -1);
+        }
     }
 
     private void extractClueWebIDF() {
@@ -299,7 +336,7 @@ public class TermFeaturesExtractor implements Processor<TfQuery> {
             TermFeatures termFeature = termFeatures.get(term);
             double clueDf = clueDfs.getDf(term);
             double contentTF = (Double) termFeature.getFeature(TermFeatures._contentTf);
-            double clueIdf = idf(clueDf, clueDfs.clueCdf);
+            double clueIdf = idf(clueDf, clueCdf);
             double contentTFClueIDF = contentTF * clueIdf;
             termFeature.setFeature(clueIdf, TermFeatures._clueIDF);
             termFeature.setFeature(contentTFClueIDF, TermFeatures._contentTFClueIDF);
@@ -310,6 +347,13 @@ public class TermFeaturesExtractor implements Processor<TfQuery> {
         return Math.log((colSize - df + 0.5) / (df + 0.5)) / LOG2BASE;
     }
 
+    final static int _listDFQueryIdx = 0;
+    final static int _listDFQueryHlIdx = 1;
+    final static int _listDFDocIdx = 2;
+    final static int _listDFDocHlIdx = 3;
+    final static int _listDFListIdx = 4;
+    final static int _listDFListHlIdx = 5;
+
     private void extractCandidateListIDF() {
         long[] ones = new long[6];
         for (int i = 0; i < ones.length; i++) {
@@ -319,15 +363,44 @@ public class TermFeaturesExtractor implements Processor<TfQuery> {
         for (String term : termFeatures.keySet()) {
             TermFeatures termFeature = termFeatures.get(term);
 
-            double listDf = clistDfs.getDf(term, CandidateListDocFreqMap._df);
-            double listCdf = clistDfs.getCdf(CandidateListDocFreqMap._df); // collection freq
-            double listIdf = idf(listDf, listCdf);
+            // assume the frequency is 1 if the term is not found in the candidate list document frequency file.
+            long[] dfs = clistDfs.containsKey(term) ? this.clistDfs.get(term) : ones;
 
-            termFeature.setFeature(listIdf, TermFeatures._listIDF);
+            double listQueryIDF = idf(dfs[_listDFQueryIdx], clistCdfs[_listDFQueryIdx]);
+            double listQueryHlIDF = idf(dfs[_listDFQueryHlIdx], clistCdfs[_listDFQueryHlIdx]);
+            double listDocIDF = idf(dfs[_listDFDocIdx], clistCdfs[_listDFDocIdx]);
+            double listDocHlIDF = idf(dfs[_listDFDocHlIdx], clistCdfs[_listDFDocHlIdx]);
+            double listListIDF = idf(dfs[_listDFListIdx], clistCdfs[_listDFListIdx]);
+            double listListHlIDF = idf(dfs[_listDFListHlIdx], clistCdfs[_listDFListHlIdx]);
 
+            termFeature.setFeature(listQueryIDF, TermFeatures._listQueryIDF);
+            termFeature.setFeature(listQueryHlIDF, TermFeatures._listQueryHlIDF);
+
+            termFeature.setFeature(listDocIDF, TermFeatures._listDocIDF);
+            termFeature.setFeature(listDocHlIDF, TermFeatures._listDocHlIDF);
+
+            termFeature.setFeature(listListIDF, TermFeatures._listListIDF);
+            termFeature.setFeature(listListHlIDF, TermFeatures._listListHlIDF);
+
+            double listHlTF = (Double) termFeature.getFeature(TermFeatures._listHlTf);
             double listTF = (Double) termFeature.getFeature(TermFeatures._listTf);
-            double listTfListIDf = listTF * listIdf;
-            termFeature.setFeature(listTfListIDf, TermFeatures._listTFListIDF);
+
+            double listHlTFListQueryHlIDF = listHlTF * listQueryHlIDF;
+            double listHlTFListDocHlIDF = listHlTF * listDocHlIDF;
+            double listHlTFListListHlIDF = listHlTF * listListHlIDF;
+
+            double listTFListQueryIDF = listTF * listQueryIDF;
+            double listTFListDocIDF = listTF * listDocIDF;
+            double listTFListListIDF = listTF * listListIDF;
+
+            termFeature.setFeature(listHlTFListQueryHlIDF, TermFeatures._listHlTFListQueryHlIDF);
+            termFeature.setFeature(listHlTFListDocHlIDF, TermFeatures._listHlTFListDocHlIDF);
+            termFeature.setFeature(listHlTFListListHlIDF, TermFeatures._listHlTFListListHlIDF);
+
+            termFeature.setFeature(listTFListQueryIDF, TermFeatures._listTFListQueryIDF);
+            termFeature.setFeature(listTFListDocIDF, TermFeatures._listTFListDocIDF);
+            termFeature.setFeature(listTFListListIDF, TermFeatures._listTFListListIDF);
+
         }
 
     }
@@ -348,78 +421,42 @@ public class TermFeaturesExtractor implements Processor<TfQuery> {
      *
      * @author wkong
      */
-    public static class TermFeatures {
+    public class TermFeatures {
 
-        final static String version = "8";
-
+        final static String version = "7";
         String term;
         Object[] features;
 
         // index of features
-        public static final int _len = 0; // number of tokens 
-
-        public static final int _listTf = 1; // tf
-        public static final int _listDf = 2; // docs contains the term in candidate list
+        public static final int _len = 0;
+        public static final int _listTf = 1;
+        public static final int _listDf = 2;
         public static final int _listSf = 3; // site freq
-        // for <ul> pattern
-        public static final int _listUlTf = 4;
-        public static final int _listUlDf = 5;
-        public static final int _listUlSf = 6;
-        // for <ol> pattern
-        public static final int _listOlTf = 7;
-        public static final int _listOlDf = 8;
-        public static final int _listOlSf = 9;
-        // for <select> pattern
-        public static final int _listSlTf = 10;
-        public static final int _listSlDf = 11;
-        public static final int _listSlSf = 12;
-        // for <tr> pattern
-        public static final int _listTrTf = 13;
-        public static final int _listTrDf = 14;
-        public static final int _listTrSf = 15;
-        // for <td> pattern
-        public static final int _listTdTf = 16;
-        public static final int _listTdDf = 17;
-        public static final int _listTdSf = 18;
-        // for text pattern
-        public static final int _listTxTf = 19;
-        public static final int _listTxDf = 20;
-        public static final int _listTxSf = 21;
-        // title
-        public static final int _titleTf = 22;
-        public static final int _titleDf = 23;
-        public static final int _titleSf = 24;
-        // content
-        public static final int _contentTf = 25;
-        public static final int _contentDf = 26;
-        public static final int _contentWDf = 27;
-        public static final int _contentSf = 28;
-        // idf
-        public static final int _clueIDF = 29;
-        public static final int _listIDF = 30;
-        // tf.idf
-        public static final int _contentTFClueIDF = 31;
-        public static final int _listTFListIDF = 32;
-        public static final int size = 33;
-
-        public static int[] getIndicesForListTFs(String clistListType) {
-            if (clistListType.equals("all")) {
-                return new int[]{_listTf, _listDf, _listSf};
-            } else if (clistListType.equals("ul")) {
-                return new int[]{_listUlTf, _listUlDf, _listUlSf};
-            } else if (clistListType.equals("ol")) {
-                return new int[]{_listOlTf, _listOlDf, _listOlSf};
-            } else if (clistListType.equals("select")) {
-                return new int[]{_listSlTf, _listSlDf, _listSlSf};
-            } else if (clistListType.equals("tr")) {
-                return new int[]{_listTrTf, _listTrDf, _listTrSf};
-            } else if (clistListType.equals("td")) {
-                return new int[]{_listTdTf, _listTdDf, _listTdSf};
-            } else if (clistListType.equals("tx")) {
-                return new int[]{_listTxTf, _listTxDf, _listTxSf};
-            }
-            return null;
-        }
+        public static final int _listHlTf = 4;
+        public static final int _listHlDf = 5;
+        public static final int _listHlSf = 6; // site freq
+        public static final int _contentTf = 7;
+        public static final int _contentDf = 8;
+        public static final int _contentWDf = 9;
+        public static final int _contentSf = 10; // site freq
+        public static final int _titleTf = 11;
+        public static final int _titleDf = 12;
+        public static final int _titleSf = 13; // site freq
+        public static final int _clueIDF = 14;
+        public static final int _listQueryIDF = 15;
+        public static final int _listQueryHlIDF = 16;
+        public static final int _listDocIDF = 17;
+        public static final int _listDocHlIDF = 18;
+        public static final int _listListIDF = 19;
+        public static final int _listListHlIDF = 20;
+        public static final int _contentTFClueIDF = 21;
+        public static final int _listHlTFListQueryHlIDF = 22;
+        public static final int _listHlTFListDocHlIDF = 23;
+        public static final int _listHlTFListListHlIDF = 24;
+        public static final int _listTFListQueryIDF = 25;
+        public static final int _listTFListDocIDF = 26;
+        public static final int _listTFListListIDF = 27;
+        public static final int size = 28;
 
         public TermFeatures(String term) {
             this.features = new Object[size];
