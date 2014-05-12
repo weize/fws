@@ -108,7 +108,7 @@ public class ExtractCandidateListDocFreqFromCorpus extends AppFunction {
         stage.add(new OutputStep("items"));
         return stage;
     }
-    
+
     private Stage getWriteMetaStage(Parameters parameters) {
         Stage stage = new Stage("writeMeta");
 
@@ -120,7 +120,7 @@ public class ExtractCandidateListDocFreqFromCorpus extends AppFunction {
 
         return stage;
     }
-    
+
     private Stage getWriteStage(Parameters parameters) {
         Stage stage = new Stage("write");
 
@@ -239,14 +239,12 @@ public class ExtractCandidateListDocFreqFromCorpus extends AppFunction {
         }
 
     }
-    
-    
+
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.TfListItem", order = {"+docName", "+listType"})
     public static class CandidateListDocFreqMetaWriter implements Processor<TfListItem> {
 
         BufferedWriter writer;
-        TfListItem last;
         HashMap<String, String> lastDocNames;
         HashMap<String, Long> ctfs; // collection tf freq
         HashMap<String, Long> cdfs; // collection doc freq
@@ -276,12 +274,12 @@ public class ExtractCandidateListDocFreqFromCorpus extends AppFunction {
 
         @Override
         public void close() throws IOException {
-            writer.write("#term\t");
-            writer.write(TextProcessing.join(CandidateList.clistTypes, "\t"));
-            writer.newLine();
-            if (last != null) {
-                writeCounts();
+            writer.write("#term");
+            for (String type : CandidateList.clistTypes) {
+                writer.write(String.format("\t%sTf\t%sDf", type, type));
             }
+            writer.newLine();
+            writeCounts();
             writer.close();
         }
 
