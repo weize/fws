@@ -1,0 +1,10 @@
+package edu.umass.ciir.fws.types;
+
+type TfTermTypedCount {
+	String term;
+        long listType;
+        long tf;
+        long df;
+	
+	order: +term;
+}

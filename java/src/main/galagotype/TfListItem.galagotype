@@ -1,0 +1,9 @@
+package edu.umass.ciir.fws.types;
+
+type TfListItem {
+	String term;
+        String docName;
+        String listType;
+	
+	order: +term +docName +listType;
+}
