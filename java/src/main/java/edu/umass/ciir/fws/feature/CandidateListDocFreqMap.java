@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.TreeMap;
 
 /**
  *
@@ -44,6 +45,13 @@ public class CandidateListDocFreqMap {
         loadCandidateListDocFreqs(clistDfFile);
     }
 
+    CandidateListDocFreqMap(File clistDfFile, File clistDfMetaFile, TreeMap<String, TermFeaturesExtractor.TermFeatures> terms) throws IOException {
+        clistCdfs = new long[size];
+        clistDfs = new HashMap<>();
+        loadMeta(clistDfMetaFile);
+        loadCandidateListDocFreqs(clistDfFile, terms);
+    }
+
     private void loadCandidateListDocFreqs(File file) throws IOException {
 
         clistDfs.clear();
@@ -52,7 +60,7 @@ public class CandidateListDocFreqMap {
         String line = reader.readLine();
         String[] elems = line.split("\t");
         assert elems.length == size + 1;
-        
+
         do {
             elems = line.split("\t");
             String term = elems[0];
@@ -61,6 +69,36 @@ public class CandidateListDocFreqMap {
                 curDFs[i - 1] = Integer.parseInt(elems[i]);
             }
             clistDfs.put(term, curDFs);
+        } while ((line = reader.readLine()) != null);
+
+        reader.close();
+    }
+
+    
+    /**
+     * Due to memory issue, only load dfs in the term set.
+     * @param file
+     * @param terms
+     * @throws IOException 
+     */
+    private void loadCandidateListDocFreqs(File file, TreeMap<String, TermFeaturesExtractor.TermFeatures> terms) throws IOException {
+        clistDfs.clear();
+
+        BufferedReader reader = Utility.getReader(file);
+        String line = reader.readLine();
+        String[] elems = line.split("\t");
+        assert elems.length == size + 1;
+
+        do {
+            elems = line.split("\t");
+            String term = elems[0];
+            if (terms.containsKey(term)) {
+                long[] curDFs = new long[size];
+                for (int i = 1; i < elems.length; i++) {
+                    curDFs[i - 1] = Integer.parseInt(elems[i]);
+                }
+                clistDfs.put(term, curDFs);
+            }
         } while ((line = reader.readLine()) != null);
 
         reader.close();
@@ -88,4 +126,5 @@ public class CandidateListDocFreqMap {
         }
         reader.close();
     }
+
 }

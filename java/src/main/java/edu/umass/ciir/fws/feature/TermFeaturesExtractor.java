@@ -57,13 +57,16 @@ public class TermFeaturesExtractor implements Processor<TfQuery> {
     CluewebDocFreqMap clueDfs; // clue web document frequency
     CandidateListDocFreqMap clistDfs; // Candidate list document frequency in a gloabl candidate list set.
 
+    String clistDfFile;
+    String clistDfMetaFile;
+
     public TermFeaturesExtractor(TupleFlowParameters parameters) throws Exception {
         Parameters p = parameters.getJSON();
         clistDir = p.getString("clistDir");
         featureDir = p.getString("featureDir");
         String clueDfFile = p.getString("clueDfFile");
-        String clistDfFile = p.getString("clistDfFile");
-        String clistDfMetaFile = p.getString("clistDfMetaFile");
+        clistDfFile = p.getString("clistDfFile");
+        clistDfMetaFile = p.getString("clistDfMetaFile");
         double clueCdf = p.getLong("clueCdf");
         topNum = p.getLong("topNum");
         rankedListFile = p.getString("rankedListFile");
@@ -71,7 +74,6 @@ public class TermFeaturesExtractor implements Processor<TfQuery> {
 
         termFeatures = new TreeMap<>();
         clueDfs = new CluewebDocFreqMap(new File(clueDfFile), clueCdf); // load clueWebDocFreqs
-        clistDfs = new CandidateListDocFreqMap(new File(clistDfFile), new File(clistDfMetaFile));
 
         loadQuerySetResults();
 
@@ -85,6 +87,8 @@ public class TermFeaturesExtractor implements Processor<TfQuery> {
         System.err.println(String.format("processing query %s", query.id));
         loadCandidateLists();
         initializeTermFeatures();
+        clistDfs = new CandidateListDocFreqMap(new File(clistDfFile), new File(clistDfMetaFile), termFeatures);
+        
         loadDocuments();
 
         extractTermLength(); // feature: length of the feature term
