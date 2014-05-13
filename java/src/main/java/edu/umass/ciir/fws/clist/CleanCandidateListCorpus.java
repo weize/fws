@@ -118,6 +118,7 @@ public class CleanCandidateListCorpus extends AppFunction {
 
         public CandidateListCorpusCleaner(TupleFlowParameters parameters) throws Exception {
             Parameters p = parameters.getJSON();
+            p.remove("stopwordsFile");
             cleaner = new CandidateListCleaner(p);
         }
 
