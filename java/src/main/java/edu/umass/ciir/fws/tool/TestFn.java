@@ -4,13 +4,9 @@
  */
 package edu.umass.ciir.fws.tool;
 
-import cc.mallet.types.InstanceList;
-import de.bwaldvogel.liblinear.Problem;
 import edu.umass.ciir.fws.clist.CandidateList;
-import edu.umass.ciir.fws.clist.CandidateListHtmlExtractor;
 import edu.umass.ciir.fws.clist.CandidateListTextExtractor;
 import edu.umass.ciir.fws.clustering.gm.lr.LinearRegressionModel;
-import edu.umass.ciir.fws.clustering.gm.lr.StandardScaler;
 import edu.umass.ciir.fws.nlp.HtmlContentExtractor;
 import edu.umass.ciir.fws.nlp.StanfordCoreNLPParser;
 import edu.umass.ciir.fws.types.TfQuery;
@@ -23,6 +19,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.LinkedList;
 import java.util.List;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
@@ -289,14 +286,21 @@ public class TestFn extends AppFunction {
     private void testLinearLib(Parameters p, PrintStream output) throws Exception {
         int[] selectedFeatureIndice = {1, 2, 3, 4, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33};
         //LinearRegressionModel model = new LinearRegressionModel();
-        LinearRegressionModel model = new LinearRegressionModel(selectedFeatureIndice);
-        File featureFile = new File("test.feature");
-        File scalerFile = new File("test.scaler");
-        File modelFile = new File("test.model");
-        File predictFile = new File("test.predict");
-        File featureFileForTest = new File("test.feature.fortest");
-        model.train(featureFile, modelFile, scalerFile);
-        model.predict(featureFileForTest, modelFile, scalerFile, predictFile);
+        LinearRegressionModel tModel = new LinearRegressionModel(selectedFeatureIndice);
+        File featureFile = new File("../exp/gm-initial/model/train.t.dat");
+        File scalerFile = new File("../exp/gm-initial/model/train.t.scaler");
+        File modelFile = new File("../exp/gm-initial/model/train.t.model");
+        File predictFile = new File("../exp/gm-initial/model/train.t.predict");
+        tModel.train(featureFile, modelFile, scalerFile);
+        tModel.predict(featureFile, modelFile, scalerFile, predictFile);
+        
+        LinearRegressionModel pModel = new LinearRegressionModel(); // all feature
+        featureFile = new File("../exp/gm-initial/model/train.p.dat.gz");
+        scalerFile = new File("../exp/gm-initial/model/train.p.scaler");
+        modelFile = new File("../exp/gm-initial/model/train.p.model");
+        predictFile = new File("../exp/gm-initial/model/train.p.predict");
+        pModel.train(featureFile, modelFile, scalerFile);
+        pModel.predict(featureFile, modelFile, scalerFile, predictFile);
     }
 
 }
