@@ -38,10 +38,6 @@ public class LdaClusterItems extends ProcessQueryParametersApp {
         return "cluster-lda";
     }
 
-    /**
-     *
-     * @author wkong
-     */
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.TfQuery")
     @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
