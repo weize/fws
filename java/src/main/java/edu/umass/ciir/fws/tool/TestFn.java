@@ -5,9 +5,12 @@
 package edu.umass.ciir.fws.tool;
 
 import cc.mallet.types.InstanceList;
+import de.bwaldvogel.liblinear.Problem;
 import edu.umass.ciir.fws.clist.CandidateList;
 import edu.umass.ciir.fws.clist.CandidateListHtmlExtractor;
 import edu.umass.ciir.fws.clist.CandidateListTextExtractor;
+import edu.umass.ciir.fws.clustering.gm.lr.LinearRegressionModel;
+import edu.umass.ciir.fws.clustering.gm.lr.StandardScaler;
 import edu.umass.ciir.fws.nlp.HtmlContentExtractor;
 import edu.umass.ciir.fws.nlp.StanfordCoreNLPParser;
 import edu.umass.ciir.fws.types.TfQuery;
@@ -55,7 +58,7 @@ public class TestFn extends AppFunction {
 
         //testPrintHTML(p, output);
         //testNlp(output);
-        testTokenizer(p, output);
+        //testTokenizer(p, output);
         //testReplace(p, output);
         //testPrintTermsInDoc(p, output);
         //testHtml(p, output);
@@ -64,6 +67,7 @@ public class TestFn extends AppFunction {
         //testCandidateListTextExtractor(p, output);
         // testDocument(p, output);
         //testLDA(p, output);
+        testLinearLib(p, output);
 
     }
 
@@ -240,7 +244,6 @@ public class TestFn extends AppFunction {
 //        writer.write(document.text);
 //        writer.close();
 
-        
         BufferedWriter writer = Utility.getWriter("test.txt");
         String html = Utility.readFileToString(new File(htmlFileName));
         List<String> tokens = TextProcessing.tokenize(HtmlContentExtractor.extractFromContent(html));
@@ -280,8 +283,20 @@ public class TestFn extends AppFunction {
     }
 
     private void testLDA(Parameters p, PrintStream output) {
-        
-        
+
+    }
+
+    private void testLinearLib(Parameters p, PrintStream output) throws Exception {
+        int[] selectedFeatureIndice = {1, 2, 3, 4, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33};
+        //LinearRegressionModel model = new LinearRegressionModel();
+        LinearRegressionModel model = new LinearRegressionModel(selectedFeatureIndice);
+        File featureFile = new File("test.feature");
+        File scalerFile = new File("test.scaler");
+        File modelFile = new File("test.model");
+        File predictFile = new File("test.predict");
+        File featureFileForTest = new File("test.feature.fortest");
+        model.train(featureFile, modelFile, scalerFile);
+        model.predict(featureFileForTest, modelFile, scalerFile, predictFile);
     }
 
 }
