@@ -15,7 +15,10 @@ for my $file(@files) {
 			last;
 		}
 	}
-	die "cannot process $file" if ($last < 0);
+	if ($last < 0) {
+		print "no last processing found for $file\n";
+		next;
+	}
 	
 	print "last processing $docName\n";
 	my $processed = 0;
@@ -42,3 +45,4 @@ for my $file(@files) {
 	}
 	close $in;
 }
+
