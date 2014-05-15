@@ -56,7 +56,7 @@ public class LinearRegressionModel {
         }
         this.selectedFeatureIndices = Arrays.copyOf(selectedFeatureIndices, selectedFeatureIndices.length);
     }
-    
+
     public void train(File featureFile, File modelFile, File scalerFile) throws IOException {
         readProblem(featureFile);
 
@@ -124,7 +124,7 @@ public class LinearRegressionModel {
 
             //add data
             String[] fields = dataStr.split("\t");
-            assert fields.length != filedNum : "Number of fields inconsistent: " + line;
+            assert fields.length != filedNum : "Number of fields inconsistent: " + line + " (" + filedNum + " : " + fields.length;
 
             // label
             double label = Double.parseDouble(fields[0]);

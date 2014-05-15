@@ -287,20 +287,21 @@ public class TestFn extends AppFunction {
         int[] selectedFeatureIndice = {1, 2, 3, 4, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33};
         //LinearRegressionModel model = new LinearRegressionModel();
         LinearRegressionModel tModel = new LinearRegressionModel(selectedFeatureIndice);
-        File featureFile = new File("../exp/gm-initial/model/train.t.dat");
-        File scalerFile = new File("../exp/gm-initial/model/train.t.scaler");
-        File modelFile = new File("../exp/gm-initial/model/train.t.model");
-        File predictFile = new File("../exp/gm-initial/model/train.t.predict");
-        tModel.train(featureFile, modelFile, scalerFile);
-        tModel.predict(featureFile, modelFile, scalerFile, predictFile);
-        
-        LinearRegressionModel pModel = new LinearRegressionModel(); // all feature
-        featureFile = new File("../exp/gm-initial/model/train.p.dat.gz");
-        scalerFile = new File("../exp/gm-initial/model/train.p.scaler");
-        modelFile = new File("../exp/gm-initial/model/train.p.model");
-        predictFile = new File("../exp/gm-initial/model/train.p.predict");
-        pModel.train(featureFile, modelFile, scalerFile);
-        pModel.predict(featureFile, modelFile, scalerFile, predictFile);
+        tModel.readProblem(new File("87.t.data.gz"));
+//        File featureFile = new File("../exp/gm-initial/model/train.t.dat");
+//        File scalerFile = new File("../exp/gm-initial/model/train.t.scaler");
+//        File modelFile = new File("../exp/gm-initial/model/train.t.model");
+//        File predictFile = new File("../exp/gm-initial/model/train.t.predict");
+//        tModel.train(featureFile, modelFile, scalerFile);
+//        tModel.predict(featureFile, modelFile, scalerFile, predictFile);
+//        
+//        LinearRegressionModel pModel = new LinearRegressionModel(); // all feature
+//        featureFile = new File("../exp/gm-initial/model/train.p.dat.gz");
+//        scalerFile = new File("../exp/gm-initial/model/train.p.scaler");
+//        modelFile = new File("../exp/gm-initial/model/train.p.model");
+//        predictFile = new File("../exp/gm-initial/model/train.p.predict");
+//        pModel.train(featureFile, modelFile, scalerFile);
+//        pModel.predict(featureFile, modelFile, scalerFile, predictFile);
     }
 
 }
