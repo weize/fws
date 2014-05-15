@@ -45,19 +45,18 @@ public class LinearRegressionModel {
         selectedFeatureIndices = null;
     }
 
-    public LinearRegressionModel(int[] selectedFeatureIndices) throws Exception {
+    public LinearRegressionModel(int[] selectedFeatureIndices) throws IOException {
         // ensure the indices are ordered and distinct.
         int last = 0;
         for (int cur : selectedFeatureIndices) {
             if (cur <= last) {
-                throw new Exception("Bad feature selection");
+                throw new IOException("Bad feature selection");
             }
             last = cur;
         }
         this.selectedFeatureIndices = Arrays.copyOf(selectedFeatureIndices, selectedFeatureIndices.length);
-
     }
-
+    
     public void train(File featureFile, File modelFile, File scalerFile) throws IOException {
         readProblem(featureFile);
 

@@ -33,7 +33,7 @@ public class ScoredItem implements Comparable<ScoredItem> {
     }
 
     @Override
-    public String toString() {
+    final public String toString() {
         return item + ":" + score;
     }
 }

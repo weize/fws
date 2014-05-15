@@ -125,16 +125,28 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         //clueweb09-en0009-30-02610
         //<clistCorpusDir>/en0009/clueweb09-en0009-30.clist.gz
         String[] subDirNames = docName.split("-");
-        String name = String.format("%s-%s-%s.%s.gz", subDirNames[0],subDirNames[1], subDirNames[2], suffix);
+        String name = String.format("%s-%s-%s.%s.gz", subDirNames[0], subDirNames[1], subDirNames[2], suffix);
         return getFileName(clistCorpusDir, subDirNames[1], name);
     }
 
     public static String getTermFeatureFileName(String featureDir, String qid) {
         return getFileNameWithSuffix(featureDir, qid, "t.feature");
     }
-    
-    public static String getGmTermDataFileName(String clusterDir, String id) {
-        return getFileNameWithSuffix(clusterDir, qid, "t.feature");
+
+    public static String getGmTermDataFileName(String clusterDir, String qid) {
+        return getFileNameWithSuffix(clusterDir, qid, qid, "t.data.gz");
+    }
+
+    public static String getGmTermPairDataFileName(String clusterDir, String qid) {
+        return getFileNameWithSuffix(clusterDir, qid, qid, "p.data.gz");
+    }
+
+    public static String getGmTermPredictFileName(String clusterDir, String qid) {
+        return getFileNameWithSuffix(clusterDir, qid, qid, "t.predict");
+    }
+
+    public static String getGmTermPairPredictFileName(String clusterDir, String qid) {
+        return getFileNameWithSuffix(clusterDir, qid, qid, "p.predict");
     }
 
     public static String getQdFacetFeatureFileName(String qdFeatureDir, String qid) {
@@ -143,6 +155,16 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
 
     public static String getQdClusterFileName(String clusterDir, String qid, double distanceMax, double websiteCountMin) {
         String name = String.format("%s.%s.cluster", qid, parametersToFileNameString(distanceMax, websiteCountMin));
+        return getFileName(clusterDir, qid, name);
+    }
+
+    public static String getGmiClusterFileName(String clusterDir, String qid, double termProbThreshold, double pairProbThreshould) {
+        String name = String.format("%s.gmi.%s.cluster", qid, parametersToFileNameString(termProbThreshold, pairProbThreshould));
+        return getFileName(clusterDir, qid, name);
+    }
+    
+    public static String getGmjClusterFileName(String clusterDir, String qid) {
+        String name = String.format("%s.gmj.cluster", qid);
         return getFileName(clusterDir, qid, name);
     }
 
@@ -217,8 +239,15 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         System.err.println(String.format("Writte in %s", outfile.getAbsoluteFile()));
     }
 
+    public static void infoProcessing(File infile) {
+        System.err.println(String.format("Processing %s", infile.getAbsoluteFile()));
+    }
+
     public static int compare(double one, double two) {
         return Double.compare(one, two);
     }
 
+    public static void infoProcessingQuery(String qid) {
+        System.err.println("processing query " + qid);
+    }
 }
