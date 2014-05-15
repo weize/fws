@@ -124,7 +124,7 @@ public class LinearRegressionModel {
 
             //add data
             String[] fields = dataStr.split("\t");
-            assert fields.length != filedNum : "Number of fields inconsistent: " + line + " (" + filedNum + " : " + fields.length;
+            assert fields.length == filedNum : "Number of fields inconsistent: " + line;
 
             // label
             double label = Double.parseDouble(fields[0]);
