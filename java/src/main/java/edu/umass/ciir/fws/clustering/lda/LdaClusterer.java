@@ -72,7 +72,7 @@ public class LdaClusterer implements Processor<TfQueryParameters> {
         List<ScoredFacet> facets = lda.cluster(topicNum);
 
         // output
-        String clusterFileName = Utility.getPlsaClusterFileName(clusterDir, qid, topicNum);
+        String clusterFileName = Utility.getLdaClusterFileName(clusterDir, qid, topicNum);
         Utility.createDirectoryForFile(clusterFileName);
         ScoredFacet.output(facets, new File(clusterFileName));
         System.err.println("Written in " + clusterFileName);

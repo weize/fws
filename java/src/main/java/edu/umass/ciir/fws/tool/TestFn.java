@@ -6,12 +6,16 @@ package edu.umass.ciir.fws.tool;
 
 import edu.umass.ciir.fws.clist.CandidateList;
 import edu.umass.ciir.fws.clist.CandidateListTextExtractor;
+import edu.umass.ciir.fws.clustering.ScoredFacet;
+import edu.umass.ciir.fws.clustering.gm.GmIndependentClusterer;
+import edu.umass.ciir.fws.clustering.gm.GmJointClusterer;
 import edu.umass.ciir.fws.clustering.gm.lr.LinearRegressionModel;
 import edu.umass.ciir.fws.nlp.HtmlContentExtractor;
 import edu.umass.ciir.fws.nlp.StanfordCoreNLPParser;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -19,7 +23,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.LinkedList;
+import java.util.Arrays;
 import java.util.List;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
@@ -64,7 +68,8 @@ public class TestFn extends AppFunction {
         //testCandidateListTextExtractor(p, output);
         // testDocument(p, output);
         //testLDA(p, output);
-        testLinearLib(p, output);
+        //testLinearLib(p, output);
+        testGmCluster(p, output);
 
     }
 
@@ -302,6 +307,47 @@ public class TestFn extends AppFunction {
 //        predictFile = new File("../exp/gm-initial/model/train.p.predict");
 //        pModel.train(featureFile, modelFile, scalerFile);
 //        pModel.predict(featureFile, modelFile, scalerFile, predictFile);
+    }
+
+    private void testGmCluster(Parameters p, PrintStream output) throws IOException {
+
+        File trainTermDataFile = new File("test/train.t.data");
+        File trainTermScalerFile = new File("test/train.t.scaler");
+        File trainTermModelFile = new File("test/train.t.model");
+        int[] selectedFeatureIndice = {1, 2, 3, 4, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33};
+        LinearRegressionModel tModel = new LinearRegressionModel(selectedFeatureIndice);
+        tModel.train(trainTermDataFile, trainTermModelFile, trainTermScalerFile);
+
+//        File trainPairDataFile = new File("test/train.p.data");
+//        File trainPairScalerFile = new File("test/train.p.scaler");
+//        File trainPairModelFile = new File("test/train.p.model");
+//        LinearRegressionModel pModel = new LinearRegressionModel();
+//        tModel.train(trainPairDataFile, trainPairModelFile, trainPairScalerFile);
+        
+        File termFeatureFile = new File("test/test.t.feature");
+        File termDataFile = new File("test/test.t.data");
+
+        System.err.println("processing " + termFeatureFile.getAbsolutePath());
+        BufferedReader reader = Utility.getReader(termFeatureFile);
+        BufferedWriter writer = Utility.getWriter(termDataFile);
+        String line;
+        while ((line = reader.readLine()) != null) {
+            // format: term<tab>f1<tab>f2<tab>...
+            String[] fields = line.split("\t");
+            String term = fields[0];
+            int label = -1;
+            String data = label + "\t" + TextProcessing.join(Arrays.asList(fields).subList(1, fields.length), "\t");
+            String comment = String.format("%d\t%s\t%s", label, "174", term);
+            writer.write(data + "\t#" + comment);
+            writer.newLine();
+
+        }
+        writer.close();
+        reader.close();
+        Utility.infoWritten(termDataFile);
+        
+        File termPredictFile = new File("test/test.t.precit");
+        tModel.predict(termDataFile, trainTermModelFile, trainTermScalerFile, termPredictFile);
     }
 
 }

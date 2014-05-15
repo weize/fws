@@ -54,10 +54,85 @@ public class GmClusterItems extends ProcessQueryParametersMultiStepApp {
         classes.add(TermPairPredictor.class);
         classes.add(GmiClusterItems.class);
         classes.add(GmjClusterItems.class);
+        classes.add(GmiClusterToFacetConverter.class);
+        classes.add(GmjClusterToFacetConverter.class);
         classes.add(DoNonething.class);
         return classes;
     }
 
+     /**
+     *
+     */
+    @Verified
+    @InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
+    @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
+    public static class GmjClusterToFacetConverter extends StandardStep<TfQueryParameters, TfQueryParameters> {
+
+        String facetDir;
+        String clusterDir;
+
+        public GmjClusterToFacetConverter(TupleFlowParameters parameters) {
+            Parameters p = parameters.getJSON();
+            facetDir = p.getString("gmFacetDir");
+            clusterDir = p.getString("gmClusterDir");
+        }
+
+        @Override
+        public void process(TfQueryParameters queryParams) throws IOException {
+            Utility.infoProcessingQuery(queryParams.id);
+            
+            String qid = queryParams.id;
+            
+            // load clusters
+            File clusterFile = new File(Utility.getGmjClusterFileName(clusterDir, queryParams.id));
+            List<ScoredFacet> clusters = ScoredFacet.load(clusterFile);
+
+            File facetFile = new File(Utility.getGmjFacetFileName(facetDir, qid));
+            Utility.createDirectoryForFile(facetFile);
+            ScoredFacet.outputAsFacets(clusters, facetFile);
+            Utility.infoWritten(facetFile);
+            processor.process(queryParams);
+        }
+    }
+    
+    
+    /**
+     *
+     */
+    @Verified
+    @InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
+    @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
+    public static class GmiClusterToFacetConverter extends StandardStep<TfQueryParameters, TfQueryParameters> {
+
+        String facetDir;
+        String clusterDir;
+
+        public GmiClusterToFacetConverter(TupleFlowParameters parameters) {
+            Parameters p = parameters.getJSON();
+            facetDir = p.getString("gmFacetDir");
+            clusterDir = p.getString("gmClusterDir");
+        }
+
+        @Override
+        public void process(TfQueryParameters queryParams) throws IOException {
+            Utility.infoProcessingQuery(queryParams.id);
+            
+            String qid = queryParams.id;
+            String[] params = Utility.splitParameters(queryParams.parameters);
+            double termProbTh = Double.parseDouble(params[2]);
+            double pairProbTh = Double.parseDouble(params[3]);
+            
+            // load clusters
+            File clusterFile = new File(Utility.getGmiClusterFileName(clusterDir, queryParams.id, termProbTh, pairProbTh));
+            List<ScoredFacet> clusters = ScoredFacet.load(clusterFile);
+
+            File facetFile = new File(Utility.getGmiFacetFileName(facetDir, qid, termProbTh, pairProbTh));
+            Utility.createDirectoryForFile(facetFile);
+            ScoredFacet.outputAsFacets(clusters, facetFile);
+            Utility.infoWritten(facetFile);
+            processor.process(queryParams);
+        }
+    }
     
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")

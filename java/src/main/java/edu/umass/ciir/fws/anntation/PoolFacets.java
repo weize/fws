@@ -43,7 +43,7 @@ public class PoolFacets extends ProcessQueryApp {
     public static class FacetPooler implements Processor<TfQuery> {
 
         String poolDir;
-        List<List<Object>> runs; // [[dir, param1, param2, ...], ]
+        List<List<Object>> runs; // [[dir, model, param1, param2, ...], ]
         long facetTopNum;
 
         public FacetPooler(TupleFlowParameters parameters) {

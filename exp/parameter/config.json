@@ -32,12 +32,13 @@
 	"ldaTermNums" : [5, 10, 20],
 	"ldaIterNum" : 1000,
 	"gmClusterDir" : "../exp/gm-initial/cluster",
+	"gmFacetDir" : "../exp/gm-initial/facet",
 	"gmTermModel" : "../exp/gm-initial/model/train.t.model",
 	"gmTermScaler" : "../exp/gm-initial/model/train.t.scaler",
 	"gmTermPairModel" : "../exp/gm-initial/model/train.p.model",
 	"gmTermPairScaler" : "../exp/gm-initial/model/train.p.scaler",
 	"poolDir" : "../exp/anntation/pool",
-	"poolRuns" : [["../exp/qd/facet",0.6, 3.0, 0.1], ["../exp/plsa/facet", 10, 10], ["../exp/lda/facet", 10, 10]],
+	"poolRuns" : [["../exp/qd/facet", "qd", 0.6, 3.0, 0.1], ["../exp/plsa/facet", "plsa", 10, 10], ["../exp/lda/facet", "lda", 10, 10]],
 	"poolFacetTopNum": 10,
 	"topNum" : 100
 }
