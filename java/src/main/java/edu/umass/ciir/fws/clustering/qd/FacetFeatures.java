@@ -70,19 +70,21 @@ public class FacetFeatures extends CandidateList implements Comparable<FacetFeat
         while ((line = in.readLine()) != null) {
             String[] fields = line.split("\t");
             // features: qid docrank type terms len ... sites
+            assert fields.length == 10 : "malformed line: " + line;
             FacetFeatures ff = new FacetFeatures();
             ff.qid = fields[0];
             ff.docRank = Long.parseLong(fields[1]);
-            ff.listType = fields[2];
-            ff.itemList = fields[3];
+            ff.docName = fields[2];
+            ff.listType = fields[3];
+            ff.itemList = fields[4];
             ff.items = CandidateList.splitItemList(ff.itemList);
             ff.features = new Object[size];
-            ff.features[_len] = Integer.parseInt(fields[4]);
-            ff.features[_WDF] = Double.parseDouble(fields[5]);
-            ff.features[_cluIDF] = Double.parseDouble(fields[6]);
-            ff.features[_qdScore] = Double.parseDouble(fields[7]);
-            ff.features[_sites] = fields[8];
-            ff.sites = splitStringToSites(fields[8]);
+            ff.features[_len] = Integer.parseInt(fields[5]);
+            ff.features[_WDF] = Double.parseDouble(fields[6]);
+            ff.features[_cluIDF] = Double.parseDouble(fields[7]);
+            ff.features[_qdScore] = Double.parseDouble(fields[8]);
+            ff.features[_sites] = fields[9];
+            ff.sites = splitStringToSites(fields[9]);
             ffs.add(ff);
         }
         in.close();
