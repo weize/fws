@@ -69,7 +69,7 @@ public class CollectPoolFilesAsJsonData extends AppFunction {
            } 
            
            pool.set("sessions", facets);
-           writer.write(pool.toPrettyString());
+           writer.write(pool.toPrettyString().replace('\n', ' '));
            writer.newLine();
        }
        writer.close();
