@@ -7,6 +7,7 @@ package edu.umass.ciir.fws.query;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import org.lemurproject.galago.tupleflow.InputClass;
@@ -32,7 +33,8 @@ public class QueryFileParser extends StandardStep<FileName, TfQuery> {
         }
     }
 
-    public static TfQuery[] loadQueryList(String inputFile) throws IOException {
+    
+    public static TfQuery[] loadQueryList(File inputFile) throws IOException {
         BufferedReader reader = Utility.getReader(inputFile);
         String line;
         ArrayList<TfQuery> queries = new ArrayList<>();
@@ -45,5 +47,9 @@ public class QueryFileParser extends StandardStep<FileName, TfQuery> {
         }
         reader.close();
         return queries.toArray(new TfQuery[0]);
+    }
+    
+    public static TfQuery[] loadQueryList(String fileName) throws IOException {
+        return loadQueryList(new File(fileName));
     }
 }
