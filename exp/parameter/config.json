@@ -1,5 +1,7 @@
 {
 	"queryFile" : "../data/query/query",
+	"queryJsonFile" : "../data/query/query-full.json",
+	"queryXmlFile" : "../data/query/diversity/",
 	"index" : "../data/index",
 	"stopwordsFile" : "../data/stopword/stopword",
 	"rankedListFile" : "../exp/query/query-sdm-rank",
@@ -40,5 +42,6 @@
 	"poolDir" : "../exp/annotation/pool",
 	"poolRuns" : [["../exp/qd/facet", "qd", 0.6, 3.0, 0.1], ["../exp/plsa/facet", "plsa", 10, 10], ["../exp/lda/facet", "lda", 10, 10], ["../exp/gm-initial/facet", "gmi", 0.6, 0.5], ["../exp/gm-initial/facet", "gmj"]],
 	"poolFacetTopNum": 10,
+	"poolFile" : "../exp/annotation/pool.json",
 	"topNum" : 100
 }
