@@ -208,7 +208,7 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         String facetDir = run.get(0).toString();
         String model = run.get(1).toString();
         String name;
-        if (run.size() == 3) {
+        if (run.size() >= 3) {
             name = String.format("%s.%s.%s.facet", qid, model, parametersToFileNameString(run.subList(2, run.size())));
         } else {
             name = String.format("%s.%s.facet", qid, model);
