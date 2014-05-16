@@ -6,12 +6,10 @@ package edu.umass.ciir.fws.tool;
 
 import edu.umass.ciir.fws.clist.CandidateList;
 import edu.umass.ciir.fws.clist.CandidateListTextExtractor;
-import edu.umass.ciir.fws.clustering.ScoredFacet;
-import edu.umass.ciir.fws.clustering.gm.GmIndependentClusterer;
-import edu.umass.ciir.fws.clustering.gm.GmJointClusterer;
 import edu.umass.ciir.fws.clustering.gm.lr.LinearRegressionModel;
 import edu.umass.ciir.fws.nlp.HtmlContentExtractor;
 import edu.umass.ciir.fws.nlp.StanfordCoreNLPParser;
+import edu.umass.ciir.fws.query.TrecFullTopicXmlParser;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
@@ -69,7 +67,8 @@ public class TestFn extends AppFunction {
         // testDocument(p, output);
         //testLDA(p, output);
         //testLinearLib(p, output);
-        testGmCluster(p, output);
+        //testGmCluster(p, output);
+        testTrecFullTopicXmlParser(p,output);
 
     }
 
@@ -348,6 +347,14 @@ public class TestFn extends AppFunction {
         
         File termPredictFile = new File("test/test.t.precit");
         tModel.predict(termDataFile, trainTermModelFile, trainTermScalerFile, termPredictFile);
+    }
+
+    private void testTrecFullTopicXmlParser(Parameters p, PrintStream output) throws IOException {
+        TrecFullTopicXmlParser parser = new TrecFullTopicXmlParser();
+        List<Parameters> topics = parser.parse(new File("test.xml"));
+        for(Parameters topic : topics) {
+            output.println(topic.toPrettyString());
+        }
     }
 
 }
