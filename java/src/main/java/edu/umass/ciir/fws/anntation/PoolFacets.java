@@ -10,6 +10,7 @@ import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.tool.app.ProcessQueryApp;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.utility.Utility;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -64,8 +65,21 @@ public class PoolFacets extends ProcessQueryApp {
             }
 
             List<ScoredFacet> facetPool = poolFacets(facetsList);
+            
+            // sort
+            ArrayList<String> lines = new ArrayList<>();
+            for(ScoredFacet f : facetPool) {
+                lines.add(f.toFacetString());
+            }
+            Collections.sort(lines);
+            
             File poolFile = new File(Utility.getPoolFileName(poolDir, query.id));
-            ScoredFacet.outputAsFacets(facetPool, poolFile);
+            BufferedWriter writer = Utility.getWriter(poolFile);
+            for(String line : lines) {
+                writer.write(line);
+                writer.newLine();
+            }
+            
             Utility.infoWritten(poolFile);
         }
 
