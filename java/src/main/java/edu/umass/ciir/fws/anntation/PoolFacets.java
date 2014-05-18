@@ -79,7 +79,8 @@ public class PoolFacets extends ProcessQueryApp {
                 writer.write(line);
                 writer.newLine();
             }
-            
+         
+            writer.close();
             Utility.infoWritten(poolFile);
         }
 
