@@ -7,13 +7,14 @@ package edu.umass.ciir.fws.anntation;
 
 import edu.emory.mathcs.backport.java.util.Collections;
 import edu.umass.ciir.fws.clustering.ScoredFacet;
+import edu.umass.ciir.fws.clustering.ScoredItem;
 import edu.umass.ciir.fws.tool.app.ProcessQueryApp;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.utility.Utility;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import org.lemurproject.galago.tupleflow.InputClass;
 import org.lemurproject.galago.tupleflow.Parameters;
@@ -65,22 +66,8 @@ public class PoolFacets extends ProcessQueryApp {
             }
 
             List<ScoredFacet> facetPool = poolFacets(facetsList);
-            
-            // sort
-            ArrayList<String> lines = new ArrayList<>();
-            for(ScoredFacet f : facetPool) {
-                lines.add(f.toFacetString());
-            }
-            Collections.sort(lines);
-            
             File poolFile = new File(Utility.getPoolFileName(poolDir, query.id));
-            BufferedWriter writer = Utility.getWriter(poolFile);
-            for(String line : lines) {
-                writer.write(line);
-                writer.newLine();
-            }
-         
-            writer.close();
+            ScoredFacet.outputAsFacets(facetPool, poolFile);
             Utility.infoWritten(poolFile);
         }
 
@@ -88,7 +75,16 @@ public class PoolFacets extends ProcessQueryApp {
         public void close() throws IOException {
         }
 
+        /**
+         * *
+         * Each time randomly select a facet from the top of each run. Terms
+         * seen previously will be filtered out.
+         *
+         * @param facetsList
+         * @return
+         */
         private List<ScoredFacet> poolFacets(List<List<ScoredFacet>> facetsList) {
+            HashSet<String> usedItems = new HashSet<>();
             ArrayList<ScoredFacet> pool = new ArrayList<>();
             ArrayList<Integer> listIndice = new ArrayList<>();
             for (int i = 0; i < facetsList.size(); i++) {
@@ -100,9 +96,17 @@ public class PoolFacets extends ProcessQueryApp {
                 for (Integer index : listIndice) {
                     List<ScoredFacet> facets = facetsList.get(index);
                     if (i < facets.size()) {
+                        ArrayList<ScoredItem> selectedItems = new ArrayList<>();
                         ScoredFacet facet = facets.get(i);
-                        facet.score = 1;
-                        pool.add(facet);
+                        for (ScoredItem t : facet.items) {
+                            if (!usedItems.contains(t.item)) {
+                                selectedItems.add(t);
+                                usedItems.add(t.item);
+                            }
+                        }
+                        if (selectedItems.size() > 0) {
+                            pool.add(new ScoredFacet(selectedItems, 0.0));
+                        }
                     }
                 }
             }

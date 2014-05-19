@@ -53,6 +53,7 @@ public class CollectTrecFullTopicsAsJson extends AppFunction {
     private List<File> loadFiles(List<String> fileNames) {
         ArrayList<File> files = new ArrayList<>();
         for (String fileName : fileNames) {
+            System.err.println(fileName);
             File file = new File(fileName);
             if (file.isFile()) {
                 files.add(file);
