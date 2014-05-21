@@ -9,6 +9,7 @@ import edu.umass.ciir.fws.clist.CandidateListTextExtractor;
 import edu.umass.ciir.fws.clustering.gm.lr.LinearRegressionModel;
 import edu.umass.ciir.fws.nlp.HtmlContentExtractor;
 import edu.umass.ciir.fws.nlp.StanfordCoreNLPParser;
+import edu.umass.ciir.fws.query.QueryTopic;
 import edu.umass.ciir.fws.query.TrecFullTopicXmlParser;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.utility.TextProcessing;
@@ -68,7 +69,8 @@ public class TestFn extends AppFunction {
         //testLDA(p, output);
         //testLinearLib(p, output);
         //testGmCluster(p, output);
-        testTrecFullTopicXmlParser(p,output);
+        //testTrecFullTopicXmlParser(p,output);
+        testQueryTopic(p, output);
 
     }
 
@@ -322,7 +324,6 @@ public class TestFn extends AppFunction {
 //        File trainPairModelFile = new File("test/train.p.model");
 //        LinearRegressionModel pModel = new LinearRegressionModel();
 //        tModel.train(trainPairDataFile, trainPairModelFile, trainPairScalerFile);
-        
         File termFeatureFile = new File("test/test.t.feature");
         File termDataFile = new File("test/test.t.data");
 
@@ -344,7 +345,7 @@ public class TestFn extends AppFunction {
         writer.close();
         reader.close();
         Utility.infoWritten(termDataFile);
-        
+
         File termPredictFile = new File("test/test.t.precit");
         tModel.predict(termDataFile, trainTermModelFile, trainTermScalerFile, termPredictFile);
     }
@@ -352,9 +353,20 @@ public class TestFn extends AppFunction {
     private void testTrecFullTopicXmlParser(Parameters p, PrintStream output) throws IOException {
         TrecFullTopicXmlParser parser = new TrecFullTopicXmlParser();
         List<Parameters> topics = parser.parse(new File("test.xml"));
-        for(Parameters topic : topics) {
+        for (Parameters topic : topics) {
             output.println(topic.toPrettyString());
         }
+    }
+
+    private void testQueryTopic(Parameters p, PrintStream output) throws IOException {
+        File input = new File(p.getString("queryJsonFile"));
+        BufferedReader reader = Utility.getReader(input);
+        String line;
+        while ((line = reader.readLine()) != null) {
+            QueryTopic q = QueryTopic.parseFromJson(line);
+            output.print(q.listAsString());
+        }
+        reader.close();
     }
 
 }

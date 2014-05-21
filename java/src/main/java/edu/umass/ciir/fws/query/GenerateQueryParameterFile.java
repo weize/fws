@@ -52,6 +52,9 @@ public class GenerateQueryParameterFile extends AppFunction {
             TfQuery newQuery = q;
             if (model.equalsIgnoreCase("sdm")) {
                 newQuery = QueryProcessing.toSDMQuery(q);
+            } else if (model.equalsIgnoreCase("rm")){
+                //newQuery = QueryProcessing.toRMSdm(q);
+                
             }
             queryParam.put("number", newQuery.id);
             queryParam.put("text", newQuery.text);

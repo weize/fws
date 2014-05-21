@@ -31,6 +31,19 @@ public class ScoredFacet implements Comparable<ScoredFacet> {
     public ScoredFacet() {
 
     }
+    
+    public ScoredFacet(double score) {
+        this.score = score;
+        items = new ArrayList<>();
+    }
+    
+    public void addItem(ScoredItem item) {
+        items.add(item);
+    }
+    
+    public int size() {
+        return items.size();
+    }
 
     public static void output(List<?> facets, File file) throws IOException {
         BufferedWriter writer = Utility.getWriter(file);
