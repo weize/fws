@@ -235,7 +235,7 @@ public class EvalAllFacetTermExpansion extends AppFunction {
             String fidTid = queryParams.parameters;
             String fid = fidTid.split("-")[0];
             String tid = fidTid.split("-")[1];
-            String rankFileName = Utility.getOracleExpandRunFileName(runDir, queryParams.id, fidTid);
+            String rankFileName = Utility.getOracleExpandRunFileName(runDir, queryParams.id, fid, tid);
             for (QuerySubtopic qs : queryTopics.get(queryParams.id).subtopics) {
                 File qrelFile = new File(Utility.getQrelForOneSubtopic(sqrelDir, queryParams.id, qs.sid));
                 if (qrelFile.exists()) {

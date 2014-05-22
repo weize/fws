@@ -125,7 +125,7 @@ public class RunAllFacetTermExpasion extends ProcessQueryParametersApp {
             String term = params[2];
             String queryNumber = queryParams.id; // used in the rank results
             String exQueryNumber = queryParams.id + "-" + fid + "-" + tid; // used for file Name
-            File outfile = new File(Utility.getOracleExpandRunFileName(runDir, queryParams.id, exQueryNumber));
+            File outfile = new File(Utility.getOracleExpandRunFileName(runDir, queryParams.id, fid, tid));
             Utility.createDirectoryForFile(outfile);
             BufferedWriter writer = Utility.getWriter(outfile);
             String queryText = expandSdmQuery(queryParams.text, term);
