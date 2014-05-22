@@ -123,8 +123,9 @@ public class ExtractOracleFeedbacks extends ProcessQueryParametersApp {
             String tid = params[1];
 
             String term = params[2];
-            String queryNumber = queryParams.id + "-" + fid + "-" + tid;
-            File outfile = new File(Utility.getOracleExpandRunFileName(runDir, queryParams.id, queryNumber));
+            String queryNumber = queryParams.id; // used in the rank results
+            String exQueryNumber = queryParams.id + "-" + fid + "-" + tid; // used for file Name
+            File outfile = new File(Utility.getOracleExpandRunFileName(runDir, queryParams.id, exQueryNumber));
             Utility.createDirectoryForFile(outfile);
             BufferedWriter writer = Utility.getWriter(outfile);
             String queryText = expandSdmQuery(queryParams.text, term);
@@ -138,7 +139,7 @@ public class ExtractOracleFeedbacks extends ProcessQueryParametersApp {
             try {
                 transformed = retrieval.transformQuery(root, p);
                 // run query
-                //results = retrieval.executeQuery(transformed, p).scoredDocuments;
+                results = retrieval.executeQuery(transformed, p).scoredDocuments;
             } catch (Exception ex) {
                 Logger.getLogger(ExtractOracleFeedbacks.class.getName()).log(Level.SEVERE, "error in running for"
                         + queryParams.toString(), ex);
