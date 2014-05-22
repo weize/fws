@@ -33,7 +33,9 @@ public class TrecEvaluator {
     }
 
     public TrecEvaluator(File resultFile) throws IOException {
-        results = Utility.copyStreamToString(new FileInputStream(resultFile));
+        FileInputStream fin = new FileInputStream(resultFile);
+        results = Utility.copyStreamToString(fin);
+        fin.close();
     }
 
     public String getHeader() {
