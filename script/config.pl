@@ -7,6 +7,8 @@ my $in = openReader($configFile);
 my $content = join("", <$in>);
 close($in);
 our $config = decode_json $content;
+our $fws = "fws";
+our $trec_eval = "trec_eval";
 
 sub openReader {
 	my $filename  = shift;
@@ -41,6 +43,12 @@ sub infoProcessing {
 sub infoWritten {
 	my $name = shift;
 	print STDERR "written in $name\n";
+}
+
+sub call {
+	my ($cmd) = @_;
+	print STDERR $cmd."\n";
+	system($cmd);
 }
 
 1;

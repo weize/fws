@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.umass.ciir.fws.retrieval.nosubtopic;
+package edu.umass.ciir.fws.srank;
 
 import edu.umass.ciir.fws.crawl.QuerySetResults;
 import edu.umass.ciir.fws.query.QuerySubtopic;
@@ -23,16 +23,16 @@ import org.lemurproject.galago.tupleflow.Parameters;
  *
  * @author wkong
  */
-public class CopyTopicRunsAsSubtopicRanks extends AppFunction{
+public class TopicRankToSubtopicRank extends AppFunction{
 
     @Override
     public String getName() {
-        return "copy-as-subtopic-rank";
+        return "rank-to-srank";
     }
 
     @Override
     public String getHelpString() {
-        return "fws copy-as-subtopic-rank config.json";
+        return "fws rank-to-srank --queryJsonFile=<queryJsonFile> --topicRankFile=<topicRankFile> --output=<subtopicRankFile>";
     }
 
     @Override
@@ -40,7 +40,7 @@ public class CopyTopicRunsAsSubtopicRanks extends AppFunction{
         // load rank results file
         String rankedListFile = p.getString("topicRankFile");
         File queryJsonFile = new File(p.getString("queryJsonFile"));
-        File outfile  = new File(p.getString("subtopicRankFile"));
+        File outfile  = new File(p.getString("output"));
         
         // load
         QuerySetResults ranks = new QuerySetResults(rankedListFile, 1000);

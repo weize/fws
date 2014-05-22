@@ -3,6 +3,7 @@
 	"queryJsonFile" : "../data/query/query-full.json",
 	"queryXmlFile" : ["../data/query/diversity/wt09.topics.full.xml","../data/query/diversity/wt2010-topics.xml","../data/query/diversity/wt2011-full-topics.xml","../data/query/diversity/wt2012-full-topics.xml"],
 	"sqrel" : "../data/qrel/all.diversity.sqrel",
+	"qrelSubtopic" : "../data/qrel/all.diversity.qrel",
 	"sqrelDir" : "../data/qrel/sqrel-splits",
 	"index" : "../data/index",
 	"stopwordsFile" : "../data/stopword/stopword",
@@ -51,6 +52,12 @@
 	"feedbackAnnotationText" : "../exp/annotation/from-db/feedback-annotation.text",
 	"oracleExpandedTerms": "../exp/feedback-oracle/expanded-terms",
 	"oracleExpansionRunDir": "../exp/feedback-oracle/run",
+	"oracleExpansionEvalDir": "../exp/feedback-oracle/eval",
+	"oracleExpansionEvalFile": "../exp/feedback-oracle/oracle-exp.eval",
+	"sdmSrank" : "../exp/srank/sdm/sdm.srank",
+	"sdmSeval" : "../exp/srank/sdm/sdm.srank.eval",
+	"sdmSevalTrec" : "../exp/srank/sdm/sdm.srank.teval",
+	"trecEval" : "trec_eval",
 	"topNum" : 100,
   	"requested" : 1000
 }

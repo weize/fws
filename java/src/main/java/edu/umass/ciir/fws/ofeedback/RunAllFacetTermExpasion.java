@@ -3,14 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.umass.ciir.fws.retrieval;
+package edu.umass.ciir.fws.ofeedback;
 
 import edu.umass.ciir.fws.anntation.AnnotatedFacet;
 import edu.umass.ciir.fws.anntation.FacetAnnotation;
 import edu.umass.ciir.fws.tool.app.ProcessQueryParametersApp;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.types.TfQueryParameters;
-import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -24,7 +23,6 @@ import org.lemurproject.galago.core.retrieval.RetrievalFactory;
 import org.lemurproject.galago.core.retrieval.ScoredDocument;
 import org.lemurproject.galago.core.retrieval.query.Node;
 import org.lemurproject.galago.core.retrieval.query.StructuredQuery;
-import static org.lemurproject.galago.core.tools.apps.BatchSearch.logger;
 import org.lemurproject.galago.tupleflow.InputClass;
 import org.lemurproject.galago.tupleflow.OutputClass;
 import org.lemurproject.galago.tupleflow.Parameters;
@@ -37,7 +35,7 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
  *
  * @author wkong
  */
-public class ExtractOracleFeedbacks extends ProcessQueryParametersApp {
+public class RunAllFacetTermExpasion extends ProcessQueryParametersApp {
 
     @Override
     protected Class getQueryParametersGeneratorClass() {
@@ -51,7 +49,7 @@ public class ExtractOracleFeedbacks extends ProcessQueryParametersApp {
 
     @Override
     public String getName() {
-        return "extract-oracle-feedbacks";
+        return "run-all-facet-term-expansion";
     }
 
     /**
@@ -71,6 +69,7 @@ public class ExtractOracleFeedbacks extends ProcessQueryParametersApp {
             facetJsonFile = new File(p.getString("facetAnnotationJson"));
             expTermFile = new File(p.getString("oracleExpandedTerms"));
             writer = Utility.getWriter(expTermFile);
+
         }
 
         @Override
@@ -97,6 +96,7 @@ public class ExtractOracleFeedbacks extends ProcessQueryParametersApp {
         public void close() throws IOException {
             writer.close();
             Utility.infoWritten(expTermFile);
+
             processor.close();
         }
 
@@ -141,7 +141,7 @@ public class ExtractOracleFeedbacks extends ProcessQueryParametersApp {
                 // run query
                 results = retrieval.executeQuery(transformed, p).scoredDocuments;
             } catch (Exception ex) {
-                Logger.getLogger(ExtractOracleFeedbacks.class.getName()).log(Level.SEVERE, "error in running for"
+                Logger.getLogger(RunAllFacetTermExpasion.class.getName()).log(Level.SEVERE, "error in running for"
                         + queryParams.toString(), ex);
             }
 
