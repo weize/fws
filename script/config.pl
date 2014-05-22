@@ -14,7 +14,7 @@ sub openReader {
 	return $in;
 }
 
-sub openWrite {
+sub openWriter {
 	my $filename  = shift;
 	open my $out, ">", $filename or die "cannot open $filename";
 	return $out;
@@ -31,6 +31,16 @@ sub loadSqrel {
 	}
 	close($in);
 	return \%sqrels;
+}
+
+sub infoProcessing {
+	my $name = shift;
+	print STDERR "processing $name\n";
+}
+
+sub infoWritten {
+	my $name = shift;
+	print STDERR "written in $name\n";
 }
 
 1;

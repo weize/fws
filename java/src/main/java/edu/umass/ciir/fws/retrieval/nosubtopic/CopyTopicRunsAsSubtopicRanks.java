@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.umass.ciir.fws.retrieval;
+package edu.umass.ciir.fws.retrieval.nosubtopic;
 
 import edu.umass.ciir.fws.crawl.QuerySetResults;
 import edu.umass.ciir.fws.query.QuerySubtopic;
@@ -38,7 +38,7 @@ public class CopyTopicRunsAsSubtopicRanks extends AppFunction{
     @Override
     public void run(Parameters p, PrintStream output) throws Exception {
         // load rank results file
-        String rankedListFile = p.getString("rankedListFile");
+        String rankedListFile = p.getString("topicRankFile");
         File queryJsonFile = new File(p.getString("queryJsonFile"));
         File outfile  = new File(p.getString("subtopicRankFile"));
         
