@@ -138,7 +138,7 @@ public class ExtractOracleFeedbacks extends ProcessQueryParametersApp {
             try {
                 transformed = retrieval.transformQuery(root, p);
                 // run query
-                //results = retrieval.executeQuery(transformed, p).scoredDocuments;
+                results = retrieval.executeQuery(transformed, p).scoredDocuments;
             } catch (Exception ex) {
                 Logger.getLogger(ExtractOracleFeedbacks.class.getName()).log(Level.SEVERE, "error in running for"
                         + queryParams.toString(), ex);
