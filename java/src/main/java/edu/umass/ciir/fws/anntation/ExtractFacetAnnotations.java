@@ -6,10 +6,10 @@
 package edu.umass.ciir.fws.anntation;
 
 import edu.umass.ciir.fws.utility.Utility;
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.PrintStream;
+import java.util.List;
 import org.lemurproject.galago.core.tools.AppFunction;
 import org.lemurproject.galago.tupleflow.Parameters;
 
@@ -33,17 +33,12 @@ public class ExtractFacetAnnotations extends AppFunction {
     public void run(Parameters p, PrintStream output) throws Exception {
         File jsonFile = new File(p.getString("facetAnnotationJson"));
         File outfile = new File(p.getString("facetAnnotationText"));
-        BufferedReader reader = Utility.getReader(jsonFile);
+        List<FacetAnnotation> anootations = FacetAnnotation.load(jsonFile);
         BufferedWriter writer = Utility.getWriter(outfile);
-        String line;
-        while ((line = reader.readLine()) != null) {
-            FacetAnnotation facetAnnotation = FacetAnnotation.parseFromJson(line);
-            if (facetAnnotation != null) {
-                writer.write(facetAnnotation.listAsString());
-                writer.newLine();
-            }
+        writer.write("#anntatorID\tqid\tfid\tdescription\trating\tterms\n");
+        for (FacetAnnotation facetAnnotation : anootations) {
+            writer.write(facetAnnotation.listAsString());
         }
-        reader.close();
         writer.close();
         Utility.infoWritten(outfile);
     }

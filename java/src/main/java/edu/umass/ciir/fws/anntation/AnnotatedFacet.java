@@ -13,16 +13,22 @@ import edu.umass.ciir.fws.clustering.ScoredFacet;
  */
 public class AnnotatedFacet extends ScoredFacet {
 
-    String description;
+    public String description;
+    public String fid;
 
-    public AnnotatedFacet(double score, String description) {
+    public AnnotatedFacet(double score, String fid, String description) {
         super(score);
         this.description = description;
+        this.fid = fid;
     }
 
     @Override
     public String toString() {
-        return description +"\t" + super.toFacetString();
+        return fid + "\t" + description + "\t" + super.toFacetString();
+    }
+    
+    public boolean isValid() {
+        return score > 1.1;
     }
 
 }

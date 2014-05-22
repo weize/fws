@@ -267,4 +267,8 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
     public static void infoProcessingQuery(String qid) {
         System.err.println("processing query " + qid);
     }
+
+    public static String getOracleExpandRunFileName(String runDir, String qid, String name) {
+        return getFileNameWithSuffix(runDir, qid, name, "rank");
+    }
 }

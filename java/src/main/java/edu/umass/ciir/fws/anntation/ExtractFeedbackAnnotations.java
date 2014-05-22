@@ -32,10 +32,11 @@ public class ExtractFeedbackAnnotations extends AppFunction {
     @Override
     public void run(Parameters p, PrintStream output) throws Exception {
         File jsonFile = new File(p.getString("feedbackAnnotationJson"));
-        File outfile = new File(p.getString("facetAnnotationText"));
+        File outfile = new File(p.getString("feedbackAnnotationText"));
         BufferedReader reader = Utility.getReader(jsonFile);
         BufferedWriter writer = Utility.getWriter(outfile);
         String line;
+        writer.write("#anntatorID\tqid\tsid\tfid\tfidx\tterms\n");
         while ((line = reader.readLine()) != null) {
             FeedbackAnnotation feedbackAnnotation = FeedbackAnnotation.parseFromJson(line);
             if (feedbackAnnotation != null) {

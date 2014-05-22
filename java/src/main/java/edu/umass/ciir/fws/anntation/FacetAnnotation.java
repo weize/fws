@@ -7,8 +7,13 @@ package edu.umass.ciir.fws.anntation;
 
 import edu.emory.mathcs.backport.java.util.Collections;
 import edu.umass.ciir.fws.clustering.ScoredItem;
+import edu.umass.ciir.fws.utility.Utility;
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import org.lemurproject.galago.tupleflow.Parameters;
 
 /**
@@ -18,9 +23,9 @@ import org.lemurproject.galago.tupleflow.Parameters;
  */
 public class FacetAnnotation {
 
-    String annotatorID;
-    String qid;
-    ArrayList<AnnotatedFacet> facets;
+    public String annotatorID;
+    public String qid;
+    public ArrayList<AnnotatedFacet> facets;
 
     public FacetAnnotation(String annotatorID, String queryID) {
         this.annotatorID = annotatorID;
@@ -43,7 +48,7 @@ public class FacetAnnotation {
     public static FacetAnnotation parseFromJson(String jsonDataString) throws IOException {
         return parseFromJson(jsonDataString, true);
     }
-    
+
     public static FacetAnnotation parseFromJson(String jsonDataString, boolean filter) throws IOException {
         Parameters data = Parameters.parseString(jsonDataString);
         String annotatorID = data.getString("annotatorID");
@@ -67,7 +72,7 @@ public class FacetAnnotation {
             int rating = Integer.parseInt(facet.getString("rating"));
             String description = facet.getString("description").replaceAll("\\s+", " ");
 
-            AnnotatedFacet f = new AnnotatedFacet(rating, description);
+            AnnotatedFacet f = new AnnotatedFacet(rating, fid.toString(), description);
 
             // to sort ids
             ArrayList<Integer> itemIds = new ArrayList<>();
@@ -91,4 +96,26 @@ public class FacetAnnotation {
         return fa;
     }
 
+    public static List<FacetAnnotation> load(File jsonFile) throws IOException {
+        ArrayList<FacetAnnotation> annotations = new ArrayList<>();
+        BufferedReader reader = Utility.getReader(jsonFile);
+        String line;
+        while ((line = reader.readLine()) != null) {
+            FacetAnnotation facetAnnotation = FacetAnnotation.parseFromJson(line);
+            if (facetAnnotation != null) {
+                annotations.add(facetAnnotation);
+            }
+        }
+        reader.close();
+        return annotations;
+    }
+
+    public static HashMap<String, FacetAnnotation> loadAsMap(File jsonFile) throws IOException {
+        HashMap<String, FacetAnnotation> map = new HashMap<>();
+        List<FacetAnnotation> annotation = load(jsonFile);
+        for (FacetAnnotation f : annotation) {
+            map.put(f.qid, f);
+        }
+        return map;
+    }
 }
