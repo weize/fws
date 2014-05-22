@@ -240,6 +240,7 @@ public class EvalAllFacetTermExpansion extends AppFunction {
                 File qrelFile = new File(Utility.getQrelForOneSubtopic(sqrelDir, queryParams.id, qs.sid));
                 if (qrelFile.exists()) {
                     File tevalFile = new File(Utility.getOracleExpandTevalFileName(evalDir, queryParams.id, qs.sid, fidTid));
+                    Utility.createDirectoryForFile(tevalFile);
                     try {
                         evaluator.evalAndOutput(qrelFile.getAbsolutePath(), rankFileName, tevalFile);
 
