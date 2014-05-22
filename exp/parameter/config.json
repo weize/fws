@@ -47,5 +47,8 @@
 	"facetAnnotationText" : "../exp/annotation/from-db/facet-annotation.text",
 	"feedbackAnnotationJson" : "../exp/annotation/from-db/feedback-annotation.json",
 	"feedbackAnnotationText" : "../exp/annotation/from-db/feedback-annotation.text",
-	"topNum" : 100
+	"oracleExpandedTerms": "../exp/feedback-oracle/expanded-terms",
+	"oracleExpansionRunDir": "../exp/feedback-oracle/run",
+	"topNum" : 100,
+  	"requested" : 1000
 }
