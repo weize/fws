@@ -20,4 +20,17 @@ sub openWrite {
 	return $out;
 }
 
+sub loadSqrel {
+	my $file = shift;
+	my $in = openReader($file);
+	my %sqrels = ();
+	while(my $line = <$in>) {
+		chomp $line;
+		my ($qid, $sid, $did, $rating) = split /\s+/, $line;
+		$sqrels{$qid}->{$sid}->{$did} = $rating; 
+	}
+	close($in);
+	return \%sqrels;
+}
+
 1;
