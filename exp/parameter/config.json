@@ -57,7 +57,7 @@
 	"sdmSrank" : "../exp/srank/sdm/sdm.srank",
 	"sdmSeval" : "../exp/srank/sdm/sdm.srank.eval",
 	"sdmSevalTrec" : "../exp/srank/sdm/sdm.srank.teval",
-	"trecEval" : "trec_eval",
+	"trecEval" : "../bin/trec_eval",
 	"topNum" : 100,
   	"requested" : 1000
 }
