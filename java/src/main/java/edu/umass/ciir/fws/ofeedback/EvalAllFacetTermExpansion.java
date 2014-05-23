@@ -163,7 +163,7 @@ public class EvalAllFacetTermExpansion extends AppFunction {
             for (QueryMetrics qm : qms) {
                 if (!qm.qid.equals("all")) {
                     writer.write(String.format("%s-%s-%s-%s\t%s\n",
-                            queryParams.id, sid, fid, tid, TextProcessing.join(qm.values, "\t")));
+                            queryParams.id, sid, fid, tid, TextProcessing.join(qm.valueStrs, "\t")));
                 }
             }
         }

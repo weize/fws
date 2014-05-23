@@ -14,6 +14,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -49,7 +50,7 @@ public class TrecEvaluator {
     public void evalAndOutput(String qrelFileName, String rankFileName, File tevalfile, File evalFile) throws Exception {
         List<QueryMetrics> qms = eval(qrelFileName, rankFileName);
         Utility.copyStringToFile(results, tevalfile);
-        
+
         if (evalFile != null) {
             BufferedWriter writer = Utility.getWriter(evalFile);
             //header
@@ -63,6 +64,46 @@ public class TrecEvaluator {
             writer.close();
         }
 
+    }
+    
+    /**
+     * 
+     * @param file
+     * @param filterAll filter qid "all".
+     * @return
+     * @throws IOException 
+     */
+    public static HashMap<String, QueryMetrics> loadQueryMetricsMap(File file, boolean filterAll) throws IOException {
+        HashMap<String, QueryMetrics> map = new HashMap<>();
+        List<QueryMetrics> list = loadQueryMetricsList(file, filterAll);
+        for (QueryMetrics qm : list) {
+            map.put(qm.qid, qm);
+        }
+        return map;
+    }
+
+    public static List<QueryMetrics> loadQueryMetricsList(File file, boolean filterAll) throws IOException {
+        ArrayList<QueryMetrics> qms = new ArrayList<>();
+        BufferedReader reader = Utility.getReader(file);
+        String line;
+        while ((line = reader.readLine()) != null) {
+            if (line.trim().startsWith("#")) {
+                continue;
+            }
+
+            String[] fields = line.split("\t");
+            String qid = fields[0];
+            if (!qid.equals("all")) {
+                double[] values = new double[fields.length - 1];
+                for (int i = 0; i < values.length; i++) {
+                    values[i] = Double.parseDouble(fields[i + 1]);
+                }
+                QueryMetrics qm = new QueryMetrics(qid, values);
+                qms.add(qm);
+            }
+        }
+        reader.close();
+        return qms;
     }
 
     public List<QueryMetrics> eval(String qrelFileName, String rankFileName) throws Exception {
