@@ -17,12 +17,12 @@ public class QueryMetrics {
     public String [] valueStrs; // metric values;
     public double [] values;
 
-    QueryMetrics(String qid, String[] values) {
+    public QueryMetrics(String qid, String[] values) {
         this.qid = qid;
         this.valueStrs = values;
     }
 
-    QueryMetrics(String qid, double[] values) {
+    public QueryMetrics(String qid, double[] values) {
         this.qid = qid;
         this.values = values;
     }

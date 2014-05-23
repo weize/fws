@@ -281,4 +281,9 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         String name = qid + "-" + sid + "-" + fidTid;
         return getFileNameWithSuffix(evalDir, qid, name, "teval");
     }
+
+    public static String getOracleFeedbackFile(String feedbackDir, double threshold) {
+        String name = "oracle." + parametersToFileNameString(threshold);
+        return getFileNameWithSuffix(feedbackDir, name, "fdbk");
+    }
 }
