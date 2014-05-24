@@ -62,13 +62,21 @@ public class RunAllFacetTermExpasion extends ProcessQueryParametersApp {
 
         File facetJsonFile;
         File expTermFile;
+        String runDir;
         BufferedWriter writer;
+        ExpandTermIdMap expTermMap;
+        File newTermIdMapFile;
+        
 
         public ExpendQueryWithFaceTerm(TupleFlowParameters parameters) throws IOException {
             Parameters p = parameters.getJSON();
             facetJsonFile = new File(p.getString("facetAnnotationJson"));
             expTermFile = new File(p.getString("oracleExpandedTerms"));
+            runDir = p.getString("oracleExpansionRunDir");
+            expTermMap = new ExpandTermIdMap(new File(p.getString("oracleExpandedTermIdMapOld")));
+            newTermIdMapFile = new File(p.getString("oracleExpandedTermIdMap"));
             writer = Utility.getWriter(expTermFile);
+            writer.write("#qid\ttermId\tfid-tid\tquery\tterm\n");
 
         }
 
@@ -81,23 +89,25 @@ public class RunAllFacetTermExpasion extends ProcessQueryParametersApp {
                     if (facet.isValid()) {
                         for (int i = 0; i < facet.size(); i++) {
                             String term = facet.items.get(i).item;
-                            String parameters = Utility.parametersToString(facet.fid, "" + i, term);
-                            processor.process(new TfQueryParameters(query.id, query.text, parameters));
-                            System.err.println(parameters);
-                            writer.write(String.format("%s\t%s\t%s-%d\t%s\n", query.id, query.text, facet.fid, i, term));
+                            Integer id = expTermMap.getId(query.id, term);
+                            File runFile = new File(Utility.getOracleExpandRunFileName(runDir, query.id, id));
+                            if (!runFile.exists()) {
+                                String parameters = Utility.parametersToString(id, term);
+                                processor.process(new TfQueryParameters(query.id, query.text, parameters));
+                            }
+                            writer.write(String.format("%s\t%d\t%s-%d\t%s\t%s\n", query.id, id, facet.fid, i, query.text, term));
                         }
                     }
                 }
             }
-
         }
 
         @Override
         public void close() throws IOException {
             writer.close();
             Utility.infoWritten(expTermFile);
-
             processor.close();
+            expTermMap.output(newTermIdMapFile); // update ids
         }
 
     }
@@ -119,13 +129,11 @@ public class RunAllFacetTermExpasion extends ProcessQueryParametersApp {
         @Override
         public void process(TfQueryParameters queryParams) throws IOException {
             String[] params = Utility.splitParameters(queryParams.parameters);
-            String fid = params[0];
-            String tid = params[1];
+            int id = Integer.parseInt(params[0]);
+            String term = params[1];
 
-            String term = params[2];
             String queryNumber = queryParams.id; // used in the rank results
-            String exQueryNumber = queryParams.id + "-" + fid + "-" + tid; // used for file Name
-            File outfile = new File(Utility.getOracleExpandRunFileName(runDir, queryParams.id, fid, tid));
+            File outfile = new File(Utility.getOracleExpandRunFileName(runDir, queryParams.id, id));
             Utility.createDirectoryForFile(outfile);
             BufferedWriter writer = Utility.getWriter(outfile);
             String queryText = expandSdmQuery(queryParams.text, term);

@@ -142,10 +142,9 @@ public class EvalAllFacetTermExpansion extends AppFunction {
         public void process(TfQueryParameters queryParams) throws IOException {
             String[] params = Utility.splitParameters(queryParams.parameters);
             String sid = params[0];
-            String fid = params[1];
-            String tid = params[2];
+            int termId = Integer.parseInt(params[1]);
 
-            File tevalFile = new File(Utility.getOracleExpandTevalFileName(evalDir, queryParams.id, sid, fid + "-" + tid));
+            File tevalFile = new File(Utility.getOracleExpandTevalFileName(evalDir, queryParams.id, sid, termId));
             TrecEvaluator evaluator = new TrecEvaluator(tevalFile);
             List<QueryMetrics> qms = evaluator.resultToQueryMetrics();
             if (first) {
@@ -162,8 +161,8 @@ public class EvalAllFacetTermExpansion extends AppFunction {
 
             for (QueryMetrics qm : qms) {
                 if (!qm.qid.equals("all")) {
-                    writer.write(String.format("%s-%s-%s-%s\t%s\n",
-                            queryParams.id, sid, fid, tid, TextProcessing.join(qm.valueStrs, "\t")));
+                    writer.write(String.format("%s-%s-%d\t%s\n",
+                            queryParams.id, sid, termId, TextProcessing.join(qm.valueStrs, "\t")));
                 }
             }
         }
@@ -189,13 +188,17 @@ public class EvalAllFacetTermExpansion extends AppFunction {
 
             String line;
             while ((line = reader.readLine()) != null) {
-                String[] fields = line.split("\t");
-                String qid = fields[0];
-                String query = fields[1];
-                String fidTid = fields[2];
-                String term = fields[3];
-                String parameters = fidTid;
-                processor.process(new TfQueryParameters(qid, query, parameters));
+                //writer.write("#qid\ttermId\tfid-tid\tquery\tterm\n");
+                if (!line.trim().startsWith("#")) {
+                    String[] fields = line.split("\t");
+                    String qid = fields[0];
+                    String termId = fields[1];
+                    String fidTid = fields[2];
+                    String query = fields[3];
+                    String term = fields[4];
+                    String parameters = termId;
+                    processor.process(new TfQueryParameters(qid, query, parameters));
+                }
 
             }
             reader.close();
@@ -232,19 +235,17 @@ public class EvalAllFacetTermExpansion extends AppFunction {
 
         @Override
         public void process(TfQueryParameters queryParams) throws IOException {
-            String fidTid = queryParams.parameters;
-            String fid = fidTid.split("-")[0];
-            String tid = fidTid.split("-")[1];
-            String rankFileName = Utility.getOracleExpandRunFileName(runDir, queryParams.id, fid, tid);
+            int termId = Integer.parseInt(queryParams.parameters);
+            String rankFileName = Utility.getOracleExpandRunFileName(runDir, queryParams.id, termId);
             for (QuerySubtopic qs : queryTopics.get(queryParams.id).subtopics) {
                 File qrelFile = new File(Utility.getQrelForOneSubtopic(sqrelDir, queryParams.id, qs.sid));
                 if (qrelFile.exists()) {
-                    File tevalFile = new File(Utility.getOracleExpandTevalFileName(evalDir, queryParams.id, qs.sid, fidTid));
+                    File tevalFile = new File(Utility.getOracleExpandTevalFileName(evalDir, queryParams.id, qs.sid, termId));
                     Utility.createDirectoryForFile(tevalFile);
                     try {
                         evaluator.evalAndOutput(qrelFile.getAbsolutePath(), rankFileName, tevalFile);
 
-                        String params = Utility.parametersToString(qs.sid, fid, tid);
+                        String params = Utility.parametersToString(qs.sid, termId);
                         processor.process(new TfQueryParameters(queryParams.id, queryParams.text, params));
                     } catch (Exception ex) {
                         Logger.getLogger(EvalAllFacetTermExpansion.class.getName()).log(Level.SEVERE, "error in eval " + queryParams.toString(), ex);

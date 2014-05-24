@@ -35,6 +35,21 @@ sub loadSqrel {
 	return \%sqrels;
 }
 
+sub loadQrelForSubtopic {
+	my $file = shift;
+	my $in = openReader($file);
+	my %sqrels = ();
+	while(my $line = <$in>) {
+		chomp $line;
+		my ($qidSid, $zero, $did, $rating) = split /\s+/, $line;
+		my ($qid, $sid) = split /-/, $qidSid;
+		$sqrels{$qid}->{$sid}->{$did} = $rating; 
+	}
+	close($in);
+	return \%sqrels;
+}
+
+
 sub infoProcessing {
 	my $name = shift;
 	print STDERR "processing $name\n";

@@ -42,7 +42,8 @@ public class FeedbackAnnotation {
         Parameters data = Parameters.parseString(jsonDataString);
         String aid = data.getString("annotatorID");
         String qid = data.getString("aolUserID");
-        String sid = data.getString("subtopicID");
+        //String sid = data.getString("subtopicID");
+        String sid = String.valueOf(Integer.parseInt(data.getString("subtopicID") + 1)); // change from zero-based to one-based
         Parameters feedbackMap = data.getMap("explicitlySaved");
         
         FeedbackAnnotation fa = new FeedbackAnnotation(aid, qid, sid);

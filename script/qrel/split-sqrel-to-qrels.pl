@@ -5,11 +5,11 @@ require 'config.pl';
 
 our $config;
 
-my $sqrelFile = $config->{"sqrel"};
+my $sqrelFile = $config->{"qrelSubtopic"};
 my $sqrelDir =  $config->{"sqrelDir"};
 infoProcessing($sqrelFile);
 
-my $sqrels = loadSqrel($sqrelFile);
+my $sqrels = loadQrelForSubtopic($sqrelFile);
 
 for my $qid (keys %{$sqrels}) {
 for my $sid (keys %{$sqrels->{$qid}}) {
