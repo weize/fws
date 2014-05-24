@@ -25,7 +25,7 @@ import org.lemurproject.galago.tupleflow.Parameters;
  *
  * @author wkong
  */
-public class CalcFacetTermExpImprovement extends AppFunction {
+public class CalcExpImprvExtractOfeedbacks extends AppFunction {
 
     @Override
     public String getName() {
@@ -39,13 +39,12 @@ public class CalcFacetTermExpImprovement extends AppFunction {
 
     static class Improvement {
 
-        String fid, tid;
+        String termId;
         String term;
         double[] metricImprvs;
 
-        public Improvement(String fid, String tid, String term, double[] metricImprvs) {
-            this.fid = fid;
-            this.tid = tid;
+        public Improvement(String termId, String term, double[] metricImprvs) {
+            this.termId = termId;
             this.term = term;
             this.metricImprvs = metricImprvs;
         }
@@ -61,11 +60,10 @@ public class CalcFacetTermExpImprovement extends AppFunction {
         // qid-sid  
         for (QueryMetrics qm : expQms) {
             double[] improvement = new double[qm.values.length];
-            String[] qidSidFidTid = qm.qid.split("-");
-            String qid = qidSidFidTid[0];
-            String sid = qidSidFidTid[1];
-            String fid = qidSidFidTid[2];
-            String tid = qidSidFidTid[3];
+            String[] qidSidTermId = qm.qid.split("-");
+            String qid = qidSidTermId[0];
+            String sid = qidSidTermId[1];
+            String termId = qidSidTermId[2];
 
             String qidSid = qid + "-" + sid;
             QueryMetrics sdmQm = sdmQms.get(qidSid);
@@ -73,8 +71,8 @@ public class CalcFacetTermExpImprovement extends AppFunction {
                 improvement[i] = qm.values[i] - sdmQm.values[i];
             }
 
-            String term = expTermMap.get(qid + "-" + fid + "-" + tid);
-            Improvement imprv = new Improvement(fid, tid, term, improvement);
+            String term = expTermMap.get(qid + "-" + termId);
+            Improvement imprv = new Improvement(termId, term, improvement);
 
             if (subtopicImprvs.containsKey(qidSid)) {
                 subtopicImprvs.get(qidSid).add(imprv);
@@ -137,10 +135,11 @@ public class CalcFacetTermExpImprovement extends AppFunction {
         while ((line = reader.readLine()) != null) {
             String[] fields = line.split("\t");
             String qid = fields[0];
-            String query = fields[1];
+            String termId = fields[1];
             String fidTid = fields[2];
-            String term = fields[3];
-            map.put(qid + "-" + fidTid, term);
+            String query = fields[3];
+            String term = fields[4];
+            map.put(qid + "-" + termId, term);
         }
         reader.close();
         return map;
@@ -151,7 +150,7 @@ public class CalcFacetTermExpImprovement extends AppFunction {
 
         for (String qidSid : subtopicImprvs.keySet()) {
             for (Improvement imprv : subtopicImprvs.get(qidSid)) {
-                writer.write(qidSid + "-" + imprv.fid + "-" + imprv.tid + "\t" + imprv.term);
+                writer.write(qidSid + "-" + imprv.termId + "\t" + imprv.term);
                 for (int i = 0; i < imprv.metricImprvs.length; i++) {
                     writer.write(String.format("\t%.4f", imprv.metricImprvs[i]));
                 }

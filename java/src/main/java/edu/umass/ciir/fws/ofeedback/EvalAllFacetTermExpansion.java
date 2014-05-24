@@ -243,7 +243,10 @@ public class EvalAllFacetTermExpansion extends AppFunction {
                     File tevalFile = new File(Utility.getOracleExpandTevalFileName(evalDir, queryParams.id, qs.sid, termId));
                     Utility.createDirectoryForFile(tevalFile);
                     try {
-                        evaluator.evalAndOutput(qrelFile.getAbsolutePath(), rankFileName, tevalFile);
+                        if (!tevalFile.exists()) {
+                            System.err.println("exsits " + tevalFile.getAbsolutePath());
+                            evaluator.evalAndOutput(qrelFile.getAbsolutePath(), rankFileName, tevalFile);
+                        }
 
                         String params = Utility.parametersToString(qs.sid, termId);
                         processor.process(new TfQueryParameters(queryParams.id, queryParams.text, params));
