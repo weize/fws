@@ -94,8 +94,10 @@ public class RunAllFacetTermExpasion extends ProcessQueryParametersApp {
                             String term = facet.items.get(i).item;
                             Integer id = expTermMap.getId(query.id, term);
                             File runFile = new File(Utility.getOracleExpandRunFileName(runDir, query.id, id));
-                            if (!runFile.exists()) {
-                                String parameters = Utility.parametersToString(id, term);
+			    if (runFile.exists()) {
+				System.err.println("exists results for " + runFile.getAbsolutePath());
+			    } else {
+				    String parameters = Utility.parametersToString(id, term);
                                 processor.process(new TfQueryParameters(query.id, query.text, parameters));
                             }
                             writer.write(String.format("%s\t%d\t%s-%d\t%s\t%s\n", query.id, id, facet.fid, i, query.text, term));
