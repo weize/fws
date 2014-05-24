@@ -66,14 +66,17 @@ public class RunAllFacetTermExpasion extends ProcessQueryParametersApp {
         BufferedWriter writer;
         ExpandTermIdMap expTermMap;
         File newTermIdMapFile;
-        
 
         public ExpendQueryWithFaceTerm(TupleFlowParameters parameters) throws IOException {
             Parameters p = parameters.getJSON();
             facetJsonFile = new File(p.getString("facetAnnotationJson"));
             expTermFile = new File(p.getString("oracleExpandedTerms"));
             runDir = p.getString("oracleExpansionRunDir");
-            expTermMap = new ExpandTermIdMap(new File(p.getString("oracleExpandedTermIdMapOld")));
+            if (p.containsKey("oracleExpandedTermIdMapOld")) {
+                expTermMap = new ExpandTermIdMap(new File(p.getString("oracleExpandedTermIdMapOld")));
+            } else {
+                expTermMap = new ExpandTermIdMap();
+            }
             newTermIdMapFile = new File(p.getString("oracleExpandedTermIdMap"));
             writer = Utility.getWriter(expTermFile);
             writer.write("#qid\ttermId\tfid-tid\tquery\tterm\n");

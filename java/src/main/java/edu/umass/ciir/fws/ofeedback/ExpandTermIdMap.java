@@ -24,6 +24,10 @@ public class ExpandTermIdMap {
         load(file);
     }
 
+    ExpandTermIdMap() {
+        idMap = new TreeMap<>();
+    }
+
     private void load(File file) throws IOException {
         idMap = new TreeMap<>();
         BufferedReader reader = Utility.getReader(file);
@@ -43,7 +47,7 @@ public class ExpandTermIdMap {
         for (String qid : idMap.keySet()) {
             TreeMap<String, Integer> map = idMap.get(qid);
             for(String term : map.keySet()) {
-                writer.write(String.format("%s\t%s\t%s\n", qid, term, map.get(term)));
+                writer.write(String.format("%s\t%s\t%d\n", qid, term, map.get(term)));
             }
         }
         writer.close();
