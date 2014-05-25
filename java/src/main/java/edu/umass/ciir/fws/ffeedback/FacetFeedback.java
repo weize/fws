@@ -9,6 +9,7 @@ import edu.emory.mathcs.backport.java.util.Collections;
 import edu.umass.ciir.fws.anntation.FeedbackAnnotation;
 import edu.umass.ciir.fws.anntation.FeedbackList;
 import edu.umass.ciir.fws.anntation.FeedbackTerm;
+import edu.umass.ciir.fws.ffeedback.oracle.ExtractOracleFeedbacks;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +35,19 @@ public class FacetFeedback {
         return String.format("%s-%s\t%s\n", fa.qid, fa.sid, TextProcessing.join(terms, "|"));
     }
 
+    public FacetFeedback(String qidSid, ArrayList<FeedbackTerm> terms) {
+        this.qid = qidSid.split("-")[0];
+        this.sid = qidSid.split("-")[1];
+        this.terms = terms;
+    }
+    
+    
+    
+    
+    public FacetFeedback() {
+        
+    }
+
     public String termsToString() {
         return TextProcessing.join(terms, "|");
     }
@@ -52,6 +66,12 @@ public class FacetFeedback {
 	ff.qid = elems[0].split("-")[0];
 	ff.sid = elems[0].split("-")[1];
         return ff;
+    }
+    
+    @Override
+    public String toString() {
+        Collections.sort(terms);
+        return qid + "-" + sid + "\t"  + TextProcessing.join(terms, "|");
     }
 
     public static FacetFeedback parseTermsAndSort(String termsStr) {
