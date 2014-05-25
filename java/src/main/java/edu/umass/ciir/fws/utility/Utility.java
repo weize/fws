@@ -279,11 +279,11 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
     public static String getExpansionRunFileName(String runDir, QueryExpansion qe) {
         return getFileNameWithSuffix(runDir, qe.qid, qe.toName(), "rank");
     }
-    
+
     public static String getExpansionRunFileName(String runDir, TfQueryExpansion qe) {
         return getFileNameWithSuffix(runDir, qe.qid, QueryExpansion.toName(qe), "rank");
     }
-    
+
     public static String getExpansionRunFileName(String runDir, TfQueryExpansionSubtopic qes) {
         return getFileNameWithSuffix(runDir, qes.qid, QueryExpansion.toName(qes), "rank");
     }
@@ -296,19 +296,23 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         String name = qid + "-" + sid + "-" + termId;
         return getFileNameWithSuffix(evalDir, qid, name, "teval");
     }
-    
+
     public static String getOracleExpandTevalFileName(String evalDir, String qid, String sid, long termId) {
         String name = qid + "-" + sid + "-" + termId;
         return getFileNameWithSuffix(evalDir, qid, name, "teval");
     }
 
-    public static String getOracleFeedbackFile(String feedbackDir, double threshold) {
-        String name = "oracle." + parametersToFileNameString(threshold);
+    public static String getOracleFeedbackFile(String feedbackDir, String model, double threshold) {
+        String name = "oracle." + model + "." + parametersToFileNameString(threshold);
         return getFileNameWithSuffix(feedbackDir, name, "fdbk");
     }
 
     public static String getQExpSubtopicTevalFileName(String evalDir, TfQueryExpansionSubtopic qes) {
         String name = String.format("%s-%s-%s-%d", qes.qid, qes.sid, qes.model, qes.expId);
         return getFileNameWithSuffix(evalDir, qes.qid, name, "teval");
+    }
+
+    public static String getExpansionImprFile(String expansionDir, String model) {
+        return getFileName(expansionDir, "expansion." + model + ".imprv");
     }
 }
