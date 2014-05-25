@@ -11,9 +11,9 @@ package edu.umass.ciir.fws.anntation;
  */
 public class FeedbackTerm implements Comparable<FeedbackTerm> {
 
-    String term;
-    int fidx; // index of the facet, of which the term apperas in
-    int tidx; // index of the term in the shown facet
+    public String term;
+    public int fidx; // index of the facet, of which the term apperas in
+    public int tidx; // index of the term in the shown facet
 
     public FeedbackTerm(String term, int fidx, int tidx) {
         this.term = term;

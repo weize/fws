@@ -79,7 +79,7 @@ public class RunAllFacetTermExpasion extends ProcessQueryParametersApp {
             }
             newTermIdMapFile = new File(p.getString("oracleExpandedTermIdMap"));
             writer = Utility.getWriter(expTermFile);
-            writer.write("#qid\ttermId\tfid-tid\tquery\tterm\n");
+            writer.write("#qid\ttermId\tfidx\ttidx\tfid\tquery\tterm\n");
 
         }
 

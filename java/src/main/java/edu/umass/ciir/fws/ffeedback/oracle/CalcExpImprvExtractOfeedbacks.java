@@ -5,6 +5,8 @@
  */
 package edu.umass.ciir.fws.ffeedback.oracle;
 
+import edu.emory.mathcs.backport.java.util.Collections;
+import edu.umass.ciir.fws.anntation.FeedbackTerm;
 import edu.umass.ciir.fws.eval.QueryMetrics;
 import edu.umass.ciir.fws.eval.TrecEvaluator;
 import edu.umass.ciir.fws.utility.TextProcessing;
@@ -37,22 +39,21 @@ public class CalcExpImprvExtractOfeedbacks extends AppFunction {
         return "fws " + getName() + " config.json";
     }
 
-    static class Improvement {
+    static class Improvement extends FeedbackTerm {
 
         String termId;
-        String term;
         double[] metricImprvs;
 
-        public Improvement(String termId, String term, double[] metricImprvs) {
+        public Improvement(String termId, FeedbackTerm term, double[] metricImprvs) {
+            super(term.term, term.fidx, term.tidx);
             this.termId = termId;
-            this.term = term;
             this.metricImprvs = metricImprvs;
         }
 
     }
 
     private TreeMap<String, ArrayList<Improvement>> calcImprovements(File oracleExpansionEvalFile, File sdmSevalFile, File expandedTermFile) throws IOException {
-        HashMap<String, String> expTermMap = loadExpTermMap(expandedTermFile);
+        HashMap<String, FeedbackTerm> expTermMap = loadExpTermMap(expandedTermFile);
         HashMap<String, QueryMetrics> sdmQms = TrecEvaluator.loadQueryMetricsMap(sdmSevalFile, true);
         List<QueryMetrics> expQms = TrecEvaluator.loadQueryMetricsList(oracleExpansionEvalFile, true);
 
@@ -71,7 +72,7 @@ public class CalcExpImprvExtractOfeedbacks extends AppFunction {
                 improvement[i] = qm.values[i] - sdmQm.values[i];
             }
 
-            String term = expTermMap.get(qid + "-" + termId);
+            FeedbackTerm term = expTermMap.get(qid + "-" + termId);
             Improvement imprv = new Improvement(termId, term, improvement);
 
             if (subtopicImprvs.containsKey(qidSid)) {
@@ -117,29 +118,28 @@ public class CalcExpImprvExtractOfeedbacks extends AppFunction {
                     selected.add(imprv);
                 }
             }
-            String [] terms = new String[selected.size()];
-            for (int i = 0; i < terms.length; i ++) {
-                terms[i] = selected.get(i).term;
-            }
-            writer.write(String.format("%s\t%s\n", qidSid,TextProcessing.join(terms, "|")));
+            Collections.sort(selected);
+            writer.write(String.format("%s\t%s\n", qidSid,TextProcessing.join(selected, "|")));
         }
         writer.close();
         Utility.infoWritten(outfile);
     }
 
-    private HashMap<String, String> loadExpTermMap(File expandedTermFile) throws IOException {
+    private HashMap<String, FeedbackTerm> loadExpTermMap(File expandedTermFile) throws IOException {
         BufferedReader reader = Utility.getReader(expandedTermFile);
 
-        HashMap<String, String> map = new HashMap<>();
+        HashMap<String, FeedbackTerm> map = new HashMap<>();
         String line;
         while ((line = reader.readLine()) != null) {
             String[] fields = line.split("\t");
             String qid = fields[0];
             String termId = fields[1];
-            String fidTid = fields[2];
-            String query = fields[3];
-            String term = fields[4];
-            map.put(qid + "-" + termId, term);
+            int fidx = Integer.parseInt(fields[2]);
+            int tidx = Integer.parseInt(fields[3]);
+            String fid = fields[4];
+            String query = fields[5];
+            String term = fields[6];
+            map.put(qid + "-" + termId, new FeedbackTerm(term, fidx, tidx));
         }
         reader.close();
         return map;
@@ -150,7 +150,7 @@ public class CalcExpImprvExtractOfeedbacks extends AppFunction {
 
         for (String qidSid : subtopicImprvs.keySet()) {
             for (Improvement imprv : subtopicImprvs.get(qidSid)) {
-                writer.write(qidSid + "-" + imprv.termId + "\t" + imprv.term);
+                writer.write(qidSid + "-" + imprv.fidx + "-" + imprv.tidx + "\t" + imprv.term);
                 for (int i = 0; i < imprv.metricImprvs.length; i++) {
                     writer.write(String.format("\t%.4f", imprv.metricImprvs[i]));
                 }
