@@ -58,6 +58,7 @@
 	"oracleExpansionEvalImproveFile": "../exp/feedback-oracle/expand-term.impr",
 	"oracleFeedbackDir": "../exp/feedback-oracle/feedback",
 	"oracleFeedbackImprvThresholds": [0.001, 0.005, 0.01, 0.02, 0.03, 0.04, 0.05], 
+	"annotatorFeedback" : "../exp/feedback-annotator/annotator.fdbk",
 	"sdmSrank" : "../exp/srank/sdm/sdm.srank",
 	"sdmSeval" : "../exp/srank/sdm/sdm.srank.eval",
 	"sdmSevalTrec" : "../exp/srank/sdm/sdm.srank.teval",

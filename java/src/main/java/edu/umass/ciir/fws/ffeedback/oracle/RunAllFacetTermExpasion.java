@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.umass.ciir.fws.ofeedback;
+package edu.umass.ciir.fws.ffeedback.oracle;
 
 import edu.umass.ciir.fws.anntation.AnnotatedFacet;
 import edu.umass.ciir.fws.anntation.FacetAnnotation;
@@ -88,10 +88,13 @@ public class RunAllFacetTermExpasion extends ProcessQueryParametersApp {
             HashMap<String, FacetAnnotation> annotations = FacetAnnotation.loadAsMap(facetJsonFile);
 
             if (annotations.containsKey(query.id)) {
-                for (AnnotatedFacet facet : annotations.get(query.id).facets) {
+                FacetAnnotation fa = annotations.get(query.id);
+                fa.sortFacets();
+                int fidx = 0;
+                for (AnnotatedFacet facet : fa.facets) {
                     if (facet.isValid()) {
                         for (int i = 0; i < facet.size(); i++) {
-                            String term = facet.items.get(i).item;
+                            String term = facet.get(i);
                             Integer id = expTermMap.getId(query.id, term);
                             File runFile = new File(Utility.getOracleExpandRunFileName(runDir, query.id, id));
 			    if (runFile.exists()) {
@@ -100,8 +103,9 @@ public class RunAllFacetTermExpasion extends ProcessQueryParametersApp {
 				    String parameters = Utility.parametersToString(id, term);
                                 processor.process(new TfQueryParameters(query.id, query.text, parameters));
                             }
-                            writer.write(String.format("%s\t%d\t%s-%d\t%s\t%s\n", query.id, id, facet.fid, i, query.text, term));
+                            writer.write(String.format("%s\t%d\t%d\t%d\t%s\t%s\t%s\n", query.id, id, fidx, i, facet.fid, query.text, term));
                         }
+                        fidx ++;
                     }
                 }
             }

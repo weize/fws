@@ -5,11 +5,15 @@
  */
 package edu.umass.ciir.fws.anntation;
 
+import edu.umass.ciir.fws.ffeedback.FacetFeedback;
+import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 import org.lemurproject.galago.core.tools.AppFunction;
 import org.lemurproject.galago.tupleflow.Parameters;
 
@@ -31,21 +35,36 @@ public class ExtractFeedbackAnnotations extends AppFunction {
 
     @Override
     public void run(Parameters p, PrintStream output) throws Exception {
+
         File jsonFile = new File(p.getString("feedbackAnnotationJson"));
-        File outfile = new File(p.getString("feedbackAnnotationText"));
-        BufferedReader reader = Utility.getReader(jsonFile);
+        List<FeedbackAnnotation> annotations = FeedbackAnnotation.load(jsonFile);
+
+        File annotatoTextFile = new File(p.getString("feedbackAnnotationText"));
+        extractAeedbackAnnotationText(annotations, annotatoTextFile);
+        Utility.infoWritten(annotatoTextFile);
+        
+        File annotatorFeedbackFile = new File(p.getString("annotatorFeedback"));
+        extractAnnotatorFeedback(annotations, annotatorFeedbackFile);
+        Utility.infoWritten(annotatorFeedbackFile);
+    }
+
+    private void extractAeedbackAnnotationText(List<FeedbackAnnotation> annotations, File outfile) throws IOException {
         BufferedWriter writer = Utility.getWriter(outfile);
-        String line;
-        writer.write("#anntatorID\tqid\tsid\tfid\tfidx\tterms\n");
-        while ((line = reader.readLine()) != null) {
-            FeedbackAnnotation feedbackAnnotation = FeedbackAnnotation.parseFromJson(line);
-            if (feedbackAnnotation != null) {
-                writer.write(feedbackAnnotation.list());
-            }
+
+        writer.write("#anntatorID\tqid\tsid\tfid\tfidx\tterms(<fid-tid:term>|...)\n");
+        for (FeedbackAnnotation feedbackAnnotation : annotations) {
+            writer.write(feedbackAnnotation.list());
         }
-        reader.close();
         writer.close();
-        Utility.infoWritten(outfile);
+        
+    }
+
+    private void extractAnnotatorFeedback(List<FeedbackAnnotation> annotations, File outfile) throws IOException {
+        BufferedWriter writer = Utility.getWriter(outfile);
+        for (FeedbackAnnotation an : annotations) {
+            writer.write(FacetFeedback.FeedbackAnnotationToFfeedbackString(an));
+        }
+        writer.close();
     }
 
 }

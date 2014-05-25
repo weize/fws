@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.umass.ciir.fws.ofeedback;
+package edu.umass.ciir.fws.ffeedback.oracle;
 
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
@@ -18,7 +18,7 @@ import java.util.TreeMap;
  */
 public class ExpandTermIdMap {
 
-    TreeMap<String, TreeMap<String, Integer>> idMap; // qid->term" -> id
+    TreeMap<String, TreeMap<String, Integer>> idMap; // qid->term-> id
 
     public ExpandTermIdMap(File file) throws IOException {
         load(file);

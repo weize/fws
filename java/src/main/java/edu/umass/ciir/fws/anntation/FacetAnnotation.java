@@ -6,7 +6,6 @@
 package edu.umass.ciir.fws.anntation;
 
 import edu.emory.mathcs.backport.java.util.Collections;
-import edu.umass.ciir.fws.clustering.ScoredItem;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
 import java.io.File;
@@ -35,6 +34,10 @@ public class FacetAnnotation {
 
     public void addFacet(AnnotatedFacet facet) {
         this.facets.add(facet);
+    }
+    
+    public void sortFacets() {
+        Collections.sort(facets);
     }
 
     public String listAsString() {
@@ -85,7 +88,7 @@ public class FacetAnnotation {
 
             for (Integer itemId : itemIds) {
                 String item = facet.getMap(itemId.toString()).getAsList("queries", Parameters.class).get(0).getString("query");
-                f.addItem(new ScoredItem(item, 0));
+                f.addTerm(item);
             }
 
             if (f.size() > 0) {
