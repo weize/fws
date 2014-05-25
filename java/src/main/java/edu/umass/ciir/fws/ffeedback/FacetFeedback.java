@@ -38,12 +38,12 @@ public class FacetFeedback {
         return TextProcessing.join(terms, "|");
     }
 
-    public static FacetFeedback parseFromString(String line) {
+    public static FacetFeedback parseFromStringAndSort(String line) {
         String[] elems = line.split("\t");
 
 	FacetFeedback ff;
 	if (elems.length == 2) {
-        	ff = parseTerms(elems[1]);
+        	ff = parseTermsAndSort(elems[1]);
 	} else {
 		ff = new FacetFeedback();
 		ff.terms = new ArrayList<>();
@@ -54,7 +54,7 @@ public class FacetFeedback {
         return ff;
     }
 
-    public static FacetFeedback parseTerms(String termsStr) {
+    public static FacetFeedback parseTermsAndSort(String termsStr) {
         FacetFeedback ff = new FacetFeedback();
         ff.terms = new ArrayList<>();
         ff.facets = new ArrayList<>();
@@ -90,13 +90,17 @@ public class FacetFeedback {
         return ff;
     }
 
-    public static String toUniqueExpansionString(List<FeedbackTerm> terms) {
-        Collections.sort(terms);
-        return TextProcessing.join(terms, "|").replace('-', '~');
+    public static String toExpansionString(List<FeedbackTerm> selected) {
+        java.util.Collections.sort(selected);
+        return TextProcessing.join(selected, "|");
+    }
+    
+    public static FacetFeedback parseFromExpansionString(String expansion) {
+        return parseTermsAndSort(expansion);
     }
 
     public static FacetFeedback parseTermsFromUniqueExpansionString(String uniqueExpansionString) {
-        return parseTerms(uniqueExpansionString.replace('~', '-'));
+        return parseTermsAndSort(uniqueExpansionString.replace('~', '-'));
     }
 
 }

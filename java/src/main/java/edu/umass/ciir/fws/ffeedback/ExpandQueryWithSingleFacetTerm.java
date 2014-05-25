@@ -95,5 +95,6 @@ public class ExpandQueryWithSingleFacetTerm extends StandardStep<FileName, TfQue
         writer.close();
         Utility.infoWritten(expFile);
         expIdMap.output(newExpIdMapFile); // update ids
+        Utility.infoWritten(newExpIdMapFile);
     }
 }
