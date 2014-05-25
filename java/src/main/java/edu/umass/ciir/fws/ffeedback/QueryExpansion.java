@@ -8,19 +8,17 @@ package edu.umass.ciir.fws.ffeedback;
 import edu.umass.ciir.fws.anntation.FeedbackTerm;
 import edu.umass.ciir.fws.types.TfQueryExpansion;
 import edu.umass.ciir.fws.types.TfQueryExpansionSubtopic;
-import edu.umass.ciir.fws.utility.TextProcessing;
-import java.util.ArrayList;
-import java.util.Collections;
+import edu.umass.ciir.fws.utility.Utility;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
 
 /**
  *
  * @author wkong
  */
 public class QueryExpansion {
-
-    
-
-    
 
     public String qid;
     public String model;
@@ -50,7 +48,7 @@ public class QueryExpansion {
         FeedbackTerm ft = FeedbackTerm.parseFromString(expansion);
         return String.format("#combine:0=0.6:1=0.4(#sdm( %s ) #combine( %s ))", originalQuery, ft.term);
     }
-    
+
     private static String expandFeedbackTermSimple(String originalQuery, String expansion) {
         FacetFeedback feedback = FacetFeedback.parseFromExpansionString(expansion);
         StringBuilder query = new StringBuilder();
@@ -89,11 +87,15 @@ public class QueryExpansion {
     public String toName() {
         return qid + "-" + model + "-" + expId;
     }
+    
+    public static String toName(String qid, String model, long expId) {
+        return qid + "-" + model + "-" + expId;
+    }
 
     public static String toName(TfQueryExpansion qe) {
         return qe.qid + "-" + qe.model + "-" + qe.expId;
     }
-    
+
     public static String toName(TfQueryExpansionSubtopic qes) {
         return qes.qid + "-" + qes.model + "-" + qes.expId;
     }
@@ -106,16 +108,16 @@ public class QueryExpansion {
     public String toString() {
         return String.format("%s\t%s\t%s\t%d\n", qid, model, expansion, expId);
     }
-    
+
     public static QueryExpansion parseQExpansion(String text) {
-        String [] elems = text.split("\t");
+        String[] elems = text.split("\t");
         String qid = elems[0];
         String model = elems[1];
         String expansion = elems[2]; // expansion may be empty
         Long expId = Long.parseLong(elems[3]);
         return new QueryExpansion(qid, model, expId, expansion);
     }
-   
+
     /**
      * #combine( query #combine( #combine(term1) #combine(term2) ...))
      *
@@ -135,5 +137,29 @@ public class QueryExpansion {
             query.append("))");
         }
         return query.toString();
+    }
+
+    /**
+     * qid-model-expId -> feedbackTerm
+     * @param file a expansion file
+     * @return
+     * @throws IOException
+     */
+    public static HashMap<String, FeedbackTerm> loadExpansionTermsAsMap(File file, String model) throws IOException {
+        BufferedReader reader = Utility.getReader(file);
+        HashMap<String, FeedbackTerm> map = new HashMap<>();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            if (line.trim().startsWith("#")) {
+                continue;
+            }
+            QueryExpansion qe = QueryExpansion.parseQExpansion(line);
+            if (qe.model.equals(qe)) {
+                FeedbackTerm ft = FeedbackTerm.parseFromString(qe.expansion);
+                map.put(qe.toName(), ft);
+            }
+        }
+        reader.close();
+        return map;
     }
 }

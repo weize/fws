@@ -9,6 +9,8 @@ import edu.emory.mathcs.backport.java.util.Collections;
 import edu.umass.ciir.fws.anntation.FeedbackTerm;
 import edu.umass.ciir.fws.eval.QueryMetrics;
 import edu.umass.ciir.fws.eval.TrecEvaluator;
+import edu.umass.ciir.fws.ffeedback.FacetFeedback;
+import edu.umass.ciir.fws.ffeedback.QueryExpansion;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
@@ -27,7 +29,7 @@ import org.lemurproject.galago.tupleflow.Parameters;
  *
  * @author wkong
  */
-public class CalcExpImprvExtractOfeedbacks extends AppFunction {
+public class ExtractOracleFeedbacks extends AppFunction {
 
     @Override
     public String getName() {
@@ -41,10 +43,10 @@ public class CalcExpImprvExtractOfeedbacks extends AppFunction {
 
     static class Improvement extends FeedbackTerm {
 
-        String termId;
+        long termId;
         double[] metricImprvs;
 
-        public Improvement(String termId, FeedbackTerm term, double[] metricImprvs) {
+        public Improvement(long termId, FeedbackTerm term, double[] metricImprvs) {
             super(term.term, term.fidx, term.tidx);
             this.termId = termId;
             this.metricImprvs = metricImprvs;
@@ -52,35 +54,38 @@ public class CalcExpImprvExtractOfeedbacks extends AppFunction {
 
     }
 
-    private TreeMap<String, ArrayList<Improvement>> calcImprovements(File oracleExpansionEvalFile, File sdmSevalFile, File expandedTermFile) throws IOException {
-        HashMap<String, FeedbackTerm> expTermMap = loadExpTermMap(expandedTermFile);
+    private TreeMap<String, ArrayList<Improvement>> calcImprovements(File expansionEvalFile, File sdmSevalFile, File expansionFile, String model) throws IOException {
+        HashMap<String, FeedbackTerm> expTermMap = QueryExpansion.loadExpansionTermsAsMap(expansionFile, model);
         HashMap<String, QueryMetrics> sdmQms = TrecEvaluator.loadQueryMetricsMap(sdmSevalFile, true);
-        List<QueryMetrics> expQms = TrecEvaluator.loadQueryMetricsList(oracleExpansionEvalFile, true);
+        List<QueryMetrics> expQms = TrecEvaluator.loadQueryMetricsList(expansionEvalFile, true);
 
         TreeMap<String, ArrayList<Improvement>> subtopicImprvs = new TreeMap<>();
         // qid-sid  
         for (QueryMetrics qm : expQms) {
             double[] improvement = new double[qm.values.length];
-            String[] qidSidTermId = qm.qid.split("-");
-            String qid = qidSidTermId[0];
-            String sid = qidSidTermId[1];
-            String termId = qidSidTermId[2];
+            String[] qidSidModelExpId = qm.qid.split("-");
+            String qid = qidSidModelExpId[0];
+            String sid = qidSidModelExpId[1];
+            String curModel = qidSidModelExpId[2];
+            long expId = Long.parseLong(qidSidModelExpId[3]);
 
-            String qidSid = qid + "-" + sid;
-            QueryMetrics sdmQm = sdmQms.get(qidSid);
-            for (int i = 0; i < improvement.length; i++) {
-                improvement[i] = qm.values[i] - sdmQm.values[i];
-            }
+            if (curModel.equals(model)) {
+                String qidSid = qid + "-" + sid;
+                QueryMetrics sdmQm = sdmQms.get(qidSid);
+                for (int i = 0; i < improvement.length; i++) {
+                    improvement[i] = qm.values[i] - sdmQm.values[i];
+                }
 
-            FeedbackTerm term = expTermMap.get(qid + "-" + termId);
-            Improvement imprv = new Improvement(termId, term, improvement);
+                FeedbackTerm term = expTermMap.get(QueryExpansion.toName(qid,model,expId));
+                Improvement imprv = new Improvement(expId, term, improvement);
 
-            if (subtopicImprvs.containsKey(qidSid)) {
-                subtopicImprvs.get(qidSid).add(imprv);
-            } else {
-                ArrayList<Improvement> list = new ArrayList<>();
-                list.add(imprv);
-                subtopicImprvs.put(qidSid, list);
+                if (subtopicImprvs.containsKey(qidSid)) {
+                    subtopicImprvs.get(qidSid).add(imprv);
+                } else {
+                    ArrayList<Improvement> list = new ArrayList<>();
+                    list.add(imprv);
+                    subtopicImprvs.put(qidSid, list);
+                }
             }
 
         }
@@ -90,15 +95,16 @@ public class CalcExpImprvExtractOfeedbacks extends AppFunction {
     @Override
     public void run(Parameters p, PrintStream output) throws Exception {
 
-        File expandedTermFile = new File(p.getString("oracleExpandedTerms"));
+        File expansionFile = new File(p.getString("expansionFile"));
+        String model = p.getString("expansionModel");
         File sdmSevalFile = new File(p.getString("sdmSeval"));
-        File oracleExpansionEvalFile = new File(p.getString("oracleExpansionEvalFile"));
+        File expansionEvalFile = new File(p.getString("expansionEvalFile"));
         File imprvFile = new File(p.getString("oracleExpansionEvalImproveFile"));
         String feedbackDir = p.getString("oracleFeedbackDir");
         List<Double> threshoulds = p.getAsList("oracleFeedbackImprvThresholds", Double.class);
 
         TreeMap<String, ArrayList<Improvement>> subtopicImprvs = calcImprovements(
-                oracleExpansionEvalFile, sdmSevalFile, expandedTermFile);
+                expansionEvalFile, sdmSevalFile, expansionFile, model);
 
         outputImprovementFile(subtopicImprvs, imprvFile);
 
@@ -111,41 +117,19 @@ public class CalcExpImprvExtractOfeedbacks extends AppFunction {
     private void outputFeedbackTerms(TreeMap<String, ArrayList<Improvement>> subtopicImprvs, double threshold, String feedbackDir) throws IOException {
         File outfile = new File(Utility.getOracleFeedbackFile(feedbackDir, threshold));
         BufferedWriter writer = Utility.getWriter(outfile);
-         for (String qidSid : subtopicImprvs.keySet()) {
-            ArrayList<Improvement> selected = new ArrayList<>();
+        for (String qidSid : subtopicImprvs.keySet()) {
+            ArrayList<FeedbackTerm> selected = new ArrayList<>();
             for (Improvement imprv : subtopicImprvs.get(qidSid)) {
                 if (imprv.metricImprvs[0] >= threshold) {
                     selected.add(imprv);
                 }
             }
-            Collections.sort(selected);
-            writer.write(String.format("%s\t%s\n", qidSid,TextProcessing.join(selected, "|")));
+            FacetFeedback ff = new FacetFeedback(qidSid, selected);
+            writer.write(ff.toString());
+            writer.newLine();
         }
         writer.close();
         Utility.infoWritten(outfile);
-    }
-
-    private HashMap<String, FeedbackTerm> loadExpTermMap(File expandedTermFile) throws IOException {
-        BufferedReader reader = Utility.getReader(expandedTermFile);
-
-        HashMap<String, FeedbackTerm> map = new HashMap<>();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            if (line.trim().startsWith("#")) {
-                continue;
-            }
-            String[] fields = line.split("\t");
-            String qid = fields[0];
-            String termId = fields[1];
-            int fidx = Integer.parseInt(fields[2]);
-            int tidx = Integer.parseInt(fields[3]);
-            String fid = fields[4];
-            String query = fields[5];
-            String term = fields[6];
-            map.put(qid + "-" + termId, new FeedbackTerm(term, fidx, tidx));
-        }
-        reader.close();
-        return map;
     }
 
     private void outputImprovementFile(TreeMap<String, ArrayList<Improvement>> subtopicImprvs, File imprvFile) throws IOException {
