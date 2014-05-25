@@ -131,6 +131,9 @@ public class CalcExpImprvExtractOfeedbacks extends AppFunction {
         HashMap<String, FeedbackTerm> map = new HashMap<>();
         String line;
         while ((line = reader.readLine()) != null) {
+            if (line.trim().startsWith("#")) {
+                continue;
+            }
             String[] fields = line.split("\t");
             String qid = fields[0];
             String termId = fields[1];
