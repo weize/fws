@@ -110,7 +110,7 @@ public class RunExpasions extends AppFunction {
         if (model.equals("sts")) {
             return ExpandQueryWithSingleFacetTerm.class;
         } else {
-            return null;
+            return ExpandQueryWithFeedbacks.class;
         }
     }
 

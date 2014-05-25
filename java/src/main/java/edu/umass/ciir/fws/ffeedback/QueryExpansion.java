@@ -7,6 +7,7 @@ package edu.umass.ciir.fws.ffeedback;
 
 import edu.umass.ciir.fws.anntation.FeedbackTerm;
 import edu.umass.ciir.fws.types.TfQueryExpansion;
+import edu.umass.ciir.fws.types.TfQueryExpansionSubtopic;
 
 /**
  *
@@ -41,12 +42,19 @@ public class QueryExpansion {
         return String.format("#combine:0=0.6:1=0.4(#sdm( %s ) #combine( %s ))", originalQuery, ft.term);
     }
 
-    QueryExpansion(String qid, String oriQuery, String model, String expansion, ExpansionIdMap2 expIdMap) {
+    public QueryExpansion(String qid, String oriQuery, String model, String expansion, ExpansionIdMap2 expIdMap) {
         this.qid = qid;
         this.model = model;
         this.oriQuery = oriQuery;
         this.expansion = expansion;
         this.expId = expIdMap.getId(qid, model, expansion);
+    }
+
+    public QueryExpansion(String qid, String model, Long expId, String expansion) {
+        this.qid = qid;
+        this.model = model;
+        this.expansion = expansion;
+        this.expId = expId;
     }
 
     public String expand() {
@@ -61,6 +69,10 @@ public class QueryExpansion {
     public static String toName(TfQueryExpansion qe) {
         return qe.qid + "-" + qe.model + "-" + qe.expId;
     }
+    
+    public static String toName(TfQueryExpansionSubtopic qes) {
+        return qes.qid + "-" + qes.model + "-" + qes.expId;
+    }
 
     public TfQueryExpansion toTfQueryExpansion() {
         return new TfQueryExpansion(qid, model, expId, expQuery);
@@ -69,6 +81,15 @@ public class QueryExpansion {
     @Override
     public String toString() {
         return String.format("%s\t%s\t%d\t%s\n", qid, model, expId, expansion);
+    }
+    
+    public static QueryExpansion parseQExpansion(String text) {
+        String [] elems = text.split("\t");
+        String qid = elems[0];
+        String model = elems[1];
+        Long expId = Long.parseLong(elems[2]);
+        String expansion = elems[3];
+        return new QueryExpansion(qid, model, expId, expansion);
     }
 
     /**
