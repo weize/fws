@@ -1,0 +1,10 @@
+package edu.umass.ciir.fws.types;
+
+type TfQueryExpansion {
+	String qid;
+        String model;
+        long expId;
+	String expanedQuery;
+	
+	order: +qid +model +expId;
+}

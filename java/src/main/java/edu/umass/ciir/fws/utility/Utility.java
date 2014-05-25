@@ -1,6 +1,8 @@
 package edu.umass.ciir.fws.utility;
 
 import edu.emory.mathcs.backport.java.util.Arrays;
+import edu.umass.ciir.fws.ffeedback.QueryExpansion;
+import edu.umass.ciir.fws.types.TfQueryExpansion;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -271,6 +273,14 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
     public static String getExpansionRunFileName(String runDir, String qid, int expId) {
         String name = qid + "-" + expId;
         return getFileNameWithSuffix(runDir, qid, name, "rank");
+    }
+
+    public static String getExpansionRunFileName(String runDir, QueryExpansion qe) {
+        return getFileNameWithSuffix(runDir, qe.qid, qe.toName(), "rank");
+    }
+    
+    public static String getExpansionRunFileName(String runDir, TfQueryExpansion qe) {
+        return getFileNameWithSuffix(runDir, qe.qid, QueryExpansion.toName(qe), "rank");
     }
 
     public static String getQrelForOneSubtopic(String sqrelDir, String qid, String sid) {
