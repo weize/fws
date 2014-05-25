@@ -154,7 +154,7 @@ public class QueryExpansion {
                 continue;
             }
             QueryExpansion qe = QueryExpansion.parseQExpansion(line);
-            if (qe.model.equals(qe)) {
+            if (qe.model.equals(model)) {
                 FeedbackTerm ft = FeedbackTerm.parseFromString(qe.expansion);
                 map.put(qe.toName(), ft);
             }

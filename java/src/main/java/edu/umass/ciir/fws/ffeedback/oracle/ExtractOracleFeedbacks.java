@@ -77,6 +77,9 @@ public class ExtractOracleFeedbacks extends AppFunction {
     }
 
     private TreeMap<String, ArrayList<Improvement>> calcImprovements(File expansionEvalFile, File sdmSevalFile, File expansionFile, String model) throws IOException {
+        Utility.infoProcessing(expansionFile);
+        Utility.infoProcessing(sdmSevalFile);
+        Utility.infoProcessing(expansionEvalFile);
         HashMap<String, FeedbackTerm> expTermMap = QueryExpansion.loadExpansionTermsAsMap(expansionFile, model);
         HashMap<String, QueryMetrics> sdmQms = TrecEvaluator.loadQueryMetricsMap(sdmSevalFile, true);
         List<QueryMetrics> expQms = TrecEvaluator.loadQueryMetricsList(expansionEvalFile, true);
