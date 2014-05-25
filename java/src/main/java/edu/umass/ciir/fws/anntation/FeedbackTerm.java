@@ -22,7 +22,7 @@ public class FeedbackTerm implements Comparable<FeedbackTerm> {
     }
 
     @Override
-    public String toString() {
+    public final String toString() {
         return String.format("%d-%d:%s", fidx, tidx, term);
     }
 
