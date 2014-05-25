@@ -138,7 +138,7 @@ public class RunExpansionEval extends AppFunction {
             Parameters p = parameters.getJSON();
             runDir = p.getString("expansionRunDir");
             evalDir = p.getString("expansionEvalDir");
-            sqrelDir = p.getString("sqrelDir");
+            sqrelDir = p.getString("sqrelSplitDir");
             evaluator = new TrecEvaluator(p.getString("trecEval"));
         }
 
@@ -182,7 +182,7 @@ public class RunExpansionEval extends AppFunction {
 
         public GetQExpansionSubtopics(TupleFlowParameters parameters) throws IOException {
             Parameters p = parameters.getJSON();
-            sqrelDir = p.getString("splitSqrelDir");
+            sqrelDir = p.getString("sqrelSplitDir");
             File queryJsonFile = new File(p.getString("queryJsonFile"));
             queryTopics = QueryTopic.loadQueryFullTopicsAsMap(queryJsonFile);
         }
