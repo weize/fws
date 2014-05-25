@@ -39,7 +39,7 @@ public class ExpandQueryWithSingleFacetTerm extends StandardStep<FileName, TfQue
     File expFile; // expansion file for kee tracke of qid and its expaions
     String runDir;
     BufferedWriter writer;
-    ExpansionIdMap2 expIdMap;
+    ExpansionIdMap expIdMap;
     File newExpIdMapFile;
     HashMap<String, TfQuery> queryMap;
     final static String model = "sts"; // single term simple
@@ -49,9 +49,9 @@ public class ExpandQueryWithSingleFacetTerm extends StandardStep<FileName, TfQue
         expFile = new File(p.getString("expansionFile"));
         runDir = p.getString("expansionRunDir");
         if (p.containsKey("expansionIdFileOld")) {
-            expIdMap = new ExpansionIdMap2(new File(p.getString("expansionIdFileOld")));
+            expIdMap = new ExpansionIdMap(new File(p.getString("expansionIdFileOld")));
         } else {
-            expIdMap = new ExpansionIdMap2();
+            expIdMap = new ExpansionIdMap();
         }
         newExpIdMapFile = new File(p.getString("expansionIdFile"));
         queryMap = QueryFileParser.loadQueryMap(new File(p.getString("queryFile")));

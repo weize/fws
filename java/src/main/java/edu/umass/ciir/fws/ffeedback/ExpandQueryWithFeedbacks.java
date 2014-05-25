@@ -39,7 +39,7 @@ public class ExpandQueryWithFeedbacks extends StandardStep<FileName, TfQueryExpa
 
     File expFile; // expansion file for kee tracke of qid and its expaions
     String runDir;
-    ExpansionIdMap2 expIdMap;
+    ExpansionIdMap expIdMap;
     File newExpIdMapFile;
     String model;
     HashMap<String, TfQuery> queryMap;
@@ -52,9 +52,9 @@ public class ExpandQueryWithFeedbacks extends StandardStep<FileName, TfQueryExpa
         runDir = p.getString("expansionRunDir");
         model = p.getString("expansionModel");
         if (p.containsKey("expansionIdFileOld")) {
-            expIdMap = new ExpansionIdMap2(new File(p.getString("expansionIdFileOld")));
+            expIdMap = new ExpansionIdMap(new File(p.getString("expansionIdFileOld")));
         } else {
-            expIdMap = new ExpansionIdMap2();
+            expIdMap = new ExpansionIdMap();
         }
         newExpIdMapFile = new File(p.getString("expansionIdFile"));
         queryMap = QueryFileParser.loadQueryMap(new File(p.getString("queryFile")));

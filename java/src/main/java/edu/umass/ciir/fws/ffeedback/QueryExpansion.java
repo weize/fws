@@ -64,7 +64,7 @@ public class QueryExpansion {
         return query.toString();
     }
 
-    public QueryExpansion(String qid, String oriQuery, String model, String expansion, ExpansionIdMap2 expIdMap) {
+    public QueryExpansion(String qid, String oriQuery, String model, String expansion, ExpansionIdMap expIdMap) {
         this.qid = qid;
         this.model = model;
         this.oriQuery = oriQuery;

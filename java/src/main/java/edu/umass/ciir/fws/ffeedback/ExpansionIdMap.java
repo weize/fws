@@ -19,7 +19,7 @@ import java.util.TreeMap;
  */
 public class ExpansionIdMap {
 
-    TreeMap<String, TreeMap<String, Integer>> idMap; // qid->term-> id
+    TreeMap<String, TreeMap<String, TreeMap<String, Long>>> idMap; // qid->model->exp-> id
 
     public ExpansionIdMap(File file) throws IOException {
         load(file);
@@ -36,9 +36,10 @@ public class ExpansionIdMap {
         while ((line = reader.readLine()) != null) {
             String[] elems = line.split("\t");
             String qid = elems[0];
-            String term = elems[1];
-            Integer id = Integer.parseInt(elems[2]);
-            put(qid, term, id);
+            String model = elems[1];
+            String expansion = elems[2];
+            Long id = Long.parseLong(elems[3]);
+            put(qid, model, expansion, id);
         }
         reader.close();
     }
@@ -46,41 +47,58 @@ public class ExpansionIdMap {
     public void output(File file) throws IOException {
         BufferedWriter writer = Utility.getWriter(file);
         for (String qid : idMap.keySet()) {
-            TreeMap<String, Integer> map = idMap.get(qid);
-            for (String term : map.keySet()) {
-                writer.write(String.format("%s\t%s\t%d\n", qid, term, map.get(term)));
+            for (String model : idMap.get(qid).keySet()) {
+                TreeMap<String, Long> map = idMap.get(qid).get(model);
+                for (String expansion : map.keySet()) {
+                    Long expId = map.get(expansion);
+                    writer.write(String.format("%s\t%s\t%s\t%d\n", qid, model, expansion, expId));
+                }
             }
         }
         writer.close();
     }
 
-    private void put(String qid, String term, Integer id) {
+    private void put(String qid, String model, String expansion, Long id) {
         if (!idMap.containsKey(qid)) {
-            idMap.put(qid, new TreeMap<String, Integer>());
+            idMap.put(qid, new TreeMap<String, TreeMap<String, Long>>());
         }
-        idMap.get(qid).put(term, id);
+
+        TreeMap<String, TreeMap<String, Long>> idMap2 = idMap.get(qid);
+
+        if (!idMap2.containsKey(model)) {
+            idMap2.put(model, new TreeMap<String, Long>());
+        }
+
+        idMap2.get(model).put(expansion, id);
     }
 
-    public boolean contains(String qid, String term) {
-        return idMap.containsKey(qid) && idMap.get(qid).containsKey(term);
+    public boolean contains(String qid, String model, String expansion) {
+        return idMap.containsKey(qid) && idMap.get(qid).containsKey(model)
+                && idMap.get(qid).get(model).containsKey(expansion);
     }
 
-    public Integer getId(String qid, String term) {
-        if (contains(qid, term)) {
-            return idMap.get(qid).get(term);
+    public Long getId(String qid, String model, String expansion) {
+        if (contains(qid, model, expansion)) {
+            return idMap.get(qid).get(model).get(expansion);
         } else {
-            return add(qid, term);
+            return add(qid, model, expansion);
         }
     }
 
-    private Integer add(String qid, String term) {
+    private Long add(String qid, String model, String expansion) {
         if (!idMap.containsKey(qid)) {
-            idMap.put(qid, new TreeMap<String, Integer>());
+            idMap.put(qid, new TreeMap<String, TreeMap<String, Long>>());
         }
 
-        TreeMap<String, Integer> map = idMap.get(qid);
-        int id = map.size();
-        map.put(term, id);
+        TreeMap<String, TreeMap<String, Long>> idMap2 = idMap.get(qid);
+
+        if (!idMap2.containsKey(model)) {
+            idMap2.put(model, new TreeMap<String, Long>());
+        }
+
+        TreeMap<String, Long> map = idMap2.get(model);
+        Long id = (long) map.size();
+        map.put(expansion, id);
         return id;
     }
 
