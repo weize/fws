@@ -46,14 +46,14 @@ public class ExpandQueryWithSingleFacetTerm extends StandardStep<FileName, TfQue
 
     public ExpandQueryWithSingleFacetTerm(TupleFlowParameters parameters) throws IOException {
         Parameters p = parameters.getJSON();
-        expFile = new File(p.getString("oracleExpandedTerms"));
-        runDir = p.getString("oracleExpansionRunDir");
-        if (p.containsKey("oracleExpandedTermIdMapOld")) {
-            expIdMap = new ExpansionIdMap2(new File(p.getString("oracleExpandedTermIdMapOld")));
+        expFile = new File(p.getString("expansionFile"));
+        runDir = p.getString("expansionRunDir");
+        if (p.containsKey("expansionIdFileOld")) {
+            expIdMap = new ExpansionIdMap2(new File(p.getString("expansionIdFileOld")));
         } else {
             expIdMap = new ExpansionIdMap2();
         }
-        newExpIdMapFile = new File(p.getString("oracleExpandedTermIdMap"));
+        newExpIdMapFile = new File(p.getString("expansionIdFile"));
         queryMap = QueryFileParser.loadQueryMap(new File(p.getString("queryFile")));
         writer = Utility.getWriter(expFile);
     }

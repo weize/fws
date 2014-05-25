@@ -68,7 +68,7 @@ public class QueryExpansion {
 
     @Override
     public String toString() {
-        return String.format(model, qid, model, expId, expansion);
+        return String.format("%s\t%s\t%d\t%s\n", qid, model, expId, expansion);
     }
 
     /**
