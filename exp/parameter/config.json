@@ -51,7 +51,6 @@
 	"feedbackAnnotationText" : "../exp/annotation/from-db/feedback-annotation.text",
 	"oracleExpandedTerms": "../exp/feedback-oracle/expand-term",
 	"oracleExpandedTermIdMap": "../exp/feedback-oracle/expand-term-id",
-	"oracleExpandedTermIdMapOld": "../exp/feedback-oracle/expand-term-id",
 	"oracleExpansionRunDir": "../exp/feedback-oracle/run",
 	"oracleExpansionEvalDir": "../exp/feedback-oracle/eval",
 	"oracleExpansionEvalFile": "../exp/feedback-oracle/expand-term.eval",
