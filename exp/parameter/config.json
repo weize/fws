@@ -3,7 +3,7 @@
 	"queryJsonFile" : "../data/query/query-full.json",
 	"queryXmlFile" : ["../data/query/diversity/wt09.topics.full.xml","../data/query/diversity/wt2010-topics.xml","../data/query/diversity/wt2011-full-topics.xml","../data/query/diversity/wt2012-full-topics.xml"],
 	"qrelSubtopic" : "../data/qrel/all.diversity.filter.spam60.qrel",
-	"sqrelDir" : "../data/qrel/sqrel-splits",
+	"splitSqrelDir" : "../data/qrel/sqrel-splits",
 	"index" : "../data/index",
 	"stopwordsFile" : "../data/stopword/stopword",
 	"rankedListFile" : "../exp/query/query-sdm-rank",

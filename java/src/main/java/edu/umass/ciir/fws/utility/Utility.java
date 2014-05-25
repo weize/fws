@@ -3,6 +3,7 @@ package edu.umass.ciir.fws.utility;
 import edu.emory.mathcs.backport.java.util.Arrays;
 import edu.umass.ciir.fws.ffeedback.QueryExpansion;
 import edu.umass.ciir.fws.types.TfQueryExpansion;
+import edu.umass.ciir.fws.types.TfQueryExpansionSubtopic;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -282,6 +283,10 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
     public static String getExpansionRunFileName(String runDir, TfQueryExpansion qe) {
         return getFileNameWithSuffix(runDir, qe.qid, QueryExpansion.toName(qe), "rank");
     }
+    
+    public static String getExpansionRunFileName(String runDir, TfQueryExpansionSubtopic qes) {
+        return getFileNameWithSuffix(runDir, qes.qid, QueryExpansion.toName(qes), "rank");
+    }
 
     public static String getQrelForOneSubtopic(String sqrelDir, String qid, String sid) {
         return getFileNameWithSuffix(sqrelDir, qid + "-" + sid, "qrel");
@@ -291,9 +296,19 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         String name = qid + "-" + sid + "-" + termId;
         return getFileNameWithSuffix(evalDir, qid, name, "teval");
     }
+    
+    public static String getOracleExpandTevalFileName(String evalDir, String qid, String sid, long termId) {
+        String name = qid + "-" + sid + "-" + termId;
+        return getFileNameWithSuffix(evalDir, qid, name, "teval");
+    }
 
     public static String getOracleFeedbackFile(String feedbackDir, double threshold) {
         String name = "oracle." + parametersToFileNameString(threshold);
         return getFileNameWithSuffix(feedbackDir, name, "fdbk");
+    }
+
+    public static String getQExpSubtopicTevalFileName(String evalDir, TfQueryExpansionSubtopic qes) {
+        String name = String.format("%s-%s-%s-%d", qes.qid, qes.sid, qes.model, qes.expId);
+        return getFileNameWithSuffix(evalDir, qes.qid, name, "teval");
     }
 }
