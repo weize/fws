@@ -147,12 +147,13 @@ public class RunExpansionEval extends AppFunction {
             String rankFileName = Utility.getExpansionRunFileName(runDir, qes);
             String qrelFileName = Utility.getQrelForOneSubtopic(sqrelDir, qes.qid, qes.sid);
             File tevalFile = new File(Utility.getQExpSubtopicTevalFileName(evalDir, qes));
-            Utility.createDirectoryForFile(tevalFile);
-
             try {
-                if (!tevalFile.exists()) {
+                if (tevalFile.exists()) {
                     System.err.println("exsits " + tevalFile.getAbsolutePath());
+                } else {
+                    Utility.createDirectoryForFile(tevalFile);
                     evaluator.evalAndOutput(qrelFileName, rankFileName, tevalFile);
+                    Utility.infoWritten(tevalFile);
                 }
                 processor.process(qes);
             } catch (Exception ex) {
