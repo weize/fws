@@ -8,6 +8,9 @@ package edu.umass.ciir.fws.ffeedback;
 import edu.umass.ciir.fws.anntation.FeedbackTerm;
 import edu.umass.ciir.fws.types.TfQueryExpansion;
 import edu.umass.ciir.fws.types.TfQueryExpansionSubtopic;
+import edu.umass.ciir.fws.utility.TextProcessing;
+import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  *
@@ -15,10 +18,14 @@ import edu.umass.ciir.fws.types.TfQueryExpansionSubtopic;
  */
 public class QueryExpansion {
 
+    
+
+    
+
     public String qid;
     public String model;
     public Long expId;
-    public String expansion;
+    public String expansion; // expansion string, e.g. fidx-tidx:term
     public String oriQuery; // original query
     public String expQuery; // expanded query
 
@@ -32,14 +39,31 @@ public class QueryExpansion {
     public static String expandQuery(String originalQuery, String expansion, String model) {
         switch (model) {
             case "sts":
-                return SingleTermSimple(originalQuery, expansion);
+                return expandSingleTermSimple(originalQuery, expansion);
+            case "fts":
+                return expandFeedbackTermSimple(originalQuery, expansion);
         }
         return null;
     }
 
-    private static String SingleTermSimple(String originalQuery, String expansion) {
+    private static String expandSingleTermSimple(String originalQuery, String expansion) {
         FeedbackTerm ft = FeedbackTerm.parseFromString(expansion);
         return String.format("#combine:0=0.6:1=0.4(#sdm( %s ) #combine( %s ))", originalQuery, ft.term);
+    }
+    
+    private static String expandFeedbackTermSimple(String originalQuery, String expansion) {
+        FacetFeedback feedback = FacetFeedback.parseFromExpansionString(expansion);
+        StringBuilder query = new StringBuilder();
+        if (feedback.terms.isEmpty()) {
+            return String.format("#sdm( %s )", originalQuery);
+        } else {
+            query.append(String.format("#combine:0=0.8:1=0.2(#sdm( %s ) #combine( ", originalQuery));
+            for (FeedbackTerm term : feedback.terms) {
+                query.append(String.format("#combine( %s ) ", term.term));
+            }
+            query.append("))");
+        }
+        return query.toString();
     }
 
     public QueryExpansion(String qid, String oriQuery, String model, String expansion, ExpansionIdMap2 expIdMap) {
@@ -80,18 +104,18 @@ public class QueryExpansion {
 
     @Override
     public String toString() {
-        return String.format("%s\t%s\t%d\t%s\n", qid, model, expId, expansion);
+        return String.format("%s\t%s\t%s\t%d\n", qid, model, expansion, expId);
     }
     
     public static QueryExpansion parseQExpansion(String text) {
         String [] elems = text.split("\t");
         String qid = elems[0];
         String model = elems[1];
-        Long expId = Long.parseLong(elems[2]);
-        String expansion = elems[3];
+        String expansion = elems[2]; // expansion may be empty
+        Long expId = Long.parseLong(elems[3]);
         return new QueryExpansion(qid, model, expId, expansion);
     }
-
+   
     /**
      * #combine( query #combine( #combine(term1) #combine(term2) ...))
      *

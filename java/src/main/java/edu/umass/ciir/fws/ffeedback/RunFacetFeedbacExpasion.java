@@ -96,7 +96,7 @@ public class RunFacetFeedbacExpasion extends SplitAndProcessQueryParametersApp {
             BufferedReader reader = Utility.getReader(fileName.filename);
             String line;
             while ((line = reader.readLine()) != null) {
-                FacetFeedback ff = FacetFeedback.parseFromString(line);
+                FacetFeedback ff = FacetFeedback.parseFromStringAndSort(line);
                 TfQuery query = queries.get(ff.qid);
 
                 emitNoExpansion(query);
@@ -104,7 +104,7 @@ public class RunFacetFeedbacExpasion extends SplitAndProcessQueryParametersApp {
                 ArrayList<FeedbackTerm> selected = new ArrayList<>();
                 for (FeedbackTerm term : ff.terms) {
                     selected.add(term);
-                    String expansion = FacetFeedback.toUniqueExpansionString(selected);
+                    String expansion = FacetFeedback.toExpansionString(selected);
                     String queryExpansion = query.id + "\t" + expansion;
                     if (!expansions.contains(queryExpansion)) {
                         Integer expId = expIdMap.getId(query.id, expansion);

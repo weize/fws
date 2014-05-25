@@ -6,11 +6,14 @@
 package edu.umass.ciir.fws.ffeedback;
 
 import edu.umass.ciir.fws.anntation.FeedbackTerm;
+import static edu.umass.ciir.fws.ffeedback.ExpandQueryWithSingleFacetTerm.model;
 import edu.umass.ciir.fws.query.QueryFileParser;
 import edu.umass.ciir.fws.types.TfQuery;
+import edu.umass.ciir.fws.types.TfQueryExpansion;
 import edu.umass.ciir.fws.types.TfQueryParameters;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,29 +28,37 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 import org.lemurproject.galago.tupleflow.types.FileName;
 
 /**
- * generate parameters
+ * Expand query with facet feedbacks.
+ *
+ * @author wkong
  */
 @Verified
 @InputClass(className = "org.lemurproject.galago.tupleflow.types.FileName")
-@OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
-public class ExpandQueryWithFeedbacks extends StandardStep<FileName, TfQueryParameters> {
+@OutputClass(className = "edu.umass.ciir.fws.types.TfQueryExpansion")
+public class ExpandQueryWithFeedbacks extends StandardStep<FileName, TfQueryExpansion> {
 
+    File expFile; // expansion file for kee tracke of qid and its expaions
     String runDir;
-    ExpansionIdMap expIdMap;
+    ExpansionIdMap2 expIdMap;
     File newExpIdMapFile;
-    HashMap<String, TfQuery> queries;
+    String model;
+    HashMap<String, TfQuery> queryMap;
     HashSet<String> expansions;
+    BufferedWriter writer;
 
     public ExpandQueryWithFeedbacks(TupleFlowParameters parameters) throws IOException {
         Parameters p = parameters.getJSON();
-        runDir = p.getString("feedbackExpansionRunDir");
-        if (p.containsKey("feedbackExpansionIdMapOld")) {
-            expIdMap = new ExpansionIdMap(new File(p.getString("feedbackExpansionIdMapOld")));
+        expFile = new File(p.getString("expansionFile"));
+        runDir = p.getString("expansionRunDir");
+        model = p.getString("expansionModel");
+        if (p.containsKey("expansionIdFileOld")) {
+            expIdMap = new ExpansionIdMap2(new File(p.getString("expansionIdFileOld")));
         } else {
-            expIdMap = new ExpansionIdMap();
+            expIdMap = new ExpansionIdMap2();
         }
-        newExpIdMapFile = new File(p.getString("feedbackExpansionIdMap"));
-        queries = QueryFileParser.loadQueryMap(new File(p.getString("queryFile")));
+        newExpIdMapFile = new File(p.getString("expansionIdFile"));
+        queryMap = QueryFileParser.loadQueryMap(new File(p.getString("queryFile")));
+        writer = Utility.getWriter(expFile);
         expansions = new HashSet<>();
     }
 
@@ -56,52 +67,45 @@ public class ExpandQueryWithFeedbacks extends StandardStep<FileName, TfQueryPara
         BufferedReader reader = Utility.getReader(fileName.filename);
         String line;
         while ((line = reader.readLine()) != null) {
-            FacetFeedback ff = FacetFeedback.parseFromString(line);
-            TfQuery query = queries.get(ff.qid);
+            FacetFeedback ff = FacetFeedback.parseFromStringAndSort(line);
+            String qid = ff.qid;
+            String oriQuery = queryMap.get(qid).text;
 
-            emitNoExpansion(query);
-
+            // each time append a feedback term, and do expansion
             ArrayList<FeedbackTerm> selected = new ArrayList<>();
+            expand(qid, oriQuery, selected); // emit one with out expansion
             for (FeedbackTerm term : ff.terms) {
                 selected.add(term);
-                String expansion = FacetFeedback.toUniqueExpansionString(selected);
-                String queryExpansion = query.id + "\t" + expansion;
-                if (!expansions.contains(queryExpansion)) {
-                    Integer expId = expIdMap.getId(query.id, expansion);
-                    File runFile = new File(Utility.getExpansionRunFileName(runDir, query.id, expId));
-                    if (runFile.exists()) {
-                        System.err.println("exists results for " + runFile.getAbsolutePath());
-                    } else {
-                        String params = Utility.parametersToString(expansion, expId);
-                        processor.process(new TfQueryParameters(query.id, query.text, params));
-                    }
-                    expansions.add(queryExpansion);
-                }
+                expand(qid, oriQuery, selected);
             }
 
         }
         reader.close();
     }
 
-    @Override
-    public void close() throws IOException {
-        processor.close();
-        expIdMap.output(newExpIdMapFile); // update ids
-    }
-
-    private void emitNoExpansion(TfQuery query) throws IOException {
-        String expansion = "";
-        String queryExpansion = query.id + "\t" + expansion;
+    private void expand(String qid, String oriQuery, ArrayList<FeedbackTerm> selected) throws IOException {
+        String expansion = FacetFeedback.toExpansionString(selected);
+        String queryExpansion = qid + "\t" + expansion;
         if (!expansions.contains(queryExpansion)) {
-            Integer expId = expIdMap.getId(query.id, expansion);
-            File runFile = new File(Utility.getExpansionRunFileName(runDir, query.id, expId));
+            expansions.add(queryExpansion);
+            QueryExpansion qe = new QueryExpansion(qid, oriQuery, model, expansion, expIdMap);
+            File runFile = new File(Utility.getExpansionRunFileName(runDir, qe));
             if (runFile.exists()) {
                 System.err.println("exists results for " + runFile.getAbsolutePath());
             } else {
-                String params = Utility.parametersToString(expansion, expId);
-                processor.process(new TfQueryParameters(query.id, query.text, params));
+                qe.expand();
+                processor.process(qe.toTfQueryExpansion());
             }
-            expansions.add(queryExpansion);
+            writer.write(qe.toString());
         }
+    }
+
+    @Override
+    public void close() throws IOException {
+        processor.close();
+        writer.close();
+        Utility.infoWritten(expFile);
+        expIdMap.output(newExpIdMapFile); // update ids
+        Utility.infoWritten(newExpIdMapFile);
     }
 }
