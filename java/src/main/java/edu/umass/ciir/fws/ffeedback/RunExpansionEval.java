@@ -254,6 +254,7 @@ public class RunExpansionEval extends AppFunction {
                 if (!qm.qid.equals("all")) {
                     qm.qid = String.format("%s-%s-%s-%d", qes.qid, qes.sid, qes.model, qes.expId);
                     writer.write(qm.toString());
+                    writer.newLine();
                 }
             }
         }
