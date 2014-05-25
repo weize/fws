@@ -112,7 +112,7 @@ public class RunFacetFeedbacExpasion extends SplitAndProcessQueryParametersApp {
                         if (runFile.exists()) {
                             System.err.println("exists results for " + runFile.getAbsolutePath());
                         } else {
-                            String params = Utility.parametersToString(expId, expansion);
+                            String params = Utility.parametersToString(expansion, expId);
                             processor.process(new TfQueryParameters(query.id, query.text, params));
                         }
                         expansions.add(queryExpansion);
@@ -138,7 +138,8 @@ public class RunFacetFeedbacExpasion extends SplitAndProcessQueryParametersApp {
                 if (runFile.exists()) {
                     System.err.println("exists results for " + runFile.getAbsolutePath());
                 } else {
-                    processor.process(new TfQueryParameters(query.id, query.text, expansion));
+                    String params = Utility.parametersToString(expansion, expId);
+                    processor.process(new TfQueryParameters(query.id, query.text, params));
                 }
                 expansions.add(queryExpansion);
             }
@@ -162,8 +163,8 @@ public class RunFacetFeedbacExpasion extends SplitAndProcessQueryParametersApp {
         @Override
         public void process(TfQueryParameters queryParams) throws IOException {
             String [] params = Utility.splitParameters(queryParams.parameters);
-            int expId = Integer.parseInt(params[0]);
-            FacetFeedback feedback = FacetFeedback.parseTermsFromUniqueExpansionString(params[1]);
+            int expId = Integer.parseInt(params[1]);
+            FacetFeedback feedback = FacetFeedback.parseTermsFromUniqueExpansionString(params[0]);
             
             String queryNumber = queryParams.id; // used in the rank results
             File outfile = new File(Utility.getExpansionRunFileName(runDir, queryParams.id, expId));

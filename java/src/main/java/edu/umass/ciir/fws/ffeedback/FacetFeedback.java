@@ -40,17 +40,28 @@ public class FacetFeedback {
 
     public static FacetFeedback parseFromString(String line) {
         String[] elems = line.split("\t");
-        FacetFeedback ff = elems.length == 2 ? parseTerms(elems[1]) : new FacetFeedback();
-        ff.qid = elems[0].split("-")[0];
-        ff.sid = elems[0].split("-")[1];
+
+	FacetFeedback ff;
+	if (elems.length == 2) {
+        	ff = parseTerms(elems[1]);
+	} else {
+		ff = new FacetFeedback();
+		ff.terms = new ArrayList<>();
+		ff.facets = new ArrayList<>();
+	}
+	ff.qid = elems[0].split("-")[0];
+	ff.sid = elems[0].split("-")[1];
         return ff;
     }
 
     public static FacetFeedback parseTerms(String termsStr) {
         FacetFeedback ff = new FacetFeedback();
-
-        // set terms
         ff.terms = new ArrayList<>();
+        ff.facets = new ArrayList<>();
+	if(termsStr.isEmpty()) {
+            return ff;
+	}
+        // set terms
         for (String termString : termsStr.split("\\|")) {
             FeedbackTerm ft = FeedbackTerm.parseFromString(termString);
             ff.terms.add(ft);
@@ -58,7 +69,6 @@ public class FacetFeedback {
         Collections.sort(ff.terms);
 
         // group terms
-        ff.facets = new ArrayList<>();
         int fidx = -1;
         ArrayList<FeedbackTerm> list = null;
         for (FeedbackTerm ft : ff.terms) {
