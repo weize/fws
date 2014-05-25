@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import org.lemurproject.galago.tupleflow.InputClass;
 import org.lemurproject.galago.tupleflow.OutputClass;
 import org.lemurproject.galago.tupleflow.StandardStep;
@@ -52,4 +53,14 @@ public class QueryFileParser extends StandardStep<FileName, TfQuery> {
     public static TfQuery[] loadQueryList(String fileName) throws IOException {
         return loadQueryList(new File(fileName));
     }
+    
+    public static HashMap<String, TfQuery> loadQueryMap(File file) throws IOException {
+        TfQuery [] queries = loadQueryList(file);
+        HashMap<String, TfQuery> map = new HashMap<>();
+        for(TfQuery q : queries) {
+            map.put(q.id, q);
+        }
+        return map;
+    }
+    
 }

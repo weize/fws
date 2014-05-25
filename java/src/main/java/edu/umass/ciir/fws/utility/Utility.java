@@ -268,8 +268,8 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         System.err.println("processing query " + qid);
     }
 
-    public static String getOracleExpandRunFileName(String runDir, String qid, int termId) {
-        String name = qid + "-" + termId;
+    public static String getExpansionRunFileName(String runDir, String qid, int expId) {
+        String name = qid + "-" + expId;
         return getFileNameWithSuffix(runDir, qid, name, "rank");
     }
 

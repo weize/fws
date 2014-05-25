@@ -62,6 +62,8 @@
 	"sdmSrank" : "../exp/srank/sdm/sdm.srank",
 	"sdmSeval" : "../exp/srank/sdm/sdm.srank.eval",
 	"sdmSevalTrec" : "../exp/srank/sdm/sdm.srank.teval",
+	"feedbackExpansionRunDir" : "../exp/feedback-expansion/run",
+	"feedbackExpansionIdMap" : "../exp/feedback-expansion/feedback-expansion-id",
 	"trecEval" : "../bin/trec_eval",
 	"topNum" : 100,
   	"requested" : 1000

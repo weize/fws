@@ -236,7 +236,7 @@ public class EvalAllFacetTermExpansion extends AppFunction {
         @Override
         public void process(TfQueryParameters queryParams) throws IOException {
             int termId = Integer.parseInt(queryParams.parameters);
-            String rankFileName = Utility.getOracleExpandRunFileName(runDir, queryParams.id, termId);
+            String rankFileName = Utility.getExpansionRunFileName(runDir, queryParams.id, termId);
             for (QuerySubtopic qs : queryTopics.get(queryParams.id).subtopics) {
                 File qrelFile = new File(Utility.getQrelForOneSubtopic(sqrelDir, queryParams.id, qs.sid));
                 if (qrelFile.exists()) {

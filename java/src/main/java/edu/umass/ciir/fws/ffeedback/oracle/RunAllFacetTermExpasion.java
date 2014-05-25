@@ -5,6 +5,7 @@
  */
 package edu.umass.ciir.fws.ffeedback.oracle;
 
+import edu.umass.ciir.fws.ffeedback.ExpansionIdMap;
 import edu.umass.ciir.fws.anntation.AnnotatedFacet;
 import edu.umass.ciir.fws.anntation.FacetAnnotation;
 import edu.umass.ciir.fws.tool.app.ProcessQueryParametersApp;
@@ -64,7 +65,7 @@ public class RunAllFacetTermExpasion extends ProcessQueryParametersApp {
         File expTermFile;
         String runDir;
         BufferedWriter writer;
-        ExpandTermIdMap expTermMap;
+        ExpansionIdMap expTermMap;
         File newTermIdMapFile;
 
         public ExpendQueryWithFaceTerm(TupleFlowParameters parameters) throws IOException {
@@ -73,9 +74,9 @@ public class RunAllFacetTermExpasion extends ProcessQueryParametersApp {
             expTermFile = new File(p.getString("oracleExpandedTerms"));
             runDir = p.getString("oracleExpansionRunDir");
             if (p.containsKey("oracleExpandedTermIdMapOld")) {
-                expTermMap = new ExpandTermIdMap(new File(p.getString("oracleExpandedTermIdMapOld")));
+                expTermMap = new ExpansionIdMap(new File(p.getString("oracleExpandedTermIdMapOld")));
             } else {
-                expTermMap = new ExpandTermIdMap();
+                expTermMap = new ExpansionIdMap();
             }
             newTermIdMapFile = new File(p.getString("oracleExpandedTermIdMap"));
             writer = Utility.getWriter(expTermFile);
@@ -96,7 +97,7 @@ public class RunAllFacetTermExpasion extends ProcessQueryParametersApp {
                         for (int i = 0; i < facet.size(); i++) {
                             String term = facet.get(i);
                             Integer id = expTermMap.getId(query.id, term);
-                            File runFile = new File(Utility.getOracleExpandRunFileName(runDir, query.id, id));
+                            File runFile = new File(Utility.getExpansionRunFileName(runDir, query.id, id));
 			    if (runFile.exists()) {
 				System.err.println("exists results for " + runFile.getAbsolutePath());
 			    } else {
@@ -142,7 +143,7 @@ public class RunAllFacetTermExpasion extends ProcessQueryParametersApp {
             String term = params[1];
 
             String queryNumber = queryParams.id; // used in the rank results
-            File outfile = new File(Utility.getOracleExpandRunFileName(runDir, queryParams.id, id));
+            File outfile = new File(Utility.getExpansionRunFileName(runDir, queryParams.id, id));
             Utility.createDirectoryForFile(outfile);
             BufferedWriter writer = Utility.getWriter(outfile);
             String queryText = expandSdmQuery(queryParams.text, term);

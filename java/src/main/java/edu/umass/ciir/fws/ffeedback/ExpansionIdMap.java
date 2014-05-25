@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.umass.ciir.fws.ffeedback.oracle;
+package edu.umass.ciir.fws.ffeedback;
 
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
@@ -13,18 +13,19 @@ import java.io.IOException;
 import java.util.TreeMap;
 
 /**
+ * keep track of expansions, assign unique id for each expansions.
  *
  * @author wkong
  */
-public class ExpandTermIdMap {
+public class ExpansionIdMap {
 
     TreeMap<String, TreeMap<String, Integer>> idMap; // qid->term-> id
 
-    public ExpandTermIdMap(File file) throws IOException {
+    public ExpansionIdMap(File file) throws IOException {
         load(file);
     }
 
-    ExpandTermIdMap() {
+    public ExpansionIdMap() {
         idMap = new TreeMap<>();
     }
 
@@ -41,12 +42,12 @@ public class ExpandTermIdMap {
         }
         reader.close();
     }
-    
+
     public void output(File file) throws IOException {
         BufferedWriter writer = Utility.getWriter(file);
         for (String qid : idMap.keySet()) {
             TreeMap<String, Integer> map = idMap.get(qid);
-            for(String term : map.keySet()) {
+            for (String term : map.keySet()) {
                 writer.write(String.format("%s\t%s\t%d\n", qid, term, map.get(term)));
             }
         }
@@ -59,11 +60,11 @@ public class ExpandTermIdMap {
         }
         idMap.get(qid).put(term, id);
     }
-    
+
     public boolean contains(String qid, String term) {
         return idMap.containsKey(qid) && idMap.get(qid).containsKey(term);
     }
-    
+
     public Integer getId(String qid, String term) {
         if (contains(qid, term)) {
             return idMap.get(qid).get(term);
@@ -76,7 +77,7 @@ public class ExpandTermIdMap {
         if (!idMap.containsKey(qid)) {
             idMap.put(qid, new TreeMap<String, Integer>());
         }
-        
+
         TreeMap<String, Integer> map = idMap.get(qid);
         int id = map.size();
         map.put(term, id);

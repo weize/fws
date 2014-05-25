@@ -36,4 +36,13 @@ public class FeedbackTerm implements Comparable<FeedbackTerm> {
         int fdiff = this.fidx - other.fidx;
         return fdiff == 0 ? this.tidx - other.tidx : fdiff;
     }
+    
+    public static FeedbackTerm parseFromString(String termString) {
+        String [] elems = termString.split(":");
+        String [] elems1 = elems[0].split("-");
+        String term = elems[1];
+        int fidx = Integer.parseInt(elems1[0]);
+        int tidx = Integer.parseInt(elems1[1]);
+        return new FeedbackTerm (term, fidx, tidx);
+    }
 }
