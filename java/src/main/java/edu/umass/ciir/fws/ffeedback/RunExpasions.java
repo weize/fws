@@ -109,7 +109,12 @@ public class RunExpasions extends AppFunction {
     public static void setParameters(Parameters parameters) {
         // "annotator", "oracle", "plsa", "lda", etc
         String expansionSource = parameters.getString("expansionSource");
-        String feedbackFile = parameters.getString(expansionSource + "Feedback");
+        String feedbackFile;
+        if (expansionSource.equals("allterm")) {
+            feedbackFile = parameters.getString("facetAnnotationJson");
+        } else {
+            feedbackFile = parameters.getString(expansionSource + "Feedback");
+        }
         String expansionModel = parameters.getString("expansionModel");
         String expansionDir = parameters.getString("expansionDir");
         String expansionRunDir = Utility.getFileName(expansionDir, "run");
@@ -118,12 +123,8 @@ public class RunExpasions extends AppFunction {
         String name = "expansion-" + expansionModel;
         String expansionFile = Utility.getFileName(expansionDir, expansionSource, name);
         String expansionEvalFile = Utility.getFileNameWithSuffix(expansionDir, expansionSource, name, "eval");
-        
+
         // use all the terms in facets for expasion. to extract oracle feedbacks
-        if (expansionSource.equals("allterm")) {
-            feedbackFile = parameters.getString("facetAnnotationJson");
-        }
-        
         parameters.set("feedbackFile", feedbackFile);
         parameters.set("expansionRunDir", expansionRunDir);
         parameters.set("expansionEvalDir", expansionEvalDir);
