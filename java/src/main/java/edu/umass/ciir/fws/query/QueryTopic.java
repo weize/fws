@@ -20,10 +20,10 @@ import org.lemurproject.galago.tupleflow.Parameters;
  */
 public class QueryTopic {
 
-    String description;
-    String query;
-    String qid;
-    String type;
+    public String description;
+    public String query;
+    public String qid;
+    public String type;
     public List<QuerySubtopic> subtopics;
 
     public QueryTopic(String qid, String query, String description, String type) {

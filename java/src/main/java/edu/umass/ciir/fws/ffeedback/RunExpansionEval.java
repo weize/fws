@@ -8,25 +8,17 @@ package edu.umass.ciir.fws.ffeedback;
 import edu.umass.ciir.fws.eval.QueryMetrics;
 import edu.umass.ciir.fws.eval.TrecEvaluator;
 import static edu.umass.ciir.fws.ffeedback.RunExpasions.setParameters;
-import edu.umass.ciir.fws.query.QuerySubtopic;
-import edu.umass.ciir.fws.query.QueryTopic;
-import edu.umass.ciir.fws.types.TfQueryExpansion;
 import edu.umass.ciir.fws.types.TfQueryExpansionSubtopic;
-import edu.umass.ciir.fws.types.TfQueryParameters;
-import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.lemurproject.galago.core.retrieval.Retrieval;
 import org.lemurproject.galago.core.tools.AppFunction;
 import org.lemurproject.galago.tupleflow.FileSource;
 import org.lemurproject.galago.tupleflow.InputClass;
@@ -72,7 +64,7 @@ public class RunExpansionEval extends AppFunction {
 
     private Job createJob(Parameters parameters) {
         Job job = new Job();
-        
+
         setParameters(parameters);
 
         job.add(getSplitStage(parameters));
@@ -182,32 +174,23 @@ public class RunExpansionEval extends AppFunction {
     public static class GetQExpansionSubtopics extends StandardStep<FileName, TfQueryExpansionSubtopic> {
 
         String sqrelDir;
-        HashMap<String, QueryTopic> queryTopics;
+        String model;
 
         public GetQExpansionSubtopics(TupleFlowParameters parameters) throws IOException {
             Parameters p = parameters.getJSON();
             sqrelDir = p.getString("sqrelSplitDir");
-            File queryJsonFile = new File(p.getString("queryJsonFile"));
-            queryTopics = QueryTopic.loadQueryFullTopicsAsMap(queryJsonFile);
+            model = p.getString("expansionModel");
         }
 
         @Override
         public void process(FileName file) throws IOException {
-            BufferedReader reader = Utility.getReader(file.filename);
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (!line.trim().startsWith("#")) {
-                    QueryExpansion qe = QueryExpansion.parseQExpansion(line);
-                    for (QuerySubtopic subtopic : queryTopics.get(qe.qid).subtopics) {
-                        File qrelFile = new File(Utility.getQrelForOneSubtopic(sqrelDir, qe.qid, subtopic.sid));
-                        if (qrelFile.exists()) {
-                            processor.process(new TfQueryExpansionSubtopic(qe.qid, qe.model, qe.expId, subtopic.sid));
-                        }
-                    }
+            List<QuerySubtopicExpansion> qses = QuerySubtopicExpansion.load(new File(file.filename), model);
+            for (QuerySubtopicExpansion qse : qses) {
+                File qrelFile = new File(Utility.getQrelForOneSubtopic(sqrelDir, qse.qid, qse.sid));
+                if (qrelFile.exists()) {
+                    processor.process(qse.toTfQueryExpansionSubtopic());
                 }
             }
-            reader.close();
         }
 
         @Override
@@ -255,7 +238,7 @@ public class RunExpansionEval extends AppFunction {
 
             for (QueryMetrics qm : qms) {
                 if (!qm.qid.equals("all")) {
-                    qm.qid = String.format("%s-%s-%s-%d", qes.qid, qes.sid, qes.model, qes.expId);
+                    qm.qid = QuerySubtopicExpansion.toId(qes);
                     writer.write(qm.toString());
                     writer.newLine();
                 }

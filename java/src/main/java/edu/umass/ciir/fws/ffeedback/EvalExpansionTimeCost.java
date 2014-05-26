@@ -5,6 +5,7 @@
  */
 package edu.umass.ciir.fws.ffeedback;
 
+import edu.umass.ciir.fws.anntation.FeedbackTerm;
 import edu.umass.ciir.fws.eval.FfeedbackTimeEstimator;
 import edu.umass.ciir.fws.eval.QueryMetrics;
 import edu.umass.ciir.fws.eval.TrecEvaluator;
@@ -32,7 +33,7 @@ public class EvalExpansionTimeCost extends AppFunction {
 
     @Override
     public String getHelpString() {
-        return "fws " + getName() + " config.json --expansionSource=<> --expansionModel=<>";
+        return "fws " + getName() + " config.json --expansionSource=<> --expansionModel=<>\n";
     }
 
     @Override
@@ -48,10 +49,17 @@ public class EvalExpansionTimeCost extends AppFunction {
         HashMap<String, QueryMetrics> sdmQmMap = TrecEvaluator.loadQueryMetricsMap(sdmSevalFile, true);
         List<QueryMetrics> expQms = TrecEvaluator.loadQueryMetricsList(expansionEvalFile, true);
         // qid-model-expId
-        HashMap<String, FacetFeedback> ffbkMap = QueryExpansion.loadExpansionFfeedbackAsMap(expansionFile, model);
+        HashMap<String, QuerySubtopicExpansion> qseMap = QuerySubtopicExpansion.loadQueryExpansionAsMap(expansionFile, model);
 
         // qid-sid -> [(map, ndcg, ..., time), ...]
         HashMap<String, List<QueryMetricsTime>> expQmts = new HashMap<>();
+        for (String qidSid : sdmQmMap.keySet()) {
+            ArrayList<QueryMetricsTime> list = new ArrayList<>();
+            QueryMetrics sdmQm = sdmQmMap.get(qidSid);
+            int time = 0; // no feedback, zero time cost
+            list.add(new QueryMetricsTime(sdmQm, time));
+            expQmts.put(qidSid, list);
+        }
         for (QueryMetrics expQm : expQms) {
             String[] qidSidModelExpId = expQm.qid.split("-");
             String qid = qidSidModelExpId[0];
@@ -61,20 +69,18 @@ public class EvalExpansionTimeCost extends AppFunction {
 
             if (curModel.equals(model)) {
                 String qidSid = qid + "-" + sid;
-                QueryMetrics sdmQm = sdmQmMap.get(qidSid);
-                FacetFeedback ffbk = ffbkMap.get(QueryExpansion.toName(qid, model, expId));
+
+                QuerySubtopicExpansion qes = qseMap.get(QuerySubtopicExpansion.toId(qid, sid, model, expId));
+                FacetFeedback ffbk = FacetFeedback.parseFromExpansionString(qes.expansion);
                 int time = FfeedbackTimeEstimator.time(ffbk);
                 QueryMetricsTime qmt = new QueryMetricsTime(expQm, time);
-                if (!expQmts.containsKey(qidSid)) {
-                    expQmts.put(qidSid, new ArrayList<QueryMetricsTime>());
-                }
                 expQmts.get(qidSid).add(qmt);
             }
 
         }
-        
+
         QueryMetricsTime.output(expQmts, expansionTimeEvalFile);
         Utility.infoWritten(expansionTimeEvalFile);
-        
+
     }
 }

@@ -9,6 +9,8 @@ import edu.umass.ciir.fws.anntation.AnnotatedFacet;
 import edu.umass.ciir.fws.anntation.FacetAnnotation;
 import edu.umass.ciir.fws.anntation.FeedbackTerm;
 import edu.umass.ciir.fws.query.QueryFileParser;
+import edu.umass.ciir.fws.query.QuerySubtopic;
+import edu.umass.ciir.fws.query.QueryTopic;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.types.TfQueryExpansion;
 import edu.umass.ciir.fws.utility.Utility;
@@ -41,7 +43,7 @@ public class ExpandQueryWithSingleFacetTerm extends StandardStep<FileName, TfQue
     BufferedWriter writer;
     ExpansionIdMap expIdMap;
     File expansionIdFile;
-    HashMap<String, TfQuery> queryMap;
+    HashMap<String, QueryTopic> queryTopics;
     final static String model = "sts"; // single term simple
 
     public ExpandQueryWithSingleFacetTerm(TupleFlowParameters parameters) throws IOException {
@@ -54,8 +56,10 @@ public class ExpandQueryWithSingleFacetTerm extends StandardStep<FileName, TfQue
         } else {
             expIdMap = new ExpansionIdMap();
         }
-        queryMap = QueryFileParser.loadQueryMap(new File(p.getString("queryFile")));
         writer = Utility.getWriter(expFile);
+        
+        File queryJsonFile = new File(p.getString("queryJsonFile"));
+        queryTopics = QueryTopic.loadQueryFullTopicsAsMap(queryJsonFile);
     }
 
     @Override
@@ -66,7 +70,8 @@ public class ExpandQueryWithSingleFacetTerm extends StandardStep<FileName, TfQue
         for (FacetAnnotation fa : fas) {
             fa.sortFacets();
             String qid = fa.qid;
-            String oriQuery = queryMap.get(qid).text;
+            QueryTopic qt = queryTopics.get(qid);
+            String oriQuery = qt.query;
 
             int fidx = 0; // index of valid facet
             for (AnnotatedFacet facet : fa.facets) {
@@ -81,7 +86,11 @@ public class ExpandQueryWithSingleFacetTerm extends StandardStep<FileName, TfQue
                             qe.expand();
                             processor.process(qe.toTfQueryExpansion());
                         }
-                        writer.write(qe.toString());
+                        // write expansion file
+                        for (QuerySubtopic subtopic : qt.subtopics) {
+                            QuerySubtopicExpansion qse = new QuerySubtopicExpansion(qe, subtopic.sid);
+                            writer.write(qse.toString());
+                        }
                     }
                     fidx++;
                 }

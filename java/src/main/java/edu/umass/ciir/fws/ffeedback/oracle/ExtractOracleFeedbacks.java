@@ -11,6 +11,7 @@ import edu.umass.ciir.fws.eval.QueryMetrics;
 import edu.umass.ciir.fws.eval.TrecEvaluator;
 import edu.umass.ciir.fws.ffeedback.FacetFeedback;
 import edu.umass.ciir.fws.ffeedback.QueryExpansion;
+import edu.umass.ciir.fws.ffeedback.QuerySubtopicExpansion;
 import static edu.umass.ciir.fws.ffeedback.RunExpasions.setParameters;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
@@ -85,7 +86,7 @@ public class ExtractOracleFeedbacks extends AppFunction {
         Utility.infoProcessing(expansionFile);
         Utility.infoProcessing(sdmSevalFile);
         Utility.infoProcessing(expansionEvalFile);
-        HashMap<String, FeedbackTerm> expTermMap = QueryExpansion.loadExpansionTermsAsMap(expansionFile, model);
+        HashMap<String, QuerySubtopicExpansion> qseMap = QuerySubtopicExpansion.loadQueryExpansionAsMap(expansionFile, model);
         HashMap<String, QueryMetrics> sdmQms = TrecEvaluator.loadQueryMetricsMap(sdmSevalFile, true);
         List<QueryMetrics> expQms = TrecEvaluator.loadQueryMetricsList(expansionEvalFile, true);
 
@@ -106,7 +107,8 @@ public class ExtractOracleFeedbacks extends AppFunction {
                     improvement[i] = qm.values[i] - sdmQm.values[i];
                 }
 
-                FeedbackTerm term = expTermMap.get(QueryExpansion.toName(qid, model, expId));
+                QuerySubtopicExpansion qes = qseMap.get(QuerySubtopicExpansion.toId(qid, sid, model, expId));
+                FeedbackTerm term = FeedbackTerm.parseFromString(qes.expansion);
                 Improvement imprv = new Improvement(expId, term, improvement);
 
                 if (subtopicImprvs.containsKey(qidSid)) {

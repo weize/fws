@@ -68,27 +68,28 @@ public class ExpandQueryWithFeedbacks extends StandardStep<FileName, TfQueryExpa
         String line;
         while ((line = reader.readLine()) != null) {
             FacetFeedback ff = FacetFeedback.parseFromStringAndSort(line);
-            String qid = ff.qid;
-            String oriQuery = queryMap.get(qid).text;
+            String oriQuery = queryMap.get(ff.qid).text;
 
             // each time append a feedback term, and do expansion
             ArrayList<FeedbackTerm> selected = new ArrayList<>();
-            //expand(qid, oriQuery, selected); // emit one with out expansion
             for (FeedbackTerm term : ff.terms) {
                 selected.add(term);
-                expand(qid, oriQuery, selected);
+                expand(ff.qid, ff.sid, oriQuery, selected);
             }
-
         }
         reader.close();
     }
 
-    private void expand(String qid, String oriQuery, ArrayList<FeedbackTerm> selected) throws IOException {
-        String expansion = FacetFeedback.toExpansionString(selected);
-        String queryExpansion = qid + "\t" + expansion;
-        if (!expansions.contains(queryExpansion)) {
-            expansions.add(queryExpansion);
-            QueryExpansion qe = new QueryExpansion(qid, oriQuery, model, expansion, expIdMap);
+    private void expand(String qid, String sid, String oriQuery, ArrayList<FeedbackTerm> selected) throws IOException {
+        String expansion = FacetFeedback.toExpansionString(selected);        
+        QueryExpansion qe = new QueryExpansion(qid, oriQuery, model, expansion, expIdMap);
+        QuerySubtopicExpansion qse = new QuerySubtopicExpansion(qe, sid);
+        // write to expansion file
+        writer.write(qse.toString());
+        
+        // emit if this query expansion haven't being processed
+        if (!expansions.contains(qe.id)) {
+            expansions.add(qe.id);
             File runFile = new File(Utility.getExpansionRunFileName(runDir, qe));
             if (runFile.exists()) {
                 System.err.println("exists results for " + runFile.getAbsolutePath());
@@ -96,7 +97,6 @@ public class ExpandQueryWithFeedbacks extends StandardStep<FileName, TfQueryExpa
                 qe.expand();
                 processor.process(qe.toTfQueryExpansion());
             }
-            writer.write(qe.toString());
         }
     }
 

@@ -277,15 +277,15 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
     }
 
     public static String getExpansionRunFileName(String runDir, QueryExpansion qe) {
-        return getFileNameWithSuffix(runDir, qe.qid, qe.toName(), "rank");
+        return getFileNameWithSuffix(runDir, qe.qid, qe.id, "rank");
     }
 
     public static String getExpansionRunFileName(String runDir, TfQueryExpansion qe) {
-        return getFileNameWithSuffix(runDir, qe.qid, QueryExpansion.toName(qe), "rank");
+        return getFileNameWithSuffix(runDir, qe.qid, QueryExpansion.toId(qe), "rank");
     }
 
     public static String getExpansionRunFileName(String runDir, TfQueryExpansionSubtopic qes) {
-        return getFileNameWithSuffix(runDir, qes.qid, QueryExpansion.toName(qes), "rank");
+        return getFileNameWithSuffix(runDir, qes.qid, QueryExpansion.toId(qes), "rank");
     }
 
     public static String getQrelForOneSubtopic(String sqrelDir, String qid, String sid) {
