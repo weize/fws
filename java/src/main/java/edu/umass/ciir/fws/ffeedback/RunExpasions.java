@@ -54,6 +54,8 @@ public class RunExpasions extends AppFunction {
     private Job createJob(Parameters parameters) {
         Job job = new Job();
 
+        setParameters(parameters);
+
         job.add(getSplitStage(parameters));
         job.add(getProcessStage(parameters));
 
@@ -76,7 +78,7 @@ public class RunExpasions extends AppFunction {
 
         Parameters p = new Parameters();
         p.set("input", new ArrayList());
-        p.getList("input").add(new File(parameter.getString("expansionSource")).getAbsolutePath());
+        p.getList("input").add(new File(parameter.getString("feedbackFile")).getAbsolutePath());
 
         stage.add(new Step(FileSource.class, p));
         stage.add(new Step(getExpansionGeneratorClass(parameter), parameter));
@@ -102,6 +104,33 @@ public class RunExpasions extends AppFunction {
         } else {
             return ExpandQueryWithFeedbacks.class;
         }
+    }
+
+    public static void setParameters(Parameters parameters) {
+        // "annotator", "oracle", "plsa", "lda", etc
+        String expansionSource = parameters.getString("expansionSource");
+        String feedbackFile = parameters.getString(expansionSource + "Feedback");
+        String expansionModel = parameters.getString("expansionModel");
+        String expansionDir = parameters.getString("expansionDir");
+        String expansionRunDir = Utility.getFileName(expansionDir, "run");
+        String expansionEvalDir = Utility.getFileName(expansionDir, "eval");
+        String expansionIdFile = Utility.getFileName(expansionDir, "expansion-id");
+        String name = "expansion-" + expansionModel;
+        String expansionFile = Utility.getFileName(expansionDir, expansionSource, name);
+        String expansionEvalFile = Utility.getFileNameWithSuffix(expansionDir, expansionSource, name, "eval");
+        
+        // use all the terms in facets for expasion. to extract oracle feedbacks
+        if (expansionSource.equals("allterm")) {
+            feedbackFile = parameters.getString("facetAnnotationJson");
+        }
+        
+        parameters.set("feedbackFile", feedbackFile);
+        parameters.set("expansionRunDir", expansionRunDir);
+        parameters.set("expansionEvalDir", expansionEvalDir);
+        parameters.set("expansionIdFile", expansionIdFile);
+        parameters.set("expansionFile", expansionFile);
+        parameters.set("expansionEvalFile", expansionEvalFile);
+
     }
 
     @Verified

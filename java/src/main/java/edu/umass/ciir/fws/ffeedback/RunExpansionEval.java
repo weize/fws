@@ -7,6 +7,7 @@ package edu.umass.ciir.fws.ffeedback;
 
 import edu.umass.ciir.fws.eval.QueryMetrics;
 import edu.umass.ciir.fws.eval.TrecEvaluator;
+import static edu.umass.ciir.fws.ffeedback.RunExpasions.setParameters;
 import edu.umass.ciir.fws.query.QuerySubtopic;
 import edu.umass.ciir.fws.query.QueryTopic;
 import edu.umass.ciir.fws.types.TfQueryExpansion;
@@ -71,6 +72,8 @@ public class RunExpansionEval extends AppFunction {
 
     private Job createJob(Parameters parameters) {
         Job job = new Job();
+        
+        setParameters(parameters);
 
         job.add(getSplitStage(parameters));
         job.add(getProcessStage(parameters));

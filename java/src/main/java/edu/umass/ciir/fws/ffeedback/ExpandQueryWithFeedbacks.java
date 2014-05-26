@@ -40,7 +40,7 @@ public class ExpandQueryWithFeedbacks extends StandardStep<FileName, TfQueryExpa
     File expFile; // expansion file for kee tracke of qid and its expaions
     String runDir;
     ExpansionIdMap expIdMap;
-    File newExpIdMapFile;
+    File expansionIdFile;
     String model;
     HashMap<String, TfQuery> queryMap;
     HashSet<String> expansions;
@@ -51,12 +51,12 @@ public class ExpandQueryWithFeedbacks extends StandardStep<FileName, TfQueryExpa
         expFile = new File(p.getString("expansionFile"));
         runDir = p.getString("expansionRunDir");
         model = p.getString("expansionModel");
-        if (p.containsKey("expansionIdFileOld")) {
-            expIdMap = new ExpansionIdMap(new File(p.getString("expansionIdFileOld")));
+        expansionIdFile = new File(p.getString("expansionIdFile"));
+        if (expansionIdFile.exists()) {
+            expIdMap = new ExpansionIdMap(expansionIdFile);
         } else {
             expIdMap = new ExpansionIdMap();
         }
-        newExpIdMapFile = new File(p.getString("expansionIdFile"));
         queryMap = QueryFileParser.loadQueryMap(new File(p.getString("queryFile")));
         writer = Utility.getWriter(expFile);
         expansions = new HashSet<>();
@@ -105,7 +105,7 @@ public class ExpandQueryWithFeedbacks extends StandardStep<FileName, TfQueryExpa
         processor.close();
         writer.close();
         Utility.infoWritten(expFile);
-        expIdMap.output(newExpIdMapFile); // update ids
-        Utility.infoWritten(newExpIdMapFile);
+        expIdMap.output(expansionIdFile); // update ids
+        Utility.infoWritten(expansionIdFile);
     }
 }
