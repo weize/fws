@@ -73,7 +73,7 @@ public class ExpandQueryWithFeedbacks extends StandardStep<FileName, TfQueryExpa
 
             // each time append a feedback term, and do expansion
             ArrayList<FeedbackTerm> selected = new ArrayList<>();
-            expand(qid, oriQuery, selected); // emit one with out expansion
+            //expand(qid, oriQuery, selected); // emit one with out expansion
             for (FeedbackTerm term : ff.terms) {
                 selected.add(term);
                 expand(qid, oriQuery, selected);
