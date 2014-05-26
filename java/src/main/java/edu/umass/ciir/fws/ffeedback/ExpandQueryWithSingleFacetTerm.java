@@ -40,7 +40,7 @@ public class ExpandQueryWithSingleFacetTerm extends StandardStep<FileName, TfQue
     String runDir;
     BufferedWriter writer;
     ExpansionIdMap expIdMap;
-    File newExpIdMapFile;
+    File expansionIdFile;
     HashMap<String, TfQuery> queryMap;
     final static String model = "sts"; // single term simple
 
@@ -48,12 +48,12 @@ public class ExpandQueryWithSingleFacetTerm extends StandardStep<FileName, TfQue
         Parameters p = parameters.getJSON();
         expFile = new File(p.getString("expansionFile"));
         runDir = p.getString("expansionRunDir");
-        if (p.containsKey("expansionIdFileOld")) {
-            expIdMap = new ExpansionIdMap(new File(p.getString("expansionIdFileOld")));
+        expansionIdFile = new File(p.getString("expansionIdFile"));
+        if (expansionIdFile.exists()) {
+            expIdMap = new ExpansionIdMap(expansionIdFile);
         } else {
             expIdMap = new ExpansionIdMap();
         }
-        newExpIdMapFile = new File(p.getString("expansionIdFile"));
         queryMap = QueryFileParser.loadQueryMap(new File(p.getString("queryFile")));
         writer = Utility.getWriter(expFile);
     }
@@ -94,7 +94,7 @@ public class ExpandQueryWithSingleFacetTerm extends StandardStep<FileName, TfQue
         processor.close();
         writer.close();
         Utility.infoWritten(expFile);
-        expIdMap.output(newExpIdMapFile); // update ids
-        Utility.infoWritten(newExpIdMapFile);
+        expIdMap.output(expansionIdFile); // update ids
+        Utility.infoWritten(expansionIdFile);
     }
 }
