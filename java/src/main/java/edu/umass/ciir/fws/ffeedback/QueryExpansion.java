@@ -87,7 +87,7 @@ public class QueryExpansion {
     public String toName() {
         return qid + "-" + model + "-" + expId;
     }
-    
+
     public static String toName(String qid, String model, long expId) {
         return qid + "-" + model + "-" + expId;
     }
@@ -141,7 +141,9 @@ public class QueryExpansion {
 
     /**
      * qid-model-expId -> feedbackTerm
+     *
      * @param file a expansion file
+     * @param model
      * @return
      * @throws IOException
      */
@@ -150,13 +152,29 @@ public class QueryExpansion {
         HashMap<String, FeedbackTerm> map = new HashMap<>();
         String line;
         while ((line = reader.readLine()) != null) {
-            if (line.trim().startsWith("#")) {
-                continue;
+            if (!line.trim().startsWith("#")) {
+                QueryExpansion qe = QueryExpansion.parseQExpansion(line);
+                if (qe.model.equals(model)) {
+                    FeedbackTerm ft = FeedbackTerm.parseFromString(qe.expansion);
+                    map.put(qe.toName(), ft);
+                }
             }
-            QueryExpansion qe = QueryExpansion.parseQExpansion(line);
-            if (qe.model.equals(model)) {
-                FeedbackTerm ft = FeedbackTerm.parseFromString(qe.expansion);
-                map.put(qe.toName(), ft);
+        }
+        reader.close();
+        return map;
+    }
+
+    public static HashMap<String, FacetFeedback> loadExpansionFfeedbackAsMap(File file, String model) throws IOException {
+        BufferedReader reader = Utility.getReader(file);
+        HashMap<String, FacetFeedback> map = new HashMap<>();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            if (!line.trim().startsWith("#")) {
+                QueryExpansion qe = QueryExpansion.parseQExpansion(line);
+                if (qe.model.equals(model)) {
+                    FacetFeedback ff = FacetFeedback.parseFromExpansionString(qe.expansion);
+                    map.put(qe.toName(), ff);
+                }
             }
         }
         reader.close();

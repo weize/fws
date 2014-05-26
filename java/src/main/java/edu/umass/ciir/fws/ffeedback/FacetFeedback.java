@@ -38,6 +38,7 @@ public class FacetFeedback {
     public FacetFeedback(String qidSid, ArrayList<FeedbackTerm> terms) {
         this.qid = qidSid.split("-")[0];
         this.sid = qidSid.split("-")[1];
+        Collections.sort(terms);
         this.terms = terms;
     }
     
