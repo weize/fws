@@ -5,7 +5,6 @@
  */
 package edu.umass.ciir.fws.ffeedback;
 
-import edu.umass.ciir.fws.anntation.FeedbackTerm;
 import edu.umass.ciir.fws.eval.FfeedbackTimeEstimator;
 import edu.umass.ciir.fws.eval.QueryMetrics;
 import edu.umass.ciir.fws.eval.TrecEvaluator;
@@ -53,13 +52,6 @@ public class EvalExpansionTimeCost extends AppFunction {
 
         // qid-sid -> [(map, ndcg, ..., time), ...]
         HashMap<String, List<QueryMetricsTime>> expQmts = new HashMap<>();
-        for (String qidSid : sdmQmMap.keySet()) {
-            ArrayList<QueryMetricsTime> list = new ArrayList<>();
-            QueryMetrics sdmQm = sdmQmMap.get(qidSid);
-            int time = 0; // no feedback, zero time cost
-            list.add(new QueryMetricsTime(sdmQm, time));
-            expQmts.put(qidSid, list);
-        }
         for (QueryMetrics expQm : expQms) {
             String[] qidSidModelExpId = expQm.qid.split("-");
             String qid = qidSidModelExpId[0];
@@ -70,6 +62,14 @@ public class EvalExpansionTimeCost extends AppFunction {
             if (curModel.equals(model)) {
                 String qidSid = qid + "-" + sid;
 
+                if (!expQmts.containsKey(qidSid)) {
+                    ArrayList<QueryMetricsTime> list = new ArrayList<>();
+                    QueryMetrics sdmQm = sdmQmMap.get(qidSid);
+                    int time = 0; // no feedback, zero time cost
+                    list.add(new QueryMetricsTime(sdmQm, time));
+                    expQmts.put(qidSid, list);
+                }
+                
                 QuerySubtopicExpansion qes = qseMap.get(QuerySubtopicExpansion.toId(qid, sid, model, expId));
                 FacetFeedback ffbk = FacetFeedback.parseFromExpansionString(qes.expansion);
                 int time = FfeedbackTimeEstimator.time(ffbk);

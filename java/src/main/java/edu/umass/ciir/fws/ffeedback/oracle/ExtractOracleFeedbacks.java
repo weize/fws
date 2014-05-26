@@ -5,17 +5,13 @@
  */
 package edu.umass.ciir.fws.ffeedback.oracle;
 
-import edu.emory.mathcs.backport.java.util.Collections;
 import edu.umass.ciir.fws.anntation.FeedbackTerm;
 import edu.umass.ciir.fws.eval.QueryMetrics;
 import edu.umass.ciir.fws.eval.TrecEvaluator;
 import edu.umass.ciir.fws.ffeedback.FacetFeedback;
-import edu.umass.ciir.fws.ffeedback.QueryExpansion;
 import edu.umass.ciir.fws.ffeedback.QuerySubtopicExpansion;
 import static edu.umass.ciir.fws.ffeedback.RunExpasions.setParameters;
-import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
