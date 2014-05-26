@@ -153,7 +153,7 @@ public class RunExpasions extends AppFunction {
             File outfile = new File(Utility.getExpansionRunFileName(runDir, qe));
             Utility.createDirectoryForFile(outfile);
             BufferedWriter writer = Utility.getWriter(outfile);
-
+            Utility.infoProcessing(outfile);
             String queryNumber = qe.qid;
             String queryText = qe.expanedQuery;
             System.err.println(queryNumber + "\t" + queryText);
