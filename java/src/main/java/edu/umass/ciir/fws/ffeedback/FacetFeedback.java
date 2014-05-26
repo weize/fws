@@ -9,9 +9,13 @@ import edu.emory.mathcs.backport.java.util.Collections;
 import edu.umass.ciir.fws.anntation.FeedbackAnnotation;
 import edu.umass.ciir.fws.anntation.FeedbackList;
 import edu.umass.ciir.fws.anntation.FeedbackTerm;
-import edu.umass.ciir.fws.ffeedback.oracle.ExtractOracleFeedbacks;
 import edu.umass.ciir.fws.utility.TextProcessing;
+import edu.umass.ciir.fws.utility.Utility;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -41,12 +45,9 @@ public class FacetFeedback {
         Collections.sort(terms);
         this.terms = terms;
     }
-    
-    
-    
-    
+
     public FacetFeedback() {
-        
+
     }
 
     public String termsToString() {
@@ -56,32 +57,32 @@ public class FacetFeedback {
     public static FacetFeedback parseFromStringAndSort(String line) {
         String[] elems = line.split("\t");
 
-	FacetFeedback ff;
-	if (elems.length == 2) {
-        	ff = parseTermsAndSort(elems[1]);
-	} else {
-		ff = new FacetFeedback();
-		ff.terms = new ArrayList<>();
-		ff.facets = new ArrayList<>();
-	}
-	ff.qid = elems[0].split("-")[0];
-	ff.sid = elems[0].split("-")[1];
+        FacetFeedback ff;
+        if (elems.length == 2) {
+            ff = parseTermsAndSort(elems[1]);
+        } else {
+            ff = new FacetFeedback();
+            ff.terms = new ArrayList<>();
+            ff.facets = new ArrayList<>();
+        }
+        ff.qid = elems[0].split("-")[0];
+        ff.sid = elems[0].split("-")[1];
         return ff;
     }
-    
+
     @Override
     public String toString() {
         Collections.sort(terms);
-        return qid + "-" + sid + "\t"  + TextProcessing.join(terms, "|");
+        return qid + "-" + sid + "\t" + TextProcessing.join(terms, "|");
     }
 
     public static FacetFeedback parseTermsAndSort(String termsStr) {
         FacetFeedback ff = new FacetFeedback();
         ff.terms = new ArrayList<>();
         ff.facets = new ArrayList<>();
-	if(termsStr.isEmpty()) {
+        if (termsStr.isEmpty()) {
             return ff;
-	}
+        }
         // set terms
         for (String termString : termsStr.split("\\|")) {
             FeedbackTerm ft = FeedbackTerm.parseFromString(termString);
@@ -115,13 +116,25 @@ public class FacetFeedback {
         java.util.Collections.sort(selected);
         return TextProcessing.join(selected, "|");
     }
-    
+
     public static FacetFeedback parseFromExpansionString(String expansion) {
         return parseTermsAndSort(expansion);
     }
 
     public static FacetFeedback parseTermsFromUniqueExpansionString(String uniqueExpansionString) {
         return parseTermsAndSort(uniqueExpansionString.replace('~', '-'));
+    }
+
+    public static HashSet<String> loadFeedbackQidSidSet(File file) throws IOException {
+        HashSet<String> set = new HashSet<>();
+        BufferedReader reader = Utility.getReader(file);
+        String line;
+        while ((line = reader.readLine()) != null) {
+            FacetFeedback ff = FacetFeedback.parseFromStringAndSort(line);
+            set.add(ff.qid + "-" + ff.sid);
+        }
+        reader.close();
+        return set;
     }
 
 }

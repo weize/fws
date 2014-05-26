@@ -16,6 +16,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.TreeMap;
 
 /**
  *
@@ -73,8 +74,8 @@ public class TrecEvaluator {
      * @return
      * @throws IOException 
      */
-    public static HashMap<String, QueryMetrics> loadQueryMetricsMap(File file, boolean filterAll) throws IOException {
-        HashMap<String, QueryMetrics> map = new HashMap<>();
+    public static TreeMap<String, QueryMetrics> loadQueryMetricsMap(File file, boolean filterAll) throws IOException {
+        TreeMap<String, QueryMetrics> map = new TreeMap<>();
         List<QueryMetrics> list = loadQueryMetricsList(file, filterAll);
         for (QueryMetrics qm : list) {
             map.put(qm.qid, qm);
