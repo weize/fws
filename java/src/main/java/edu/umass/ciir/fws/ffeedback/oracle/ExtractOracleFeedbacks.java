@@ -11,6 +11,7 @@ import edu.umass.ciir.fws.eval.QueryMetrics;
 import edu.umass.ciir.fws.eval.TrecEvaluator;
 import edu.umass.ciir.fws.ffeedback.FacetFeedback;
 import edu.umass.ciir.fws.ffeedback.QueryExpansion;
+import static edu.umass.ciir.fws.ffeedback.RunExpasions.setParameters;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
@@ -56,11 +57,15 @@ public class ExtractOracleFeedbacks extends AppFunction {
 
     @Override
     public void run(Parameters p, PrintStream output) throws Exception {
+        p.set("expansionSource", "allterm");
+        p.set("expansionModel", "sts");
+        setParameters(p);
+        
         File expansionFile = new File(p.getString("expansionFile"));
         String model = p.getString("expansionModel");
         File sdmSevalFile = new File(p.getString("sdmSeval"));
         File expansionEvalFile = new File(p.getString("expansionEvalFile"));
-        String expansionDir = p.getString("expansionDir");
+        String expansionEvalImprFile = expansionEvalFile + ".imprv";
         String feedbackDir = p.getString("oracleFeedbackDir");
         List<Double> threshoulds = p.getAsList("oracleFeedbackImprvThresholds", Double.class);
 
@@ -68,7 +73,7 @@ public class ExtractOracleFeedbacks extends AppFunction {
         TreeMap<String, ArrayList<Improvement>> subtopicImprvs = calcImprovements(
                 expansionEvalFile, sdmSevalFile, expansionFile, model);
 
-        outputImprovementFile(subtopicImprvs, expansionDir, model);
+        outputImprovementFile(subtopicImprvs, expansionEvalImprFile, model);
 
         for (double threshold : threshoulds) {
             outputFeedbackTerms(subtopicImprvs, threshold, feedbackDir, model);
@@ -135,8 +140,8 @@ public class ExtractOracleFeedbacks extends AppFunction {
         Utility.infoWritten(outfile);
     }
 
-    private void outputImprovementFile(TreeMap<String, ArrayList<Improvement>> subtopicImprvs, String expansionDir, String model) throws IOException {
-        File outfile = new File(Utility.getExpansionImprFile(expansionDir, model));
+    private void outputImprovementFile(TreeMap<String, ArrayList<Improvement>> subtopicImprvs, String expansionEvalImprFile, String model) throws IOException {
+        File outfile = new File(expansionEvalImprFile);
         BufferedWriter writer = Utility.getWriter(outfile);
 
         for (String qidSid : subtopicImprvs.keySet()) {
