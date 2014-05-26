@@ -51,7 +51,7 @@
 	"feedbackAnnotationText" : "../exp/annotation/from-db/feedback-annotation.text",
 	"annotatorFeedback" : "../exp/feedback/annotator/annotator.fdbk",
 	"oracleFeedbackDir" : "../exp/feedback/oracle",
-	"oracleFeedbackImprvThresholds": [0.001, 0.005, 0.01, 0.02, 0.03, 0.04, 0.05] 
+	"oracleFeedbackImprvThresholds": [0.001, 0.005, 0.01, 0.02, 0.03, 0.04, 0.05],
 	"expansionDir" : "../exp/expansion",
 	"sdmSrank" : "../exp/srank/sdm/sdm.srank",
 	"sdmSeval" : "../exp/srank/sdm/sdm.srank.eval",
