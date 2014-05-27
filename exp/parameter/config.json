@@ -1,5 +1,6 @@
 {
 	"queryFile" : "../data/query/query",
+	"expDir" :"../exp",
 	"queryJsonFile" : "../data/query/query-full.json",
 	"queryXmlFile" : ["../data/query/diversity/wt09.topics.full.xml","../data/query/diversity/wt2010-topics.xml","../data/query/diversity/wt2011-full-topics.xml","../data/query/diversity/wt2012-full-topics.xml"],
 	"qrelSubtopic" : "../data/qrel/all.diversity.filter.spam60.qrel",
@@ -50,7 +51,10 @@
 	"feedbackAnnotationJson" : "../exp/annotation/from-db/feedback-annotation.json",
 	"feedbackAnnotationText" : "../exp/annotation/from-db/feedback-annotation.text",
 	"annotatorFeedback" : "../exp/feedback/annotator/annotator.fdbk",
+	"oracle01Feedback" : "../exp/feedback/oracle/oracle.sts.0_01.fdbk",
+	"oracle05Feedback" : "../exp/feedback/oracle/oracle.sts.0_05.fdbk",
 	"oracleFeedbackDir" : "../exp/feedback/oracle",
+	"feedbackDir" : "../exp/feedback",
 	"oracleFeedbackImprvThresholds": [0.001, 0.005, 0.01, 0.02, 0.03, 0.04, 0.05],
 	"expansionDir" : "../exp/expansion",
 	"sdmSrank" : "../exp/srank/sdm/sdm.srank",

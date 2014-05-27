@@ -1,12 +1,13 @@
 use strict;
-use JSON;
+#use JSON;
 
 # config file
 my $configFile = "../exp/parameter/config.json";
 my $in = openReader($configFile);
 my $content = join("", <$in>);
 close($in);
-our $config = decode_json $content;
+our $config;
+#our $config = decode_json $content;
 our $fws = "fws";
 our $trec_eval = "trec_eval";
 
