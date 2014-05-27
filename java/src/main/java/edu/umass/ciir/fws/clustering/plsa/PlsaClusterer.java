@@ -54,7 +54,7 @@ public class PlsaClusterer implements Processor<TfQueryParameters> {
 
         int topicNum = Integer.parseInt(queryParameters.parameters);
 
-        // load candidate lists
+        // loadClusters candidate lists
         File clistFile = new File(Utility.getCandidateListCleanFileName(clistDir, qid));
         List<CandidateList> clist = CandidateList.loadCandidateLists(clistFile, topNum);
 
@@ -149,7 +149,7 @@ public class PlsaClusterer implements Processor<TfQueryParameters> {
         private Plsa(List<CandidateList> clists, long iterNum) {
             this.iterNum = iterNum;
 
-            // load data
+            // loadClusters data
             datas = new ArrayList<>();
             HashMap<String, Integer> vocabulary = new HashMap<>();
             int id = 0;

@@ -83,9 +83,9 @@ public class GmClusterItems extends ProcessQueryParametersMultiStepApp {
             
             String qid = queryParams.id;
             
-            // load clusters
+            // loadClusters clusters
             File clusterFile = new File(Utility.getGmjClusterFileName(clusterDir, queryParams.id));
-            List<ScoredFacet> clusters = ScoredFacet.load(clusterFile);
+            List<ScoredFacet> clusters = ScoredFacet.loadClusters(clusterFile);
 
             File facetFile = new File(Utility.getGmjFacetFileName(facetDir, qid));
             Utility.createDirectoryForFile(facetFile);
@@ -122,9 +122,9 @@ public class GmClusterItems extends ProcessQueryParametersMultiStepApp {
             double termProbTh = Double.parseDouble(params[2]);
             double pairProbTh = Double.parseDouble(params[3]);
             
-            // load clusters
+            // loadClusters clusters
             File clusterFile = new File(Utility.getGmiClusterFileName(clusterDir, queryParams.id, termProbTh, pairProbTh));
-            List<ScoredFacet> clusters = ScoredFacet.load(clusterFile);
+            List<ScoredFacet> clusters = ScoredFacet.loadClusters(clusterFile);
 
             File facetFile = new File(Utility.getGmiFacetFileName(facetDir, qid, termProbTh, pairProbTh));
             Utility.createDirectoryForFile(facetFile);

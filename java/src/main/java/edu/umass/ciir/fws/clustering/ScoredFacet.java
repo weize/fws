@@ -74,7 +74,8 @@ public class ScoredFacet implements Comparable<ScoredFacet> {
         return itemList.toString();
     }
 
-    public static List<ScoredFacet> load(File file) throws IOException {
+    
+    public static List<ScoredFacet> loadClusters(File file) throws IOException {
         ArrayList<ScoredFacet> facets = new ArrayList<>();
         BufferedReader reader = Utility.getReader(file);
         String line;
@@ -86,6 +87,27 @@ public class ScoredFacet implements Comparable<ScoredFacet> {
             ArrayList<ScoredItem> items = new ArrayList<>();
             for (String scoredItemStr : scoredItemList.split("\\|")) {
                 ScoredItem scoredItem = new ScoredItem(scoredItemStr);
+                items.add(scoredItem);
+            }
+
+            facets.add(new ScoredFacet(items, score));
+        }
+        reader.close();
+        return facets;
+    }
+    
+    public static List<ScoredFacet> loadFacets(File file) throws IOException {
+        ArrayList<ScoredFacet> facets = new ArrayList<>();
+        BufferedReader reader = Utility.getReader(file);
+        String line;
+        while ((line = reader.readLine()) != null) {
+            String[] fields = line.split("\t");
+            double score = Double.parseDouble(fields[0]);
+            String scoredItemList = fields[1];
+
+            ArrayList<ScoredItem> items = new ArrayList<>();
+            for (String scoredItemStr : scoredItemList.split("\\|")) {
+                ScoredItem scoredItem = new ScoredItem(scoredItemStr, 0);
                 items.add(scoredItem);
             }
 

@@ -6,11 +6,9 @@
 package edu.umass.ciir.fws.ffeedback;
 
 import edu.umass.ciir.fws.anntation.FeedbackTerm;
-import static edu.umass.ciir.fws.ffeedback.ExpandQueryWithSingleFacetTerm.model;
 import edu.umass.ciir.fws.query.QueryFileParser;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.types.TfQueryExpansion;
-import edu.umass.ciir.fws.types.TfQueryParameters;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -19,6 +17,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import org.lemurproject.galago.tupleflow.InputClass;
 import org.lemurproject.galago.tupleflow.OutputClass;
 import org.lemurproject.galago.tupleflow.Parameters;
@@ -64,10 +63,9 @@ public class ExpandQueryWithFeedbacks extends StandardStep<FileName, TfQueryExpa
 
     @Override
     public void process(FileName fileName) throws IOException {
-        BufferedReader reader = Utility.getReader(fileName.filename);
-        String line;
-        while ((line = reader.readLine()) != null) {
-            FacetFeedback ff = FacetFeedback.parseFromStringAndSort(line);
+        List<FacetFeedback> fdbkList = FacetFeedback.load(new File(fileName.filename));
+
+        for (FacetFeedback ff : fdbkList) {
             String oriQuery = queryMap.get(ff.qid).text;
 
             // each time append a feedback term, and do expansion
@@ -77,16 +75,15 @@ public class ExpandQueryWithFeedbacks extends StandardStep<FileName, TfQueryExpa
                 expand(ff.qid, ff.sid, oriQuery, selected);
             }
         }
-        reader.close();
     }
 
     private void expand(String qid, String sid, String oriQuery, ArrayList<FeedbackTerm> selected) throws IOException {
-        String expansion = FacetFeedback.toExpansionString(selected);        
+        String expansion = FacetFeedback.toExpansionString(selected);
         QueryExpansion qe = new QueryExpansion(qid, oriQuery, model, expansion, expIdMap);
         QuerySubtopicExpansion qse = new QuerySubtopicExpansion(qe, sid);
         // write to expansion file
         writer.write(qse.toString());
-        
+
         // emit if this query expansion haven't being processed
         if (!expansions.contains(qe.id)) {
             expansions.add(qe.id);

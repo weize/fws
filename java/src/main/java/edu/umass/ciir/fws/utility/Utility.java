@@ -315,4 +315,11 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
     public static String getExpansionImprFile(String expansionDir, String model) {
         return getFileName(expansionDir, "expansion." + model + ".imprv");
     }
+
+    public static String getFacetFileName(String facetDir, String qid, String model, String paramStr) {
+        String name = paramStr.isEmpty() ? String.format("%s.%s.facet", qid, model)
+                : String.format("%s.%s.%s.facet", qid, model, paramStr);
+        return Utility.getFileName(facetDir, qid, name);
+        
+    }
 }

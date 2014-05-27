@@ -9,6 +9,8 @@ import edu.emory.mathcs.backport.java.util.Collections;
 import edu.umass.ciir.fws.anntation.FeedbackAnnotation;
 import edu.umass.ciir.fws.anntation.FeedbackList;
 import edu.umass.ciir.fws.anntation.FeedbackTerm;
+import edu.umass.ciir.fws.clustering.ScoredFacet;
+import edu.umass.ciir.fws.clustering.ScoredItem;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
@@ -45,8 +47,15 @@ public class FacetFeedback {
         Collections.sort(terms);
         this.terms = terms;
     }
+    
+    public FacetFeedback(String qid, String sid, ArrayList<FeedbackTerm> terms) {
+        this.qid = qid;
+        this.sid = sid;
+        Collections.sort(terms);
+        this.terms = terms;
+    }
 
-    public FacetFeedback() {
+    private FacetFeedback() {
 
     }
 
@@ -54,12 +63,12 @@ public class FacetFeedback {
         return TextProcessing.join(terms, "|");
     }
 
-    public static FacetFeedback parseFromStringAndSort(String line) {
+    public static FacetFeedback parse(String line) {
         String[] elems = line.split("\t");
 
         FacetFeedback ff;
         if (elems.length == 2) {
-            ff = parseTermsAndSort(elems[1]);
+            ff = parseTerms(elems[1]);
         } else {
             ff = new FacetFeedback();
             ff.terms = new ArrayList<>();
@@ -72,11 +81,10 @@ public class FacetFeedback {
 
     @Override
     public String toString() {
-        Collections.sort(terms);
         return qid + "-" + sid + "\t" + TextProcessing.join(terms, "|");
     }
 
-    public static FacetFeedback parseTermsAndSort(String termsStr) {
+    public static FacetFeedback parseTerms(String termsStr) {
         FacetFeedback ff = new FacetFeedback();
         ff.terms = new ArrayList<>();
         ff.facets = new ArrayList<>();
@@ -118,11 +126,20 @@ public class FacetFeedback {
     }
 
     public static FacetFeedback parseFromExpansionString(String expansion) {
-        return parseTermsAndSort(expansion);
+        return parseTerms(expansion);
     }
 
-    public static FacetFeedback parseTermsFromUniqueExpansionString(String uniqueExpansionString) {
-        return parseTermsAndSort(uniqueExpansionString.replace('~', '-'));
+
+    public static List<FacetFeedback> load(File file) throws IOException {
+        ArrayList<FacetFeedback> list = new ArrayList<>();
+        BufferedReader reader = Utility.getReader(file);
+        String line;
+        while ((line = reader.readLine()) != null) {
+            FacetFeedback ff = FacetFeedback.parse(line);
+            list.add(ff);
+        }
+        reader.close();
+        return list;
     }
 
     public static HashSet<String> loadFeedbackQidSidSet(File file) throws IOException {
@@ -130,11 +147,32 @@ public class FacetFeedback {
         BufferedReader reader = Utility.getReader(file);
         String line;
         while ((line = reader.readLine()) != null) {
-            FacetFeedback ff = FacetFeedback.parseFromStringAndSort(line);
+            FacetFeedback ff = FacetFeedback.parse(line);
             set.add(ff.qid + "-" + ff.sid);
         }
         reader.close();
         return set;
+    }
+
+    public static FacetFeedback getSimulatedFfeedback(FacetFeedback feedbackSource, List<ScoredFacet> facets) {
+        HashSet<String> selected = new HashSet<>();
+        for (FeedbackTerm term : feedbackSource.terms) {
+            selected.add(term.term);
+        }
+
+        ArrayList<FeedbackTerm> fterms = new ArrayList<>();
+        for (int fidx = 0; fidx < facets.size(); fidx++) {
+            List<ScoredItem> items = facets.get(fidx).items;
+            for(int tidx = 0; tidx < items.size(); tidx ++) {
+                String term = items.get(tidx).item;
+                if (selected.contains(term)) {
+                    fterms.add(new FeedbackTerm(term, fidx, tidx));
+                    selected.remove(term);
+                }
+            }
+        }
+        
+        return new FacetFeedback(feedbackSource.qid, feedbackSource.sid, fterms);
     }
 
 }

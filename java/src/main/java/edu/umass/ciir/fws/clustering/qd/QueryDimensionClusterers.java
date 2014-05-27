@@ -71,7 +71,7 @@ public class QueryDimensionClusterers implements Processor<TfQueryParameters> {
         distanceMax = Double.parseDouble(fields[0]);
         websiteCountMin = Double.parseDouble(fields[1]);
 
-        loadFacetFeatures(); // load lists and features
+        loadFacetFeatures(); // loadClusters lists and features
         initializeClusetering();
         clustering();
         rankClusters();

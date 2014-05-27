@@ -103,7 +103,7 @@ public class QdClusterToFacet extends ProcessQueryParametersApp {
             double websiteCountMin = Double.parseDouble(fields[1]);
             double itemRatio = Double.parseDouble(fields[2]);
 
-            // load clusters
+            // loadClusters clusters
             String clusterFileName = Utility.getQdClusterFileName(clusterDir, qid, distanceMax, websiteCountMin);
             BufferedReader reader = Utility.getReader(clusterFileName);
 

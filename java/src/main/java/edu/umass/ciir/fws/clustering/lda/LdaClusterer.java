@@ -63,7 +63,7 @@ public class LdaClusterer implements Processor<TfQueryParameters> {
 
         int topicNum = Integer.parseInt(queryParameters.parameters);
 
-        // load candidate lists
+        // loadClusters candidate lists
         File clistFile = new File(Utility.getCandidateListCleanFileName(clistDir, qid));
         List<CandidateList> clist = CandidateList.loadCandidateLists(clistFile, topNum);
 

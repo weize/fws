@@ -56,7 +56,7 @@ public class CollectPoolFilesAsJsonData extends AppFunction {
            // facets
            File poolFile = new File(Utility.getPoolFileName(poolDir, q.id));
            ArrayList<ArrayList<Parameters>> facets = new ArrayList<>();
-           for(ScoredFacet f : ScoredFacet.load(poolFile)) {
+           for(ScoredFacet f : ScoredFacet.loadClusters(poolFile)) {
                ArrayList<Parameters> facet = new ArrayList<>();
                for(ScoredItem t : f.items) {
                    itemId ++;

@@ -62,7 +62,7 @@ public class PoolFacets extends ProcessQueryApp {
             for (List<Object> run : runs) {
                 File facetFile = new File(Utility.getFacetFileName(run, query.id));
                 Utility.infoProcessing(facetFile);
-                facetsList.add(ScoredFacet.load(facetFile));
+                facetsList.add(ScoredFacet.loadClusters(facetFile));
             }
 
             List<ScoredFacet> facetPool = poolFacets(facetsList);

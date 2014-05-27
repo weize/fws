@@ -95,9 +95,9 @@ public class PlsaClusterToFacet extends ProcessQueryParametersApp {
             long plsaTopicNum = Long.parseLong(fields[0]);
             long plsaTermNum = Long.parseLong(fields[1]);
 
-            // load clusters
+            // loadClusters clusters
             File clusterFile = new File(Utility.getPlsaClusterFileName(clusterDir, qid, plsaTopicNum));
-            List<ScoredFacet> clusters = ScoredFacet.load(clusterFile);
+            List<ScoredFacet> clusters = ScoredFacet.loadClusters(clusterFile);
 
             // select facet terms
             for (ScoredFacet cluster : clusters) {
