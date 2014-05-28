@@ -8,11 +8,7 @@ package edu.umass.ciir.fws.ffeedback;
 import edu.umass.ciir.fws.anntation.FeedbackTerm;
 import edu.umass.ciir.fws.types.TfQueryExpansion;
 import edu.umass.ciir.fws.types.TfQueryExpansionSubtopic;
-import edu.umass.ciir.fws.utility.Utility;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
+import java.util.List;
 
 /**
  *
@@ -36,7 +32,7 @@ public class QueryExpansion {
         this.expId = expIdMap.getId(qid, model, expansion);
         this.id = toId(qid, model, expId);
     }
-    
+
     public QueryExpansion(String qid, String oriQuery, String model, String expansion, long expId) {
         this.qid = qid;
         this.oriQuery = oriQuery;
@@ -52,6 +48,8 @@ public class QueryExpansion {
                 return expandSingleTermSimple(originalQuery, expansion);
             case "fts":
                 return expandFeedbackTermSimple(originalQuery, expansion);
+            case "ffs":
+                return expandFacetFeedbackSimple(originalQuery, expansion);
         }
         return null;
     }
@@ -83,8 +81,24 @@ public class QueryExpansion {
         return query.toString();
     }
 
-    
-
+    private static String expandFacetFeedbackSimple(String originalQuery, String expansion) {
+        FacetFeedback feedback = FacetFeedback.parseFromExpansionString(expansion);
+        StringBuilder query = new StringBuilder();
+        if (feedback.terms.isEmpty()) {
+            return String.format("#sdm( %s )", originalQuery);
+        } else {
+            query.append(String.format("#combine:0=0.8:1=0.2(#sdm( %s ) #combine( ", originalQuery));
+            for (List<FeedbackTerm> terms : feedback.facets) {
+                query.append("#combine( ");
+                for (FeedbackTerm term : terms) {
+                    query.append(String.format("#combine( %s ) ", term.term));
+                }
+                query.append(" )");
+            }
+            query.append("))");
+        }
+        return query.toString();
+    }
 
     public String expand() {
         expQuery = expandQuery(oriQuery, expansion, model);
