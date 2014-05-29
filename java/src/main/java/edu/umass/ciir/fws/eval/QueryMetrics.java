@@ -7,6 +7,11 @@
 package edu.umass.ciir.fws.eval;
 
 import edu.umass.ciir.fws.utility.TextProcessing;
+import edu.umass.ciir.fws.utility.Utility;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 /**
  *
@@ -38,5 +43,14 @@ public class QueryMetrics {
     @Override
     public String toString() {
         return qid +'\t' + TextProcessing.join(valueStrs, "\t");
+    }
+    
+    public static void output(List<QueryMetrics> results,  File file) throws IOException {
+        BufferedWriter writer = Utility.getWriter(file);
+        for(QueryMetrics qm : results) {
+            writer.write(qm.toString());
+            writer.newLine();
+        }
+        writer.close();
     }
 }

@@ -136,9 +136,9 @@ public class EvalExpansionTimeCost extends AppFunction {
                     ii[i]++; // move to next qmt
                 }
 
-                add(values, qmts.get(ii[i]).values);
+                Utility.add(values, qmts.get(ii[i]).values);
             }
-            avg(values, expQmtLists.length);
+            Utility.avg(values, expQmtLists.length);
             avgQmt.add(new QueryMetricsTime(qidSid, values, time));
         }
         return avgQmt;
@@ -160,17 +160,5 @@ public class EvalExpansionTimeCost extends AppFunction {
             }
         }
         return hasResult ? minTime : -1;
-    }
-
-    private void add(double[] to, double[] from) {
-        for (int i = 0; i < from.length; i++) {
-            to[i] += from[i];
-        }
-    }
-
-    private void avg(double[] values, int length) {
-        for (int i = 0; i < values.length; i++) {
-            values[i] /= length;
-        }
     }
 }

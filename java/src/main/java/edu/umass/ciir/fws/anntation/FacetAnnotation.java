@@ -35,7 +35,7 @@ public class FacetAnnotation {
     public void addFacet(AnnotatedFacet facet) {
         this.facets.add(facet);
     }
-    
+
     public void sortFacets() {
         Collections.sort(facets);
     }
@@ -72,7 +72,7 @@ public class FacetAnnotation {
 
         for (Integer fid : facetIds) {
             Parameters facet = facetMap.getMap(fid.toString());
-            int rating = Integer.parseInt(facet.getString("rating"));
+            int rating = mapRating(Integer.parseInt(facet.getString("rating")));
             String description = facet.getString("description").replaceAll("\\s+", " ");
 
             AnnotatedFacet f = new AnnotatedFacet(rating, fid.toString(), description);
@@ -120,5 +120,26 @@ public class FacetAnnotation {
             map.put(f.qid, f);
         }
         return map;
+    }
+
+    /**
+     * convert rating in databse to real rating
+     *
+     * @param orgRating
+     * @return
+     */
+    private static int mapRating(int orgRating) throws IOException {
+        switch (orgRating) {
+            case 0: // not assigned
+                return 0;
+            case 1: // bad
+                return -1;
+            case 2: // fair
+                return 1;
+            case 3: // good
+                return 2;
+            default :
+                throw new IOException("rating invalid");       
+        }
     }
 }

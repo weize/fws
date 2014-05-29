@@ -18,10 +18,15 @@ import java.util.Map;
 import org.lemurproject.galago.tupleflow.Utility;
 
 /**
- * 
+ *
  * @author wkong
  */
-public class PrfEvaluator extends QueryFacetEvaluator {
+public class PrfEvaluator {
+
+    public static final int metricNum = 10;
+    int numTopFacets;
+    List<ScoredFacet> sysFacets; // system
+    List<AnnotatedFacet> annFacets; // annotators
 
     double alpha = 1;
     double beta = 1;
@@ -35,12 +40,24 @@ public class PrfEvaluator extends QueryFacetEvaluator {
         itemSets = new ArrayList<>();
     }
 
+    protected void loadFacets(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets) {
+        // only using top n sysFacets
+        sysFacets = sfacets.subList(0, Math.min(sfacets.size(), numTopFacets));
+        annFacets = new ArrayList<>();
+        for (AnnotatedFacet f : afacets) {
+            if (f.isValid()) {
+                annFacets.add(f);
+            }
+        }
+    }
+
     /**
      *
      * @param afacets sysFacets from annotator
      * @param sfacets sysFacets from system
+     * @return
      */
-    public void eval(FacetAnnotation afacets, List<ScoredFacet> sfacets) {
+    public double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets) {
         loadFacets(afacets, sfacets);
         loadItemWeightMap();
         loadItemSets();
@@ -50,21 +67,24 @@ public class PrfEvaluator extends QueryFacetEvaluator {
         double r = recall(false);
         double wr = recall(true);
 
+        double f1 = QueryFacetEvaluator.f1(p, r);
+        double wf1 = QueryFacetEvaluator.f1(wp, wr);
+
         double f1c = clusteringF1(false);
         double wf1c = clusteringF1(true);
 
         double prf = hamitionMean(p, r, f1c);
         double wprf = hamitionMean(wp, wr, wf1c);
+
+        return new double[]{p, wp, r, wr, f1, wf1, f1c, wf1c, prf, wprf};
     }
 
     private void loadItemWeightMap() {
         itemWeightMap.clear();
         for (AnnotatedFacet facet : annFacets) {
-            if (facet.isValid()) {
-                for (String item : facet.terms) {
-                    double weight = facet.rating;
-                    itemWeightMap.put(item, weight);
-                }
+            for (String item : facet.terms) {
+                double weight = facet.rating;
+                itemWeightMap.put(item, weight);
             }
         }
     }
@@ -161,11 +181,7 @@ public class PrfEvaluator extends QueryFacetEvaluator {
 
         double p = sTotal == 0 ? 0 : correct / sTotal;
         double r = aTotal == 0 ? 0 : correct / aTotal;
-        return f1(p, r);
-    }
-
-    public double f1(double p, double r) {
-        return p + r < Utility.epsilon ? 0 : 2 * p * r / (p + r);
+        return QueryFacetEvaluator.f1(p, r);
     }
 
     private double hamitionMean(double p, double r, double f) {

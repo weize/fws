@@ -331,4 +331,24 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         return Utility.getFileName(facetDir, qid, name);
         
     }
+    public static String getFacetEvalFileName(String evalDir, String model, String paramStr) {
+        String name = paramStr.isEmpty() ? String.format("%s.facet", model)
+                : String.format("%s.%s.eval", model, paramStr);
+        return Utility.getFileName(evalDir, name);
+    }
+    
+    
+    public static void add(double[] to, double[] from) {
+        for (int i = 0; i < from.length; i++) {
+            to[i] += from[i];
+        }
+    }
+
+    public static void avg(double[] values, int length) {
+        for (int i = 0; i < values.length; i++) {
+            values[i] /= length;
+        }
+    }
+
+    
 }

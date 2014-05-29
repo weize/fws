@@ -118,6 +118,8 @@ public class GmLearn extends AppFunction {
         job.add(getSplitQueriesForTuningStage(parameters));
         job.add(getPredictForTuningStage(parameters));
         job.add(getGmiTuneStage(parameters));
+        job.add(getSplitFoldersForTuneEvalStage(parameters));
+        job.add(getTuneEvalStage(parameters));
 
         job.connect("splitQueries", "prepareEachQueryData", ConnectionAssignmentType.Each);
         job.connect("prepareEachQueryData", "splitFolders", ConnectionAssignmentType.Combined);
@@ -127,6 +129,8 @@ public class GmLearn extends AppFunction {
         job.connect("predict", "splitQueriesForTuning", ConnectionAssignmentType.Combined);
         job.connect("splitQueriesForTuning", "predictForTuning", ConnectionAssignmentType.Each);
         job.connect("predictForTuning", "gmiTune", ConnectionAssignmentType.Each);
+        job.connect("gmiTune", "splitFoldersForTuneEval", ConnectionAssignmentType.Combined);
+        job.connect("splitFoldersForTuneEval", "tuneEval", ConnectionAssignmentType.Each);
 
         return job;
     }
@@ -251,26 +255,56 @@ public class GmLearn extends AppFunction {
         stage.add(new InputStep("tuneDirQueries"));
         //stage.add(new Step(TermPredictor.class, parameters));
         //stage.add(new Step(ExtractTermPairDataForPrediectedTerms.class, parameters));
-        stage.add(new Step(PairPredictor.class, parameters));
+        //stage.add(new Step(PairPredictor.class, parameters));
         stage.add(Utility.getSorter(new TfQueryParameters.IdParametersOrder()));
         stage.add(new OutputStep("tuneDirQueries2"));
         return stage;
     }
 
     private Stage getGmiTuneStage(Parameters parameters) {
-         Stage stage = new Stage("gmiTune");
+        Stage stage = new Stage("gmiTune");
 
         stage.addInput("tuneDirQueries2", new TfQueryParameters.IdParametersOrder());
-        //stage.addOutput("trainDirQueries", new TfQueryParameters.IdParametersOrder());
+        stage.addOutput("tuneDirQueries3", new TfQueryParameters.IdParametersOrder());
 
         stage.add(new InputStep("tuneDirQueries2"));
         //stage.add(new Step(GmiClusterItems.class, parameters));
-        stage.add(new Step(GmiClusterToFacetConverter.class, parameters));
-//        stage.add(Utility.getSorter(new TfQueryParameters.IdParametersOrder()));
-//        stage.add(new OutputStep("trainDirQueries2"));
-        stage.add(new Step(DoNonethingForQueryParams.class));
+        //stage.add(new Step(GmiClusterToFacetConverter.class, parameters));
+        //stage.add(Utility.getSorter(new TfQueryParameters.IdParametersOrder()));
+        stage.add(new OutputStep("tuneDirQueries3"));
+
+        //stage.add(new Step(DoNonethingForQueryParams.class));
         return stage;
 
+    }
+
+    private Stage getSplitFoldersForTuneEvalStage(Parameters parameters) {
+        Stage stage = new Stage("splitFoldersForTuneEval");
+
+        stage.addInput("tuneDirQueries3", new TfQueryParameters.IdParametersOrder());
+        stage.addOutput("foldersForTuneEval", new TfFolder.IdOrder());
+
+        stage.add(new InputStep("tuneDirQueries3"));
+        stage.add(new Step(SplitFoldersForTuneEval.class, parameters));
+        stage.add(Utility.getSorter(new TfFolder.IdOrder()));
+        stage.add(new OutputStep("foldersForTuneEval"));
+
+        return stage;
+    }
+
+    private Stage getTuneEvalStage(Parameters parameters) {
+        Stage stage = new Stage("tuneEval");
+
+        stage.addInput("foldersForTuneEval", new TfFolder.IdOrder());
+        //stage.addOutput("foldersForTuneEval", new TfFolder.IdOrder());
+
+        stage.add(new InputStep("foldersForTuneEval"));
+        stage.add(new Step(EvalTuneGmi.class, parameters));
+        //stage.add(Utility.getSorter(new TfFolder.IdOrder()));
+        //stage.add(new OutputStep("foldersForTuneEval"));
+
+        stage.add(new Step(DoNonethingForFolder.class));
+        return stage;
     }
 
     @Verified
@@ -320,6 +354,42 @@ public class GmLearn extends AppFunction {
         public void close() throws IOException {
             for (int i = 1; i <= numFolders; i++) {
                 processor.process(new TfFolder(String.valueOf(i)));
+            }
+            processor.close();
+        }
+
+    }
+
+    @Verified
+    @InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
+    @OutputClass(className = "edu.umass.ciir.fws.types.TfFolder")
+    public static class SplitFoldersForTuneEval extends StandardStep<TfQueryParameters, TfFolder> {
+
+        long numFolders;
+        List<Double> termProbThs;
+        List<Double> pairProbThs;
+
+        public SplitFoldersForTuneEval(TupleFlowParameters parameters) throws IOException {
+            Parameters p = parameters.getJSON();
+            numFolders = parameters.getJSON().getLong("cvFolderNum");
+            termProbThs = p.getAsList("gmiTermProbThesholds", Double.class);
+            pairProbThs = p.getAsList("gmiPairProbThesholds", Double.class);
+        }
+
+        @Override
+        public void process(TfQueryParameters query) throws IOException {
+        }
+
+        @Override
+        public void close() throws IOException {
+            for (int i = 1; i <= numFolders; i++) {
+                String folderId = String.valueOf(i);
+                for (double termTh : termProbThs) {
+                    for (double pairTh : pairProbThs) {
+                        String newParams = Utility.parametersToString(folderId, "tune", termTh, pairTh);
+                        processor.process(new TfFolder(newParams));
+                    }
+                }
             }
             processor.close();
         }

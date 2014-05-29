@@ -35,7 +35,7 @@ public class AnnotatedFacet implements Comparable<AnnotatedFacet> {
     }
 
     public boolean isValid() {
-        return rating > 1.1;
+        return rating > 0;
     }
 
     @Override

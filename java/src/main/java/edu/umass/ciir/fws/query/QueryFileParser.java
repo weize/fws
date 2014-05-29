@@ -4,6 +4,7 @@
  */
 package edu.umass.ciir.fws.query;
 
+import edu.emory.mathcs.backport.java.util.Arrays;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
@@ -12,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import org.lemurproject.galago.tupleflow.InputClass;
 import org.lemurproject.galago.tupleflow.OutputClass;
 import org.lemurproject.galago.tupleflow.StandardStep;
@@ -50,6 +52,10 @@ public class QueryFileParser extends StandardStep<FileName, TfQuery> {
         return queries.toArray(new TfQuery[0]);
     }
 
+    public static List<TfQuery> loadQueries(File file) throws IOException {
+        return Arrays.asList(loadQueryList(file));
+    }
+    
     public static TfQuery[] loadQueryList(String fileName) throws IOException {
         return loadQueryList(new File(fileName));
     }
