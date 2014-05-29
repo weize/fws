@@ -64,8 +64,6 @@ public class RpndcgEvaluator {
 
         double idealDCG = idealDCG();
 
-        System.err.println("idealDCG: " + idealDCG);
-
         // different weight: no weight,  precision, precison * recall, f1
         double[] scores = new double[metricNum];
         for (int flag = 0; flag < metricNum; flag++) {
