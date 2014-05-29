@@ -45,6 +45,22 @@ public class LinearRegressionModel {
         selectedFeatureIndices = null;
     }
 
+    public LinearRegressionModel(List<Long> selectedFeatureIndices) throws IOException {
+        // ensure the indices are ordered and distinct.
+        long last = 0;
+        for (long cur : selectedFeatureIndices) {
+            if (cur <= last) {
+                throw new IOException("Bad feature selection");
+            }
+            last = cur;
+        }
+
+        this.selectedFeatureIndices = new int[selectedFeatureIndices.size()];
+        for (int i = 0; i < selectedFeatureIndices.size(); i++) {
+            this.selectedFeatureIndices[i] = selectedFeatureIndices.get(i).intValue();
+        }
+    }
+
     public LinearRegressionModel(int[] selectedFeatureIndices) throws IOException {
         // ensure the indices are ordered and distinct.
         int last = 0;

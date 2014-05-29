@@ -3,14 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.umass.ciir.fws.clustering.gm;
+package edu.umass.ciir.fws.feature;
 
+import edu.umass.ciir.fws.anntation.AnnotatedFacet;
+import edu.umass.ciir.fws.anntation.FacetAnnotation;
 import edu.umass.ciir.fws.clist.CandidateList;
 import edu.umass.ciir.fws.clustering.ScoredItem;
 import edu.umass.ciir.fws.crawl.Document;
 import edu.umass.ciir.fws.crawl.QuerySetResults;
-import edu.umass.ciir.fws.types.TfQuery;
-import edu.umass.ciir.fws.types.TfQueryParameters;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
@@ -20,71 +20,56 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import org.lemurproject.galago.tupleflow.InputClass;
-import org.lemurproject.galago.tupleflow.OutputClass;
 import org.lemurproject.galago.tupleflow.Parameters;
-import org.lemurproject.galago.tupleflow.StandardStep;
-import org.lemurproject.galago.tupleflow.TupleFlowParameters;
-import org.lemurproject.galago.tupleflow.execution.Verified;
 
 /**
- * need to be deleted. Use TermPairFeatureExtractor.
+ *
  * @author wkong
  */
-@Verified
-@InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
-@OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
-public class TermPairDataExtractor extends StandardStep<TfQueryParameters, TfQueryParameters> {
+public class TermPairFeatureExtractor {
 
     public final static int numTopScoredItems = 1000;
     final static int textContextDist = 25;
     String clistDir;
-    String featureDir;
     long topNum;
     String rankedListFile;
     String docDir;
-    String clusterDir;
+    String qid;
 
     QuerySetResults querySetResults;
     List<CandidateList> clists;
     List<Document> docs;
-    TfQuery query;
     List<ScoredItem> items;
 
     HashMap<String, Integer> itemIdMap; // item -> id
     HashMap<String, ItemPairFeature> itemPairFeatures;
 
-    public TermPairDataExtractor(TupleFlowParameters parameters) throws Exception {
-        Parameters p = parameters.getJSON();
+    public TermPairFeatureExtractor(Parameters p) throws Exception {
         clistDir = p.getString("clistDir");
-        featureDir = p.getString("gmClusterDir");
         topNum = p.getLong("topNum");
         rankedListFile = p.getString("rankedListFile");
         docDir = p.getString("docDir");
-        clusterDir = p.getString("gmClusterDir");
 
         loadQuerySetResults();
     }
 
-    @Override
-    public void process(TfQueryParameters queryParams) throws IOException {
-        query = new TfQuery(queryParams.id, queryParams.text);
-        Utility.infoProcessingQuery(query.id);
-        File dataFile = new File(Utility.getGmTermPairDataFileName(clusterDir, query.id));
+    public void extract(List<ScoredItem> items, String qid) throws IOException {
+        this.qid = qid;
         loadCandidateLists();
         loadDocuments();
-        loadItemsFromPredictFile();
+        loadItemsAndSetIds(items);
         generateItemPairs();
 
         extractLengthDiff();
         extractListFreq();
         extractContextListSim();
         extractContextTextSim();
-        output(dataFile);
-        Utility.infoWritten(dataFile);
-        processor.process(queryParams);
+    }
 
+    public void extract(File termPredictFile, String qid) throws IOException {
+        extract(loadItemsFromPredictFile(termPredictFile), qid);
     }
 
     private void extractLengthDiff() {
@@ -184,7 +169,7 @@ public class TermPairDataExtractor extends StandardStep<TfQueryParameters, TfQue
     }
 
     private void loadCandidateLists() throws IOException {
-        File clistFile = new File(Utility.getCandidateListFileName(clistDir, query.id, "clean.clist"));
+        File clistFile = new File(Utility.getCandidateListFileName(clistDir, qid, "clean.clist"));
         clists = CandidateList.loadCandidateLists(clistFile, topNum);
     }
 
@@ -193,12 +178,11 @@ public class TermPairDataExtractor extends StandardStep<TfQueryParameters, TfQue
     }
 
     private void loadDocuments() throws IOException {
-        docs = Document.loadDocumentsFromFiles(querySetResults.get(query.id), docDir, query.id);
+        docs = Document.loadDocumentsFromFiles(querySetResults.get(qid), docDir, qid);
     }
 
-    private void loadItemsFromPredictFile() throws IOException {
-        File predictFile = new File(Utility.getGmTermPredictFileName(clusterDir, query.id));
-        BufferedReader reader = Utility.getReader(predictFile);
+    private List<ScoredItem> loadItemsFromPredictFile(File termPredictFile) throws IOException {
+        BufferedReader reader = Utility.getReader(termPredictFile);
         String line;
         ArrayList<ScoredItem> allItems = new ArrayList<>();
         while ((line = reader.readLine()) != null) {
@@ -210,8 +194,11 @@ public class TermPairDataExtractor extends StandardStep<TfQueryParameters, TfQue
         }
         reader.close();
         Collections.sort(allItems);
-        items = allItems.subList(0, Math.min(numTopScoredItems, allItems.size()));
+        return allItems.subList(0, Math.min(numTopScoredItems, allItems.size()));
+    }
 
+    private void loadItemsAndSetIds(List<ScoredItem> items) {
+        this.items = items;
         itemIdMap = new HashMap<>();
         // item -> id
         for (int i = 0; i < items.size(); i++) {
@@ -289,12 +276,43 @@ public class TermPairDataExtractor extends StandardStep<TfQueryParameters, TfQue
         return score;
     }
 
-    private void output(File dataFile) throws IOException {
+    public void output(File dataFile) throws IOException {
         BufferedWriter writer = Utility.getWriter(dataFile);
         for (ItemPairFeature pair : itemPairFeatures.values()) {
             int rating = -1;
             writer.write(String.format("%d\t%s\t#%d\t%s\t%s\n", rating,
-                    pair.featuresToString(), rating, query.id, pair.itemPairToString()));
+                    pair.featuresToString(), rating, qid, pair.itemPairToString()));
+        }
+        writer.close();
+
+    }
+
+    public void output(File dataFile, FacetAnnotation fa) throws IOException {
+        HashSet<String> facetPairs = new HashSet<>();
+        if (fa != null) {
+            for (AnnotatedFacet f : fa.facets) {
+                if (f.isValid()) {
+                    List<String> terms = f.terms;
+                    for (int i = 0; i < terms.size(); i++) {
+                        for (int j = i + 1; j < terms.size(); j++) {
+                            String a = terms.get(i);
+                            String b = terms.get(j);
+                            if (itemIdMap.containsKey(a) && itemIdMap.containsKey(b)) {
+                                String pid = getItemPairId(a, b);
+                                facetPairs.add(pid);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        BufferedWriter writer = Utility.getWriter(dataFile);
+        for (String pid : itemPairFeatures.keySet()) {
+            ItemPairFeature pair = itemPairFeatures.get(pid);
+            int rating = facetPairs.contains(pid) ? 1 : -1;
+            writer.write(String.format("%d\t%s\t#%d\t%s\t%s\n", rating,
+                    pair.featuresToString(), rating, qid, pair.itemPairToString()));
         }
         writer.close();
 

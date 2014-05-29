@@ -16,6 +16,7 @@ import java.io.OutputStreamWriter;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+import org.lemurproject.galago.tupleflow.Type;
 
 /**
  * Created by wkong on 4/1/14.
@@ -143,13 +144,17 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
     public static String getGmTermPairDataFileName(String clusterDir, String qid) {
         return getFileNameWithSuffix(clusterDir, qid, qid, "p.data.gz");
     }
+    
+    public static String getGmPtTermPairDataFileName(String clusterDir, String qid) {
+        return getFileNameWithSuffix(clusterDir, qid, qid, "p.pt.data.gz");
+    }
 
     public static String getGmTermPredictFileName(String clusterDir, String qid) {
         return getFileNameWithSuffix(clusterDir, qid, qid, "t.predict");
     }
 
     public static String getGmTermPairPredictFileName(String clusterDir, String qid) {
-        return getFileNameWithSuffix(clusterDir, qid, qid, "p.predict");
+        return getFileNameWithSuffix(clusterDir, qid, qid, "p.predict.gz");
     }
 
     public static String getQdFacetFeatureFileName(String qdFeatureDir, String qid) {
@@ -261,6 +266,10 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
 
     public static void infoProcessing(File infile) {
         System.err.println(String.format("Processing %s", infile.getAbsoluteFile()));
+    }
+    
+    public static void infoProcessing(Type object) {
+        System.err.println(String.format("Processing %s", object.toString()));
     }
 
     public static int compare(double one, double two) {

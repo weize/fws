@@ -19,7 +19,7 @@ public class AnnotatedFacet implements Comparable<AnnotatedFacet> {
     public String fid;
     private int fidInt;
     public int rating;
-    List<String> terms;
+    public List<String> terms;
 
     public AnnotatedFacet(int rating, String fid, String description) {
         this.rating = rating;
