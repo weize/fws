@@ -27,13 +27,15 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
 public class GmiClusterItems extends StandardStep<TfQueryParameters, TfQueryParameters> {
 
-    String predictDir = "gmClusterDir";
+    String predictDir;
+    String gmiClusterDir;
     String trainDir;
 
     public GmiClusterItems(TupleFlowParameters parameters) {
         Parameters p = parameters.getJSON();
         String gmDir = p.getString("gmDir");
         predictDir = Utility.getFileName(gmDir, "predict");
+        gmiClusterDir = p.getString("gmiClusterDir");
         trainDir = Utility.getFileName(gmDir, "train");
     }
 
@@ -45,21 +47,27 @@ public class GmiClusterItems extends StandardStep<TfQueryParameters, TfQueryPara
         double termProbTh = Double.parseDouble(params[2]);
         double pairProbTh = Double.parseDouble(params[3]);
 
-        String tuneDir = Utility.getFileName(trainDir, folderId, "tune");
-        File termPredictFile = predictOrTune.equals("predict")
-                ? new File(Utility.getGmTermPredictFileName(predictDir, queryParams.id))
-                : new File(Utility.getGmTermPredictFileName(tuneDir, queryParams.id));
-        File termPairPredictFile = predictOrTune.equals("predict")
-                ? new File(Utility.getGmTermPairPredictFileName(predictDir, queryParams.id))
-                : new File(Utility.getGmTermPairPredictFileName(tuneDir, queryParams.id));
+        File termPredictFile;
+        File termPairPredictFile;
+        File clusterFile;
+
+        if (predictOrTune.equals("predict")) {
+            termPredictFile = new File(Utility.getGmTermPredictFileName(predictDir, queryParams.id));
+            termPairPredictFile = new File(Utility.getGmTermPairPredictFileName(predictDir, queryParams.id));
+            //param 4 is the ranker "avg" or "sum", parameter file is metric index.
+            String gmiParam = Utility.parametersToFileNameString(params[4], params[5]);
+            clusterFile = new File(Utility.getClusterFileName(gmiClusterDir, queryParams.id, "gmi", gmiParam));
+
+        } else {
+            String tuneDir = Utility.getFileName(trainDir, folderId, "tune");
+            termPredictFile = new File(Utility.getGmTermPredictFileName(tuneDir, queryParams.id));
+            termPairPredictFile = new File(Utility.getGmTermPairPredictFileName(tuneDir, queryParams.id));
+            String gmiParam = Utility.parametersToFileNameString(termProbTh, pairProbTh);
+            clusterFile = new File(Utility.getClusterFileName(tuneDir, queryParams.id, "gmi", gmiParam));
+        }
 
         Utility.infoProcessing(queryParams);
-
-        File clusterFile = predictOrTune.equals("predict")
-                ? new File(Utility.getGmiClusterFileName(predictDir, queryParams.id, termProbTh, pairProbTh))
-                : new File(Utility.getGmiClusterFileName(tuneDir, queryParams.id, termProbTh, pairProbTh));
         Utility.createDirectoryForFile(clusterFile);
-
         GmIndependentClusterer gmi = new GmIndependentClusterer(termProbTh, pairProbTh);
         List<ScoredFacet> clusters = gmi.cluster(termPredictFile, termPairPredictFile);
         ScoredFacet.output(clusters, clusterFile);

@@ -50,10 +50,7 @@ public class GmjClusterToFacetConverter extends StandardStep<TfQueryParameters, 
         File facetFile = new File(Utility.getFacetFileName(facetDir, queryParams.id, "gmj", ranker));
         Utility.createDirectoryForFile(facetFile);
         if (ranker.equals("avg")) {
-            for(ScoredFacet cluster : clusters) {
-                cluster.score /= cluster.size();
-            }
-            Collections.sort(clusters);
+            ScoredFacet.avgScoreAndRank(clusters);
         }
         ScoredFacet.outputAsFacets(clusters, facetFile);
         Utility.infoWritten(facetFile);

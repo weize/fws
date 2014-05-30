@@ -45,8 +45,9 @@
 	"gmTermPairScaler" : "../exp/gm-initial/model/train.p.scaler",
 	"gmjClusterDir" : "../exp/gmj/cluster",
 	"gmjFacetDir" : "../exp/gmj/facet",
-	"gmiClusterDir" : "../exp/gmj/cluster",
-	"gmiFacetDir" : "../exp/gmj/facet",
+	"gmiClusterDir" : "../exp/gmi/cluster",
+	"gmiTunedParamFile" : "../exp/gmi/params",
+	"gmiFacetDir" : "../exp/gmi/facet",
 	"gmiTermProbThesholds" : [0.6, 0.7],
 	"gmiPairProbThesholds" : [0.5, 0.6],
 	"termFeatureIndices" : [1, 2, 3, 4, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33],
@@ -75,6 +76,7 @@
 	"sdmSeval" : "../exp/srank/sdm/sdm.srank.eval",
 	"sdmSevalTrec" : "../exp/srank/sdm/sdm.srank.teval",
 	"trecEval" : "../bin/trec_eval",
+	"facetTuneMetricIndices" : [9, 13],
 	"topNum" : 100,
   	"requested" : 1000
 }

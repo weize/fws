@@ -27,13 +27,13 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
 public class GmiClusterToFacetConverter extends StandardStep<TfQueryParameters, TfQueryParameters> {
 
-    String predictDir;
+    String gmiClusterDir;
     String trainDir;
 
     public GmiClusterToFacetConverter(TupleFlowParameters parameters) {
         Parameters p = parameters.getJSON();
         String gmDir = p.getString("gmDir");
-        predictDir = Utility.getFileName(gmDir, "predict");
+        gmiClusterDir = p.getString("gmiClusterDir");
         trainDir = Utility.getFileName(gmDir, "train");
     }
 
@@ -49,14 +49,21 @@ public class GmiClusterToFacetConverter extends StandardStep<TfQueryParameters, 
         String ranker = params[4];
 
         String tuneDir = Utility.getFileName(trainDir, folderId, "tune");
-        String workingDir = predictOrTune.equals("predict") ? predictDir : tuneDir;
 
-        // loadClusters clusters
-        File clusterFile = new File(Utility.getGmiClusterFileName(workingDir, queryParams.id, termProbTh, pairProbTh));
+        File clusterFile;
+        File facetFile;
+
+        if (predictOrTune.equals("predict")) {
+            String gmiParam = Utility.parametersToFileNameString(ranker, params[5]); // ranker and index
+            clusterFile = new File(Utility.getClusterFileName(gmiClusterDir, queryParams.id, "gmi", gmiParam));
+            facetFile = new File(Utility.getFacetFileName(gmiClusterDir, queryParams.id, "gmi", gmiParam));
+        } else {
+            clusterFile = new File(Utility.getGmiClusterFileName(tuneDir, queryParams.id, termProbTh, pairProbTh));
+            String gmiParam = Utility.parametersToFileNameString(termProbTh, pairProbTh, ranker);
+            facetFile = new File(Utility.getFacetFileName(tuneDir, queryParams.id, "gmi", gmiParam));
+        }
+
         List<ScoredFacet> clusters = ScoredFacet.loadClusters(clusterFile);
-
-        String gmiParam = Utility.parametersToFileNameString(termProbTh, pairProbTh, ranker);
-        File facetFile = new File(Utility.getFacetFileName(workingDir, queryParams.id, "gmi", gmiParam));
         Utility.createDirectoryForFile(facetFile);
         if (ranker.equals("avg")) {
             ScoredFacet.avgScoreAndRank(clusters);
