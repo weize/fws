@@ -6,7 +6,6 @@
 package edu.umass.ciir.fws.clustering.gm;
 
 import edu.emory.mathcs.backport.java.util.Arrays;
-import edu.umass.ciir.fws.clustering.gm.lr.LinearRegressionModel;
 import edu.umass.ciir.fws.query.QueryFileParser;
 import edu.umass.ciir.fws.types.TfFolder;
 import edu.umass.ciir.fws.types.TfQuery;
@@ -157,6 +156,12 @@ public class GmLearn extends AppFunction {
         return stage;
     }
 
+    /**
+     * term data, and pair data for train
+     *
+     * @param parameters
+     * @return
+     */
     private Stage getPrepareEachQueryDataStage(Parameters parameters) {
         Stage stage = new Stage("prepareEachQueryData");
 
@@ -164,8 +169,8 @@ public class GmLearn extends AppFunction {
         stage.addOutput("queries2", new TfQuery.IdOrder());
 
         stage.add(new InputStep("queries"));
-        //stage.add(new Step(TermFeatureToData.class, parameters));
-        //stage.add(new Step(ExtractTermPairDataForPostiveTerm.class, parameters));
+        stage.add(new Step(TermFeatureToData.class, parameters));
+        stage.add(new Step(ExtractTermPairDataForPostiveTerm.class, parameters));
         stage.add(Utility.getSorter(new TfQuery.IdOrder()));
         stage.add(new OutputStep("queries2"));
         return stage;
@@ -191,10 +196,10 @@ public class GmLearn extends AppFunction {
         stage.addOutput("folders2", new TfFolder.IdOrder());
 
         stage.add(new InputStep("folders"));
-        //stage.add(new Step(CollectTermTrainData.class, parameters));
-        //stage.add(new Step(TrainTermModel.class, parameters));
-        //stage.add(new Step(CollectPairTrainData.class, parameters));
-        //stage.add(new Step(TrainPairModel.class, parameters));
+        stage.add(new Step(CollectTermTrainData.class, parameters));
+        stage.add(new Step(TrainTermModel.class, parameters));
+        stage.add(new Step(CollectPairTrainData.class, parameters));
+        stage.add(new Step(TrainPairModel.class, parameters));
         stage.add(Utility.getSorter(new TfFolder.IdOrder()));
         stage.add(new OutputStep("folders2"));
 
@@ -220,14 +225,14 @@ public class GmLearn extends AppFunction {
 
         stage.addInput("trainDirQueries", new TfQueryParameters.IdParametersOrder());
         stage.addOutput("trainDirQueries2", new TfQueryParameters.IdParametersOrder());
-        //stage.addOutput("trainDirQueries", new TfQueryParameters.IdParametersOrder());
 
         stage.add(new InputStep("trainDirQueries"));
-        //stage.add(new Step(TermPredictor.class, parameters));
-        //stage.add(new Step(ExtractTermPairDataForPrediectedTerms.class, parameters));
-        //stage.add(new Step(PairPredictor.class, parameters));
-        //stage.add(new Step(GmjClusterItems.class, parameters));
-        //stage.add(new Step(GmjClusterToFacetConverter.class, parameters));
+        stage.add(new Step(TermPredictor.class, parameters));
+        stage.add(new Step(ExtractTermPairDataForPrediectedTerms.class, parameters));
+        stage.add(new Step(PairPredictor.class, parameters));
+        stage.add(new Step(GmjClusterItems.class, parameters));
+        stage.add(new Step(AppendFacetRankingParameter.class));
+        stage.add(new Step(GmjClusterToFacetConverter.class, parameters));
         stage.add(Utility.getSorter(new TfQueryParameters.IdParametersOrder()));
         stage.add(new OutputStep("trainDirQueries2"));
         return stage;
@@ -253,9 +258,10 @@ public class GmLearn extends AppFunction {
         stage.addOutput("tuneDirQueries2", new TfQueryParameters.IdParametersOrder());
 
         stage.add(new InputStep("tuneDirQueries"));
-        //stage.add(new Step(TermPredictor.class, parameters));
-        //stage.add(new Step(ExtractTermPairDataForPrediectedTerms.class, parameters));
-        //stage.add(new Step(PairPredictor.class, parameters));
+        stage.add(new Step(TermPredictor.class, parameters));
+        stage.add(new Step(ExtractTermPairDataForPrediectedTerms.class, parameters));
+        stage.add(new Step(PairPredictor.class, parameters));
+        stage.add(new Step(GenerateFolderQueryParamForGmi.class, parameters));
         stage.add(Utility.getSorter(new TfQueryParameters.IdParametersOrder()));
         stage.add(new OutputStep("tuneDirQueries2"));
         return stage;
@@ -268,12 +274,12 @@ public class GmLearn extends AppFunction {
         stage.addOutput("tuneDirQueries3", new TfQueryParameters.IdParametersOrder());
 
         stage.add(new InputStep("tuneDirQueries2"));
-        //stage.add(new Step(GmiClusterItems.class, parameters));
-        //stage.add(new Step(GmiClusterToFacetConverter.class, parameters));
-        //stage.add(Utility.getSorter(new TfQueryParameters.IdParametersOrder()));
+        stage.add(new Step(GmiClusterItems.class, parameters));
+        stage.add(new Step(AppendFacetRankingParameter.class));
+        stage.add(new Step(GmiClusterToFacetConverter.class, parameters));
+        stage.add(Utility.getSorter(new TfQueryParameters.IdParametersOrder()));
         stage.add(new OutputStep("tuneDirQueries3"));
 
-        //stage.add(new Step(DoNonethingForQueryParams.class));
         return stage;
 
     }
@@ -296,13 +302,9 @@ public class GmLearn extends AppFunction {
         Stage stage = new Stage("tuneEval");
 
         stage.addInput("foldersForTuneEval", new TfFolder.IdOrder());
-        //stage.addOutput("foldersForTuneEval", new TfFolder.IdOrder());
 
         stage.add(new InputStep("foldersForTuneEval"));
         stage.add(new Step(EvalTuneGmi.class, parameters));
-        //stage.add(Utility.getSorter(new TfFolder.IdOrder()));
-        //stage.add(new OutputStep("foldersForTuneEval"));
-
         stage.add(new Step(DoNonethingForFolder.class));
         return stage;
     }
@@ -386,8 +388,10 @@ public class GmLearn extends AppFunction {
                 String folderId = String.valueOf(i);
                 for (double termTh : termProbThs) {
                     for (double pairTh : pairProbThs) {
-                        String newParams = Utility.parametersToString(folderId, "tune", termTh, pairTh);
-                        processor.process(new TfFolder(newParams));
+                        for (String ranker : new String[]{"sum", "avg"}) {
+                            String newParams = Utility.parametersToString(folderId, "tune", termTh, pairTh, ranker);
+                            processor.process(new TfFolder(newParams));
+                        }
                     }
                 }
             }
@@ -425,6 +429,56 @@ public class GmLearn extends AppFunction {
                 }
             }
             processor.close();
+        }
+
+    }
+
+    @Verified
+    @InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
+    @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
+    public static class GenerateFolderQueryParamForGmi extends StandardStep<TfQueryParameters, TfQueryParameters> {
+
+        List<Double> termProbThs;
+        List<Double> pairProbThs;
+
+        public GenerateFolderQueryParamForGmi(TupleFlowParameters parameters) throws IOException {
+            Parameters p = parameters.getJSON();
+            termProbThs = p.getAsList("gmiTermProbThesholds", Double.class);
+            pairProbThs = p.getAsList("gmiPairProbThesholds", Double.class);
+        }
+
+        @Override
+        public void process(TfQueryParameters queryParams) throws IOException {
+            String[] params = Utility.splitParameters(queryParams.parameters);
+            String folderId = params[0];
+            String predictOrTune = params[1];
+            for (double termTh : termProbThs) {
+                for (double pairTh : pairProbThs) {
+                    String newParams = Utility.parametersToString(folderId, predictOrTune, termTh, pairTh);
+                    processor.process(new TfQueryParameters(queryParams.id, queryParams.text, newParams));
+                }
+            }
+        }
+
+    }
+
+    @Verified
+    @InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
+    @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
+    public static class AppendFacetRankingParameter extends StandardStep<TfQueryParameters, TfQueryParameters> {
+
+        static final String[] rankParams = new String[]{"sum", "avg"};
+
+        public AppendFacetRankingParameter(TupleFlowParameters parameters) throws IOException {
+        }
+
+        @Override
+        public void process(TfQueryParameters queryParams) throws IOException {
+
+            for (String ranker : rankParams) {
+                String paramsNew = Utility.parametersToString(queryParams.parameters, ranker);
+                processor.process(new TfQueryParameters(queryParams.id, queryParams.text, paramsNew));
+            }
         }
 
     }

@@ -40,8 +40,6 @@ public class PairPredictor extends StandardStep<TfQueryParameters, TfQueryParame
         predictDir = Utility.getFileName(gmDir, "predict");
         trainDir = Utility.getFileName(gmDir, "train");
         indices = p.getAsList("pairFeatureIndices", Long.class);
-        termProbThs = p.getAsList("gmiTermProbThesholds", Double.class);
-        pairProbThs = p.getAsList("gmiPairProbThesholds", Double.class);
     }
 
     @Override
@@ -66,12 +64,7 @@ public class PairPredictor extends StandardStep<TfQueryParameters, TfQueryParame
         model.predict(dataFile, modelFile, scalerFile, predictFile);
         Utility.infoWritten(predictFile);
 
-        for (double termTh : termProbThs) {
-            for (double pairTh : pairProbThs) {
-                String newParams = Utility.parametersToString(folderId, predictOrTune, termTh, pairTh);
-                processor.process(new TfQueryParameters(queryParams.id, queryParams.text, newParams));
-            }
-        }
+        processor.process(queryParams);
     }
 
 }

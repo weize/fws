@@ -5,13 +5,11 @@
  */
 package edu.umass.ciir.fws.clustering.gm;
 
-import edu.umass.ciir.fws.anntation.FacetAnnotation;
 import edu.umass.ciir.fws.eval.QueryFacetEvaluator;
 import edu.umass.ciir.fws.types.TfFolder;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import org.lemurproject.galago.tupleflow.InputClass;
 import org.lemurproject.galago.tupleflow.OutputClass;
 import org.lemurproject.galago.tupleflow.Parameters;
@@ -51,6 +49,7 @@ public class EvalTuneGmi extends StandardStep<TfFolder, TfFolder> {
         String predictOrTune = params[1];
         double termProbTh = Double.parseDouble(params[2]);
         double pairProbTh = Double.parseDouble(params[3]);
+        String ranker = params[4];
 
         String folderDir = Utility.getFileName(trainDir, folderId);
         
@@ -60,7 +59,7 @@ public class EvalTuneGmi extends StandardStep<TfFolder, TfFolder> {
         String tuneDir = Utility.getFileName(trainDir, folderId, "tune");
         String facetDir = tuneDir;
         
-        String gmiParam = Utility.parametersToFileNameString(termProbTh, pairProbTh);
+        String gmiParam = Utility.parametersToFileNameString(termProbTh, pairProbTh, ranker);
         
         File evalFile = new File(Utility.getFacetEvalFileName(evalDir, model, gmiParam));
        

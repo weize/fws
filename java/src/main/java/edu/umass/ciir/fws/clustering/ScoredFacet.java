@@ -12,6 +12,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -31,16 +32,16 @@ public class ScoredFacet implements Comparable<ScoredFacet> {
     public ScoredFacet() {
 
     }
-    
+
     public ScoredFacet(double score) {
         this.score = score;
         items = new ArrayList<>();
     }
-    
+
     public void addItem(ScoredItem item) {
         items.add(item);
     }
-    
+
     public int size() {
         return items.size();
     }
@@ -51,6 +52,13 @@ public class ScoredFacet implements Comparable<ScoredFacet> {
             writer.write(((ScoredFacet) f).toString() + "\n");
         }
         writer.close();
+    }
+
+    public static void avgScoreAndRank(List<ScoredFacet> clusters) {
+        for (ScoredFacet cluster : clusters) {
+            cluster.score /= cluster.size();
+        }
+        Collections.sort(clusters);
     }
 
     public static void outputAsFacets(List<ScoredFacet> facets, File file) throws IOException {
@@ -74,7 +82,6 @@ public class ScoredFacet implements Comparable<ScoredFacet> {
         return itemList.toString();
     }
 
-    
     public static List<ScoredFacet> loadClusters(File file) throws IOException {
         ArrayList<ScoredFacet> facets = new ArrayList<>();
         BufferedReader reader = Utility.getReader(file);
@@ -95,7 +102,7 @@ public class ScoredFacet implements Comparable<ScoredFacet> {
         reader.close();
         return facets;
     }
-    
+
     public static List<ScoredFacet> loadFacets(File file) throws IOException {
         ArrayList<ScoredFacet> facets = new ArrayList<>();
         BufferedReader reader = Utility.getReader(file);

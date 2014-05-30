@@ -46,6 +46,7 @@ public class GmiClusterToFacetConverter extends StandardStep<TfQueryParameters, 
         String predictOrTune = params[1];
         double termProbTh = Double.parseDouble(params[2]);
         double pairProbTh = Double.parseDouble(params[3]);
+        String ranker = params[4];
 
         String tuneDir = Utility.getFileName(trainDir, folderId, "tune");
         String workingDir = predictOrTune.equals("predict") ? predictDir : tuneDir;
@@ -54,8 +55,12 @@ public class GmiClusterToFacetConverter extends StandardStep<TfQueryParameters, 
         File clusterFile = new File(Utility.getGmiClusterFileName(workingDir, queryParams.id, termProbTh, pairProbTh));
         List<ScoredFacet> clusters = ScoredFacet.loadClusters(clusterFile);
 
-        File facetFile = new File(Utility.getGmiFacetFileName(workingDir, queryParams.id, termProbTh, pairProbTh));
+        String gmiParam = Utility.parametersToFileNameString(termProbTh, pairProbTh, ranker);
+        File facetFile = new File(Utility.getFacetFileName(workingDir, queryParams.id, "gmi", gmiParam));
         Utility.createDirectoryForFile(facetFile);
+        if (ranker.equals("avg")) {
+            ScoredFacet.avgScoreAndRank(clusters);
+        }
         ScoredFacet.outputAsFacets(clusters, facetFile);
         Utility.infoWritten(facetFile);
         processor.process(queryParams);
