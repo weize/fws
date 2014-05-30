@@ -9,6 +9,7 @@ import edu.umass.ciir.fws.clustering.ScoredItem;
 import edu.umass.ciir.fws.types.TfQueryParameters;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
+import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.*;
@@ -65,12 +66,20 @@ public class QueryDimensionClusterers implements Processor<TfQueryParameters> {
 
     @Override
     public void process(TfQueryParameters queryParameters) throws IOException {
-        //setQueryParameters
         System.err.println(String.format("Processing qid:%s parameters:%s", queryParameters.id, queryParameters.parameters));
+        
+        //setQueryParameters
         qid = queryParameters.id;
         String[] fields = Utility.splitParameters(queryParameters.parameters);
         distanceMax = Double.parseDouble(fields[0]);
         websiteCountMin = Double.parseDouble(fields[1]);
+        
+        File clusterFile = new File(Utility.getQdClusterFileName(clusterDir, qid, distanceMax, websiteCountMin));
+        if (clusterFile.exists()) {
+            Utility.infoFileExists(clusterFile);
+            return;
+        }
+        Utility.createDirectoryForFile(clusterFile);
 
         loadFacetFeatures(); // loadClusters lists and features
         initializeClusetering();
@@ -80,7 +89,7 @@ public class QueryDimensionClusterers implements Processor<TfQueryParameters> {
             printClusterLists();
         }
         rankItems();
-        output();
+        output(clusterFile);
     }
 
     private void clustering() {
@@ -320,10 +329,8 @@ public class QueryDimensionClusterers implements Processor<TfQueryParameters> {
         }
     }
 
-    private void output() throws IOException {
-        String fileName = Utility.getQdClusterFileName(clusterDir, qid, distanceMax, websiteCountMin);
-        Utility.createDirectoryForFile(fileName);
-        Writer writer = Utility.getWriter(fileName);
+    private void output(File file) throws IOException {
+        Writer writer = Utility.getWriter(file);
         for (QDCluster c : clusters) {
             if (c.items.size() < 2) {
                 continue;
@@ -331,7 +338,7 @@ public class QueryDimensionClusterers implements Processor<TfQueryParameters> {
             writer.write(String.format("%s\t%s\t%s\n", c.score, c.numOfSite, TextProcessing.join(c.items, "|")));
         }
         writer.close();
-        System.err.println(String.format("Written in %s", fileName));
+        Utility.infoWritten(file);
     }
 
     @Override

@@ -55,6 +55,13 @@ public class PlsaClusterer implements Processor<TfQueryParameters> {
 
         int topicNum = Integer.parseInt(queryParameters.parameters);
 
+        // output
+        File clusterFile = new File(Utility.getPlsaClusterFileName(clusterDir, qid, topicNum));
+        if (clusterFile.exists()) {
+            Utility.infoFileExists(clusterFile);
+            return;
+        }
+
         // loadClusters candidate lists
         File clistFile = new File(Utility.getCandidateListCleanFileName(clistDir, qid));
         List<CandidateList> clist = CandidateList.loadCandidateLists(clistFile, topNum);
@@ -63,11 +70,9 @@ public class PlsaClusterer implements Processor<TfQueryParameters> {
         Plsa plsa = new Plsa(clist, iterNum);
         List<ScoredFacet> facets = plsa.cluster(topicNum);
 
-        // output
-        String clusterFileName = Utility.getPlsaClusterFileName(clusterDir, qid, topicNum);
-        Utility.createDirectoryForFile(clusterFileName);
-        ScoredFacet.output(facets, new File(clusterFileName));
-        System.err.println("Written in " + clusterFileName);
+        Utility.createDirectoryForFile(clusterFile);
+        ScoredFacet.output(facets, clusterFile);
+        Utility.infoWritten(clusterFile);
     }
 
     @Override

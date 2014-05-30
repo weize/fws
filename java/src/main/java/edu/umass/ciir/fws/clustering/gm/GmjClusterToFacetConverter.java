@@ -10,7 +10,6 @@ import edu.umass.ciir.fws.types.TfQueryParameters;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import org.lemurproject.galago.tupleflow.InputClass;
 import org.lemurproject.galago.tupleflow.OutputClass;
@@ -48,6 +47,12 @@ public class GmjClusterToFacetConverter extends StandardStep<TfQueryParameters, 
         List<ScoredFacet> clusters = ScoredFacet.loadClusters(clusterFile);
 
         File facetFile = new File(Utility.getFacetFileName(facetDir, queryParams.id, "gmj", ranker));
+        
+        if (facetFile.exists()) {
+            Utility.infoFileExists(facetFile);
+            return;
+        }
+        
         Utility.createDirectoryForFile(facetFile);
         if (ranker.equals("avg")) {
             ScoredFacet.avgScoreAndRank(clusters);

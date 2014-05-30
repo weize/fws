@@ -19,7 +19,6 @@ import cc.mallet.pipe.TokenSequence2FeatureSequence;
 import cc.mallet.topics.ParallelTopicModel;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
-import edu.umass.ciir.fws.clustering.plsa.*;
 import edu.umass.ciir.fws.clist.CandidateList;
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.clustering.ScoredItem;
@@ -29,7 +28,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -50,7 +48,8 @@ public class LdaClusterer implements Processor<TfQueryParameters> {
 
     public LdaClusterer(TupleFlowParameters parameters) {
         Parameters p = parameters.getJSON();
-        clusterDir = p.getString("ldaClusterDir");
+        String runDir = p.getString("ldaRunDir");
+        clusterDir = Utility.getFileName(runDir, "cluster");
         iterNum = p.getLong("ldaIterNum");
         clistDir = p.getString("clistDir");
         topNum = p.getLong("topNum");
@@ -63,6 +62,11 @@ public class LdaClusterer implements Processor<TfQueryParameters> {
 
         int topicNum = Integer.parseInt(queryParameters.parameters);
 
+        File clusterFile = new File(Utility.getLdaClusterFileName(clusterDir, qid, topicNum));
+        if (clusterFile.exists()) {
+            Utility.infoFileExists(clusterFile);
+            return;
+        }
         // loadClusters candidate lists
         File clistFile = new File(Utility.getCandidateListCleanFileName(clistDir, qid));
         List<CandidateList> clist = CandidateList.loadCandidateLists(clistFile, topNum);
@@ -72,10 +76,10 @@ public class LdaClusterer implements Processor<TfQueryParameters> {
         List<ScoredFacet> facets = lda.cluster(topicNum);
 
         // output
-        String clusterFileName = Utility.getLdaClusterFileName(clusterDir, qid, topicNum);
-        Utility.createDirectoryForFile(clusterFileName);
-        ScoredFacet.output(facets, new File(clusterFileName));
-        System.err.println("Written in " + clusterFileName);
+        
+        Utility.createDirectoryForFile(clusterFile);
+        ScoredFacet.output(facets, clusterFile);
+        Utility.infoWritten(clusterFile);
     }
 
     @Override

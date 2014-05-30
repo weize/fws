@@ -92,8 +92,8 @@ public class QdClusterToFacet extends ProcessQueryParametersApp {
         public QdClusterToFacetConverter(TupleFlowParameters parameters) {
             Parameters p = parameters.getJSON();
             runDir = p.getString("qdRunDir");
-            facetDir = Utility.getFileName(runDir,"facet");
-            clusterDir = Utility.getFileName(runDir,"cluster");
+            facetDir = Utility.getFileName(runDir, "facet");
+            clusterDir = Utility.getFileName(runDir, "cluster");
         }
 
         @Override
@@ -104,6 +104,12 @@ public class QdClusterToFacet extends ProcessQueryParametersApp {
             double distanceMax = Double.parseDouble(fields[0]);
             double websiteCountMin = Double.parseDouble(fields[1]);
             double itemRatio = Double.parseDouble(fields[2]);
+
+            File facetFile = new File(Utility.getQdFacetFileName(facetDir, qid, distanceMax, websiteCountMin, itemRatio));
+            if (facetFile.exists()) {
+                Utility.infoFileExists(facetFile);
+                return;
+            }
 
             // loadClusters clusters
             String clusterFileName = Utility.getQdClusterFileName(clusterDir, qid, distanceMax, websiteCountMin);
@@ -131,7 +137,7 @@ public class QdClusterToFacet extends ProcessQueryParametersApp {
                 }
 
             }
-            File facetFile = new File(Utility.getQdFacetFileName(facetDir, qid, distanceMax, websiteCountMin, itemRatio));
+
             Utility.createDirectoryForFile(facetFile);
             ScoredFacet.outputAsFacets(facets, facetFile);
             Utility.infoWritten(facetFile);

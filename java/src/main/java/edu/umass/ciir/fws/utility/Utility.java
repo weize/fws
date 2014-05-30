@@ -359,5 +359,9 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         }
     }
 
+    public static void infoFileExists(File file) {
+        System.err.println("File exists "+ file.getAbsolutePath());
+    }
+
     
 }

@@ -96,6 +96,12 @@ public class PlsaClusterToFacet extends ProcessQueryParametersApp {
             long plsaTopicNum = Long.parseLong(fields[0]);
             long plsaTermNum = Long.parseLong(fields[1]);
 
+            File facetFile = new File(Utility.getPlsaFacetFileName(facetDir, qid, plsaTopicNum, plsaTermNum));
+            if (facetFile.exists()) {
+                Utility.infoFileExists(facetFile);
+                return;
+            }
+
             // loadClusters clusters
             File clusterFile = new File(Utility.getPlsaClusterFileName(clusterDir, qid, plsaTopicNum));
             List<ScoredFacet> clusters = ScoredFacet.loadClusters(clusterFile);
@@ -105,7 +111,7 @@ public class PlsaClusterToFacet extends ProcessQueryParametersApp {
                 int size = (int) Math.min(plsaTermNum, cluster.items.size());
                 cluster.items = cluster.items.subList(0, size);
             }
-            File facetFile = new File(Utility.getPlsaFacetFileName(facetDir, qid, plsaTopicNum, plsaTermNum));
+
             Utility.createDirectoryForFile(facetFile);
             ScoredFacet.outputAsFacets(clusters, facetFile);
             Utility.infoWritten(facetFile);

@@ -84,8 +84,9 @@ public class LdaClusterToFacet extends ProcessQueryParametersApp {
 
         public LdaClusterToFacetConverter(TupleFlowParameters parameters) {
             Parameters p = parameters.getJSON();
-            facetDir = p.getString("ldaFacetDir");
-            clusterDir = p.getString("ldaClusterDir");
+            String runDir = p.getString("ldaRunDir");
+            facetDir = Utility.getFileName(runDir, "facet");
+            clusterDir = Utility.getFileName(runDir, "cluster");
         }
 
         @Override
@@ -96,6 +97,12 @@ public class LdaClusterToFacet extends ProcessQueryParametersApp {
             long topicNum = Long.parseLong(fields[0]);
             long termNum = Long.parseLong(fields[1]);
 
+            File facetFile = new File(Utility.getLdaFacetFileName(facetDir, qid, topicNum, termNum));
+            if (facetFile.exists()) {
+                Utility.infoFileExists(facetFile);
+                return;
+            }
+
             // loadClusters clusters
             File clusterFile = new File(Utility.getLdaClusterFileName(clusterDir, qid, topicNum));
             List<ScoredFacet> clusters = ScoredFacet.loadClusters(clusterFile);
@@ -105,7 +112,7 @@ public class LdaClusterToFacet extends ProcessQueryParametersApp {
                 int size = (int) Math.min(termNum, cluster.items.size());
                 cluster.items = cluster.items.subList(0, size);
             }
-            File facetFile = new File(Utility.getLdaFacetFileName(facetDir, qid, topicNum, termNum));
+
             Utility.createDirectoryForFile(facetFile);
             ScoredFacet.outputAsFacets(clusters, facetFile);
             Utility.infoWritten(facetFile);
