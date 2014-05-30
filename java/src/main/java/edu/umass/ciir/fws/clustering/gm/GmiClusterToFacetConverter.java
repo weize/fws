@@ -28,12 +28,14 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 public class GmiClusterToFacetConverter extends StandardStep<TfQueryParameters, TfQueryParameters> {
 
     String gmiClusterDir;
+    String gmiFacetDir;
     String trainDir;
 
     public GmiClusterToFacetConverter(TupleFlowParameters parameters) {
         Parameters p = parameters.getJSON();
         String gmDir = p.getString("gmDir");
         gmiClusterDir = p.getString("gmiClusterDir");
+        gmiFacetDir = p.getString("gmiFacetDir");
         trainDir = Utility.getFileName(gmDir, "train");
     }
 
@@ -56,7 +58,7 @@ public class GmiClusterToFacetConverter extends StandardStep<TfQueryParameters, 
         if (predictOrTune.equals("predict")) {
             String gmiParam = Utility.parametersToFileNameString(ranker, params[5]); // ranker and index
             clusterFile = new File(Utility.getClusterFileName(gmiClusterDir, queryParams.id, "gmi", gmiParam));
-            facetFile = new File(Utility.getFacetFileName(gmiClusterDir, queryParams.id, "gmi", gmiParam));
+            facetFile = new File(Utility.getFacetFileName(gmiFacetDir, queryParams.id, "gmi", gmiParam));
         } else {
             clusterFile = new File(Utility.getGmiClusterFileName(tuneDir, queryParams.id, termProbTh, pairProbTh));
             String gmiParam = Utility.parametersToFileNameString(termProbTh, pairProbTh, ranker);
