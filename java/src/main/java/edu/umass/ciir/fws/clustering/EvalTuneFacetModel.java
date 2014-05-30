@@ -53,7 +53,7 @@ public class EvalTuneFacetModel extends StandardStep<TfFolder, TfFolder> {
         String folderDir = Utility.getFileName(tuneDir, folderId);
         String evalDir = Utility.getFileName(folderDir, "eval");
         File trainQueryFile = new File(Utility.getFileName(folderDir, "train.query"));
-
+        
         String param = "";
 
         if (model.equals("plsa")) {
@@ -73,6 +73,12 @@ public class EvalTuneFacetModel extends StandardStep<TfFolder, TfFolder> {
         }
 
         File evalFile = new File(Utility.getFacetEvalFileName(evalDir, model, param));
+        
+        if (evalFile.exists()) {
+            Utility.infoFileExists(evalFile);
+            return;
+        }
+        
         evaluator.eval(trainQueryFile, runFacetDir, model, param, evalFile);
         Utility.infoWritten(evalFile);
         processor.process(folder);
