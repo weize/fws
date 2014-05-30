@@ -50,8 +50,9 @@ public class QueryDimensionClusterers implements Processor<TfQueryParameters> {
 
     public QueryDimensionClusterers(TupleFlowParameters parameters) {
         Parameters p = parameters.getJSON();
-        clusterDir = p.getString("qdClusterDir");
-        featureDir = p.getString("qdFeatureDir");
+        String runDir = p.getString("qdRunDir");
+        featureDir = Utility.getFileName(runDir, "feature");
+        clusterDir = Utility.getFileName(runDir, "cluster");
 
         clusters = new ArrayList<>();
         cluster = new ArrayList<>();

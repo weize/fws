@@ -83,8 +83,9 @@ public class PlsaClusterToFacet extends ProcessQueryParametersApp {
 
         public PlsaClusterToFacetConverter(TupleFlowParameters parameters) {
             Parameters p = parameters.getJSON();
-            facetDir = p.getString("plsaFacetDir");
-            clusterDir = p.getString("plsaClusterDir");
+            String runDir = p.getString("plsaRunDir");
+            facetDir = Utility.getFileName(runDir, "facet");
+            clusterDir = Utility.getFileName(runDir, "cluster");
         }
 
         @Override

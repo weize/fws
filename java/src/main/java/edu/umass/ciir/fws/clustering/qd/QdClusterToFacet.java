@@ -87,11 +87,13 @@ public class QdClusterToFacet extends ProcessQueryParametersApp {
 
         String facetDir;
         String clusterDir;
+        String runDir;
 
         public QdClusterToFacetConverter(TupleFlowParameters parameters) {
             Parameters p = parameters.getJSON();
-            facetDir = p.getString("qdFacetDir");
-            clusterDir = p.getString("qdClusterDir");
+            runDir = p.getString("qdRunDir");
+            facetDir = Utility.getFileName(runDir,"facet");
+            clusterDir = Utility.getFileName(runDir,"cluster");
         }
 
         @Override
