@@ -138,6 +138,7 @@ public class QdClusterToFacet extends ProcessQueryParametersApp {
 
             }
 
+            Utility.infoOpen(facetFile);
             Utility.createDirectoryForFile(facetFile);
             ScoredFacet.outputAsFacets(facets, facetFile);
             Utility.infoWritten(facetFile);

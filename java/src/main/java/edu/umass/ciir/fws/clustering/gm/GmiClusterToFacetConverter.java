@@ -71,6 +71,7 @@ public class GmiClusterToFacetConverter extends StandardStep<TfQueryParameters, 
             return;
         }
 
+        Utility.infoOpen(facetFile);
         List<ScoredFacet> clusters = ScoredFacet.loadClusters(clusterFile);
         Utility.createDirectoryForFile(facetFile);
         if (ranker.equals("avg")) {

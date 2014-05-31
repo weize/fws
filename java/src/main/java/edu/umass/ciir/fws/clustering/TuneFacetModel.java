@@ -214,6 +214,7 @@ public class TuneFacetModel extends AppFunction {
             String modelParamsFileStr = Utility.parametersToFileNameString(modelParams);
             File runFacetFile = new File(Utility.getFacetFileName(runFacetDir, queryParams.id, model, modelParamsFileStr));
             File facetFile = new File(Utility.getFacetFileName(facetDir, queryParams.id, model, metricIndex));
+            Utility.infoOpen(facetFile);
             Utility.createDirectoryForFile(facetFile);
             makesLink(runFacetFile, facetFile);
             Utility.infoWritten(facetFile);

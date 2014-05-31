@@ -77,6 +77,7 @@ public class LdaClusterer implements Processor<TfQueryParameters> {
 
         // output
         
+        Utility.infoOpen(clusterFile);
         Utility.createDirectoryForFile(clusterFile);
         ScoredFacet.output(facets, clusterFile);
         Utility.infoWritten(clusterFile);

@@ -70,6 +70,7 @@ public class PlsaClusterer implements Processor<TfQueryParameters> {
         Plsa plsa = new Plsa(clist, iterNum);
         List<ScoredFacet> facets = plsa.cluster(topicNum);
 
+        Utility.infoOpen(clusterFile);
         Utility.createDirectoryForFile(clusterFile);
         ScoredFacet.output(facets, clusterFile);
         Utility.infoWritten(clusterFile);

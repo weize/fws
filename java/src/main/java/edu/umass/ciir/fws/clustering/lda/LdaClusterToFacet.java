@@ -113,6 +113,7 @@ public class LdaClusterToFacet extends ProcessQueryParametersApp {
                 cluster.items = cluster.items.subList(0, size);
             }
 
+            Utility.infoOpen(facetFile);
             Utility.createDirectoryForFile(facetFile);
             ScoredFacet.outputAsFacets(clusters, facetFile);
             Utility.infoWritten(facetFile);

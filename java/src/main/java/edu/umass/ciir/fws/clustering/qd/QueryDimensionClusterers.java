@@ -330,6 +330,7 @@ public class QueryDimensionClusterers implements Processor<TfQueryParameters> {
     }
 
     private void output(File file) throws IOException {
+        Utility.infoOpen(file);
         Writer writer = Utility.getWriter(file);
         for (QDCluster c : clusters) {
             if (c.items.size() < 2) {

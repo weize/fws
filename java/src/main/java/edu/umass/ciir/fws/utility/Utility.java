@@ -363,5 +363,9 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         System.err.println("File exists "+ file.getAbsolutePath());
     }
 
+    public static void infoOpen(File file) {
+        System.err.println("File opened " + file.getAbsolutePath());
+    }
+
     
 }

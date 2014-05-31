@@ -53,6 +53,7 @@ public class GmjClusterToFacetConverter extends StandardStep<TfQueryParameters, 
             return;
         }
         
+        Utility.infoOpen(facetFile);
         Utility.createDirectoryForFile(facetFile);
         if (ranker.equals("avg")) {
             ScoredFacet.avgScoreAndRank(clusters);

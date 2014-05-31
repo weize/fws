@@ -81,6 +81,7 @@ public class EvalFacetModelForTuning extends StandardStep<TfFolder, TfFolder> {
             return;
         }
 
+        Utility.infoOpen(evalFile);
         evaluator.eval(trainQueryFile, runFacetDir, model, param, evalFile, facetTuneRank);
         Utility.infoWritten(evalFile);
         processor.process(folder);

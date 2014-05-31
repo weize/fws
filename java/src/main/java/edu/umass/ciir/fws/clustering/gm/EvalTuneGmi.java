@@ -71,6 +71,7 @@ public class EvalTuneGmi extends StandardStep<TfFolder, TfFolder> {
             return;
         }
        
+        Utility.infoOpen(evalFile);
         evaluator.eval(trainQueryFile, facetDir, model, gmiParam, evalFile, facetTuneRank);
         Utility.infoWritten(evalFile);
         processor.process(folder);

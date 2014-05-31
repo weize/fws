@@ -89,6 +89,7 @@ public class GmClusterItems extends ProcessQueryParametersMultiStepApp {
 
             File facetFile = new File(Utility.getGmjFacetFileName(facetDir, qid));
             Utility.createDirectoryForFile(facetFile);
+            Utility.infoOpen(facetFile);
             ScoredFacet.outputAsFacets(clusters, facetFile);
             Utility.infoWritten(facetFile);
             processor.process(queryParams);

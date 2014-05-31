@@ -73,6 +73,7 @@ public class GmiClusterItems extends StandardStep<TfQueryParameters, TfQueryPara
             return;
         }
         
+        Utility.infoOpen(clusterFile);
         Utility.createDirectoryForFile(clusterFile);
         GmIndependentClusterer gmi = new GmIndependentClusterer(termProbTh, pairProbTh);
         List<ScoredFacet> clusters = gmi.cluster(termPredictFile, termPairPredictFile);
