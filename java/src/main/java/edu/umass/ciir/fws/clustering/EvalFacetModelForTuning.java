@@ -10,7 +10,6 @@ import edu.umass.ciir.fws.types.TfFolder;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import org.lemurproject.galago.tupleflow.InputClass;
 import org.lemurproject.galago.tupleflow.OutputClass;
 import org.lemurproject.galago.tupleflow.Parameters;
@@ -25,14 +24,14 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 @Verified
 @InputClass(className = "edu.umass.ciir.fws.types.TfFolder")
 @OutputClass(className = "edu.umass.ciir.fws.types.TfFolder")
-public class EvalTuneFacetModel extends StandardStep<TfFolder, TfFolder> {
+public class EvalFacetModelForTuning extends StandardStep<TfFolder, TfFolder> {
 
     String tuneDir;
     String runFacetDir;
     QueryFacetEvaluator evaluator;
     String model;
 
-    public EvalTuneFacetModel(TupleFlowParameters parameters) throws IOException {
+    public EvalFacetModelForTuning(TupleFlowParameters parameters) throws IOException {
         Parameters p = parameters.getJSON();
         model = p.getString("facetModel");
         String modelDir = Utility.getFileName(p.getString("facetDir"), model);
@@ -76,6 +75,7 @@ public class EvalTuneFacetModel extends StandardStep<TfFolder, TfFolder> {
         
         if (evalFile.exists()) {
             Utility.infoFileExists(evalFile);
+            processor.process(folder);
             return;
         }
         

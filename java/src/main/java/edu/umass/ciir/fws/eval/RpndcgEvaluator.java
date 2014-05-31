@@ -48,13 +48,9 @@ public class RpndcgEvaluator {
             }
         }
     }
-
-    /**
-     *
-     * @param afacets facets from annotator
-     * @param sfacets facet from system
-     */
-    public double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets) throws IOException {
+    
+    public double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets, int numTopFacets) throws IOException {
+        this.numTopFacets = numTopFacets;
         loadFacets(afacets, sfacets);
 
         // map system sysFacets to annotator sysFacets
@@ -72,6 +68,16 @@ public class RpndcgEvaluator {
             scores[flag] = nDCG;
         }
         return scores;
+    }
+    
+
+    /**
+     *
+     * @param afacets facets from annotator
+     * @param sfacets facet from system
+     */
+    public double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets) throws IOException {
+       return eval(afacets, sfacets)
     }
 
     private double idealDCG() throws IOException {

@@ -50,14 +50,10 @@ public class PrfEvaluator {
             }
         }
     }
-
-    /**
-     *
-     * @param afacets sysFacets from annotator
-     * @param sfacets sysFacets from system
-     * @return
-     */
-    public double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets) {
+    
+    
+    public double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets, int numTopFacets) {
+        this.numTopFacets = numTopFacets;
         loadFacets(afacets, sfacets);
         loadItemWeightMap();
         loadItemSets();
@@ -77,6 +73,17 @@ public class PrfEvaluator {
         double wprf = hamitionMean(wp, wr, wf1c);
 
         return new double[]{p, wp, r, wr, f1, wf1, f1c, wf1c, prf, wprf};
+    }
+    
+
+    /**
+     *
+     * @param afacets sysFacets from annotator
+     * @param sfacets sysFacets from system
+     * @return
+     */
+    public double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets) {
+        return eval(afacets, sfacets, this.numTopFacets);
     }
 
     private void loadItemWeightMap() {

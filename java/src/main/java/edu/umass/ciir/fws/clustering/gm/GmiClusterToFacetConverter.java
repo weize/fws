@@ -65,6 +65,12 @@ public class GmiClusterToFacetConverter extends StandardStep<TfQueryParameters, 
             facetFile = new File(Utility.getFacetFileName(tuneDir, queryParams.id, "gmi", gmiParam));
         }
 
+        if (facetFile.exists()) {
+            Utility.infoFileExists(facetFile);
+            processor.process(queryParams);
+            return;
+        }
+
         List<ScoredFacet> clusters = ScoredFacet.loadClusters(clusterFile);
         Utility.createDirectoryForFile(facetFile);
         if (ranker.equals("avg")) {

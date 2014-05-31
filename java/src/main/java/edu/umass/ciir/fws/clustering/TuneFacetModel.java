@@ -43,7 +43,7 @@ import org.lemurproject.galago.tupleflow.types.FileName;
  *
  * @author wkong
  */
-public class TuneFacets extends AppFunction {
+public class TuneFacetModel extends AppFunction {
 
     @Override
     public String getName() {
@@ -147,7 +147,7 @@ public class TuneFacets extends AppFunction {
         stage.addOutput("folderParams2", new TfFolder.IdOrder());
 
         stage.add(new InputStep("folderParams"));
-        stage.add(new Step(EvalTuneFacetModel.class, parameter));
+        stage.add(new Step(EvalFacetModelForTuning.class, parameter));
         stage.add(Utility.getSorter(new TfFolder.IdOrder()));
         stage.add(new OutputStep("folderParams2"));
 
@@ -164,7 +164,6 @@ public class TuneFacets extends AppFunction {
         stage.add(new Step(SelectBestParam.class, parameter));
         stage.add(Utility.getSorter(new TfQueryParameters.IdParametersOrder()));
         stage.add(new OutputStep("queryParams"));
-        //stage.add(new Step(GmLearn.DoNonethingForQueryParams.class));
 
         return stage;
     }

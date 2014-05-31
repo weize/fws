@@ -41,6 +41,7 @@ public class GmiClusterItems extends StandardStep<TfQueryParameters, TfQueryPara
 
     @Override
     public void process(TfQueryParameters queryParams) throws IOException {
+        Utility.infoProcessing(queryParams);
         String[] params = Utility.splitParameters(queryParams.parameters);
         String folderId = params[0];
         String predictOrTune = params[1];
@@ -66,7 +67,12 @@ public class GmiClusterItems extends StandardStep<TfQueryParameters, TfQueryPara
             clusterFile = new File(Utility.getClusterFileName(tuneDir, queryParams.id, "gmi", gmiParam));
         }
 
-        Utility.infoProcessing(queryParams);
+        if (clusterFile.exists()) {
+            Utility.infoFileExists(clusterFile);
+            processor.process(queryParams);
+            return;
+        }
+        
         Utility.createDirectoryForFile(clusterFile);
         GmIndependentClusterer gmi = new GmIndependentClusterer(termProbTh, pairProbTh);
         List<ScoredFacet> clusters = gmi.cluster(termPredictFile, termPairPredictFile);

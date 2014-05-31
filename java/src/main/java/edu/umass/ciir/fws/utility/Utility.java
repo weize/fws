@@ -243,7 +243,7 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         String str = parametersToString(parameters);
         return str.replace('.', '_');
     }
-
+    
     public static String parametersToFileNameString(Object... parameters) {
         String str = parametersToString(parameters);
         return str.replace('.', '_');
