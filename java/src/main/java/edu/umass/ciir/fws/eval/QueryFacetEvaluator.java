@@ -36,16 +36,23 @@ public class QueryFacetEvaluator {
         clusteringEvaluator = new ClusteringEvaluator(numTopFacets);
         facetMap = FacetAnnotation.loadAsMap(annotatedFacetJsonFile);
     }
+    
+    public QueryFacetEvaluator(File annotatedFacetJsonFile) throws IOException {
+        prfEvaluator = new PrfEvaluator(10);
+        rpndcgEvaluator = new RpndcgEvaluator(10);
+        clusteringEvaluator = new ClusteringEvaluator(10);
+        facetMap = FacetAnnotation.loadAsMap(annotatedFacetJsonFile);
+    }
 
-    public void eval(File queryFile, String facetDir, String model, String params, File outfile) throws IOException {
+    public void eval(File queryFile, String facetDir, String model, String paramFileNameStr, File outfile, int numTopFacets) throws IOException {
         List<TfQuery> queries = QueryFileParser.loadQueries(queryFile);
         double[] avg = new double[metricNum];
         ArrayList<QueryMetrics> results = new ArrayList<>();
         for (TfQuery query : queries) {
             FacetAnnotation annotator = facetMap.get(query.id);
-            File systemFile = new File(Utility.getFacetFileName(facetDir, query.id, model, params));
+            File systemFile = new File(Utility.getFacetFileName(facetDir, query.id, model, paramFileNameStr));
             List<ScoredFacet> system = ScoredFacet.loadFacets(systemFile);
-            double[] result = getResults(annotator.facets, system);
+            double[] result = getResults(annotator.facets, system, numTopFacets);
             results.add(new QueryMetrics(query.id, result));
             Utility.add(avg, result);
         }
@@ -54,20 +61,20 @@ public class QueryFacetEvaluator {
         QueryMetrics.output(results, outfile);
     }
 
-    private double[] getResults(ArrayList<AnnotatedFacet> facets, List<ScoredFacet> system) throws IOException {
+    private double[] getResults(ArrayList<AnnotatedFacet> facets, List<ScoredFacet> system, int numTopFacets) throws IOException {
         double[] scores = new double[metricNum];
         int i = 0;
-        for (double score : prfEvaluator.eval(facets, system)) {
+        for (double score : prfEvaluator.eval(facets, system, numTopFacets)) {
             scores[i] = score;
             i++;
         }
 
-        for (double score : rpndcgEvaluator.eval(facets, system)) {
+        for (double score : rpndcgEvaluator.eval(facets, system, numTopFacets)) {
             scores[i] = score;
             i++;
         }
 
-        for (double score : clusteringEvaluator.eval(facets, system)) {
+        for (double score : clusteringEvaluator.eval(facets, system, numTopFacets)) {
             scores[i] = score;
             i++;
         }

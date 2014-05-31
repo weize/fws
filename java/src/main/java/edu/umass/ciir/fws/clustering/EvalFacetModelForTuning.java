@@ -30,6 +30,7 @@ public class EvalFacetModelForTuning extends StandardStep<TfFolder, TfFolder> {
     String runFacetDir;
     QueryFacetEvaluator evaluator;
     String model;
+    int facetTuneRank;
 
     public EvalFacetModelForTuning(TupleFlowParameters parameters) throws IOException {
         Parameters p = parameters.getJSON();
@@ -37,6 +38,7 @@ public class EvalFacetModelForTuning extends StandardStep<TfFolder, TfFolder> {
         String modelDir = Utility.getFileName(p.getString("facetDir"), model);
         tuneDir = Utility.getFileName(modelDir, "tune");
         runFacetDir = Utility.getFileName(modelDir, "run", "facet");
+        facetTuneRank = new Long(p.getLong("facetTuneRank")).intValue();
         File facetJsonFile = new File(p.getString("facetAnnotationJson"));
 
         evaluator = new QueryFacetEvaluator(10, facetJsonFile);
@@ -52,7 +54,7 @@ public class EvalFacetModelForTuning extends StandardStep<TfFolder, TfFolder> {
         String folderDir = Utility.getFileName(tuneDir, folderId);
         String evalDir = Utility.getFileName(folderDir, "eval");
         File trainQueryFile = new File(Utility.getFileName(folderDir, "train.query"));
-        
+
         String param = "";
 
         if (model.equals("plsa")) {
@@ -71,15 +73,15 @@ public class EvalFacetModelForTuning extends StandardStep<TfFolder, TfFolder> {
             param = Utility.parametersToFileNameString(qdDistanceMax, qdWebsiteCountMin, qdItemRatio);
         }
 
-        File evalFile = new File(Utility.getFacetEvalFileName(evalDir, model, param));
-        
+        File evalFile = new File(Utility.getFacetEvalFileName(evalDir, model, param, facetTuneRank));
+
         if (evalFile.exists()) {
             Utility.infoFileExists(evalFile);
             processor.process(folder);
             return;
         }
-        
-        evaluator.eval(trainQueryFile, runFacetDir, model, param, evalFile);
+
+        evaluator.eval(trainQueryFile, runFacetDir, model, param, evalFile, facetTuneRank);
         Utility.infoWritten(evalFile);
         processor.process(folder);
     }

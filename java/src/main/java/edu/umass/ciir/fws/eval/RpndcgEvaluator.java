@@ -77,7 +77,7 @@ public class RpndcgEvaluator {
      * @param sfacets facet from system
      */
     public double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets) throws IOException {
-       return eval(afacets, sfacets)
+       return eval(afacets, sfacets, this.numTopFacets);
     }
 
     private double idealDCG() throws IOException {

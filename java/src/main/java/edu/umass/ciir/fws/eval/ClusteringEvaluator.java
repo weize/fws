@@ -29,6 +29,15 @@ public class ClusteringEvaluator {
         this.numTopFacets = numTopFacets;
     }
 
+    public double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets, int numTopFacets) {
+        this.numTopFacets = numTopFacets;
+        loadFacets(afacets, sfacets);
+        double purity = purity();
+        double nmi = nmi();
+
+        return new double[]{purity, nmi};
+    }
+    
     /**
      *
      * @param afacets sysFacets from annotator
@@ -36,11 +45,7 @@ public class ClusteringEvaluator {
      * @return
      */
     public double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets) {
-        loadFacets(afacets, sfacets);
-        double purity = purity();
-        double nmi = nmi();
-
-        return new double[]{purity, nmi};
+        return eval(afacets, sfacets, numTopFacets);
     }
 
     private double nmi() {

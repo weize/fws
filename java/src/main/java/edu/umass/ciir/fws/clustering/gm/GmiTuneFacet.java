@@ -66,13 +66,13 @@ public class GmiTuneFacet extends AppFunction {
         job.add(getEvalStage(parameters));
         job.add(getSelectStage(parameters));
         job.add(getProcessStage(parameters));
-        
+
         job.connect("split", "cluster", ConnectionAssignmentType.Each);
         job.connect("cluster", "splitEval", ConnectionAssignmentType.Combined);
         job.connect("splitEval", "eval", ConnectionAssignmentType.Each);
         job.connect("eval", "select", ConnectionAssignmentType.Combined);
         job.connect("select", "process", ConnectionAssignmentType.Each);
-        
+
         return job;
     }
 
@@ -139,7 +139,7 @@ public class GmiTuneFacet extends AppFunction {
         stage.add(new OutputStep("folderParams2"));
         return stage;
     }
-    
+
     private Stage getSelectStage(Parameters parameters) {
         Stage stage = new Stage("select");
 
@@ -262,6 +262,7 @@ public class GmiTuneFacet extends AppFunction {
         String trainDir;
         String[] rankers = new String[]{"sum", "avg"};
         List<Long> metricIndices;
+        int facetTuneRank;
         BufferedWriter writer;
 
         public SelectBestParam(TupleFlowParameters parameters) throws IOException {
@@ -269,7 +270,7 @@ public class GmiTuneFacet extends AppFunction {
             numFolders = parameters.getJSON().getLong("cvFolderNum");
             termProbThs = p.getAsList("gmiTermProbThesholds", Double.class);
             pairProbThs = p.getAsList("gmiPairProbThesholds", Double.class);
-
+            facetTuneRank = new Long(p.getLong("facetTuneRank")).intValue();
             String gmDir = p.getString("gmDir");
             trainDir = Utility.getFileName(gmDir, "train");
             metricIndices = p.getAsList("facetTuneMetricIndices", Long.class);
@@ -305,7 +306,7 @@ public class GmiTuneFacet extends AppFunction {
             for (double termTh : termProbThs) {
                 for (double pairTh : pairProbThs) {
                     String param = Utility.parametersToFileNameString(termTh, pairTh, ranker);
-                    File evalFile = new File(Utility.getFacetEvalFileName(evalDir, "gmi", param));
+                    File evalFile = new File(Utility.getFacetEvalFileName(evalDir, "gmi", param, facetTuneRank));
                     double score = QueryMetrics.getAvgScore(evalFile, metricIndex);
                     if (score > maxScore) {
                         maxScore = score;

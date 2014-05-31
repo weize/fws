@@ -30,6 +30,7 @@ public class EvalTuneGmi extends StandardStep<TfFolder, TfFolder> {
     String trainDir;
     QueryFacetEvaluator evaluator;
     final static String model = "gmi";
+    int facetTuneRank;
 
     public EvalTuneGmi(TupleFlowParameters parameters) throws IOException {
         Parameters p = parameters.getJSON();
@@ -37,6 +38,7 @@ public class EvalTuneGmi extends StandardStep<TfFolder, TfFolder> {
         //predictDir = Utility.getFileName(gmDir, "predict");
         trainDir = Utility.getFileName(gmDir, "train");
         File facetJsonFile = new File(p.getString("facetAnnotationJson"));
+        facetTuneRank = new Long(p.getLong("facetTuneRank")).intValue();
         
         evaluator = new QueryFacetEvaluator(10, facetJsonFile);
     }
@@ -61,7 +63,7 @@ public class EvalTuneGmi extends StandardStep<TfFolder, TfFolder> {
         
         String gmiParam = Utility.parametersToFileNameString(termProbTh, pairProbTh, ranker);
         
-        File evalFile = new File(Utility.getFacetEvalFileName(evalDir, model, gmiParam));
+        File evalFile = new File(Utility.getFacetEvalFileName(evalDir, model, gmiParam, facetTuneRank));
         
         if (evalFile.exists()) {
             Utility.infoFileExists(evalFile);
@@ -69,7 +71,7 @@ public class EvalTuneGmi extends StandardStep<TfFolder, TfFolder> {
             return;
         }
        
-        evaluator.eval(trainQueryFile, facetDir, model, gmiParam, evalFile);
+        evaluator.eval(trainQueryFile, facetDir, model, gmiParam, evalFile, facetTuneRank);
         Utility.infoWritten(evalFile);
         processor.process(folder);
     }

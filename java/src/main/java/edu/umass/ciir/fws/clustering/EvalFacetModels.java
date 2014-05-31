@@ -7,7 +7,6 @@ package edu.umass.ciir.fws.clustering;
 
 import edu.umass.ciir.fws.clustering.gm.GmLearn;
 import edu.umass.ciir.fws.eval.QueryFacetEvaluator;
-import edu.umass.ciir.fws.types.TfFolder;
 import edu.umass.ciir.fws.types.TfQueryParameters;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
@@ -20,6 +19,7 @@ import org.lemurproject.galago.tupleflow.FileSource;
 import org.lemurproject.galago.tupleflow.InputClass;
 import org.lemurproject.galago.tupleflow.OutputClass;
 import org.lemurproject.galago.tupleflow.Parameters;
+import org.lemurproject.galago.tupleflow.Processor;
 import org.lemurproject.galago.tupleflow.StandardStep;
 import org.lemurproject.galago.tupleflow.TupleFlowParameters;
 import org.lemurproject.galago.tupleflow.execution.ConnectionAssignmentType;
@@ -44,7 +44,7 @@ public class EvalFacetModels extends AppFunction {
 
     @Override
     public String getHelpString() {
-        return "fws eval-facet config.json\n";
+        return "fws eval-facets config.json\n";
     }
 
     @Override
@@ -92,72 +92,66 @@ public class EvalFacetModels extends AppFunction {
         stage.addInput("modelParams", new TfQueryParameters.IdParametersOrder());
 
         stage.add(new InputStep("modelParams"));
-        stage.add(new Step(TuneFacetModel.CopyRun.class, parameters));
-        stage.add(new Step(GmLearn.DoNonethingForQueryParams.class));
+        stage.add(new Step(EvalFacetModel.class, parameters));
         return stage;
     }
 
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
-    @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
-    public class EvalFacetModel extends StandardStep<TfQueryParameters, TfQueryParameters> {
+    public static class EvalFacetModel implements Processor<TfQueryParameters> {
 
         QueryFacetEvaluator evaluator;
         String allFacetDir;
+        File queryFile;
 
         public EvalFacetModel(TupleFlowParameters parameters) throws IOException {
             Parameters p = parameters.getJSON();
             allFacetDir = p.getString("facetDir");
             File facetJsonFile = new File(p.getString("facetAnnotationJson"));
             evaluator = new QueryFacetEvaluator(10, facetJsonFile);
+            queryFile = new File(p.getString("queryFile"));
         }
 
         @Override
-        public void process(TfQueryParameters folder) throws IOException {
-            Utility.infoProcessing(folder);
-            String[] params = Utility.splitParameters(folder.id);
-            String folderId = params[0];
-            String predictOrTune = params[1];
+        public void process(TfQueryParameters run) throws IOException {
+            Utility.infoProcessing(run);
+            String[] params = Utility.splitParameters(run.parameters);
+            String model = params[0];
+            int numTopFacets = Integer.parseInt(params[params.length - 1]);
 
-            String folderDir = Utility.getFileName(tuneDir, folderId);
-            String evalDir = Utility.getFileName(folderDir, "eval");
-            File trainQueryFile = new File(Utility.getFileName(folderDir, "train.query"));
+            String facetParam = "";
+            String evalDir = Utility.getFileName(allFacetDir, model, "eval");
+            String facetDir = Utility.getFileName(allFacetDir, model, "facet");
 
-            String param = "";
+            if (model.equals("plsa") || model.equals("lda") || model.equals("qd")) {
+                String optMetricIdx = params[1];
+                facetParam = optMetricIdx;
 
-            if (model.equals("plsa")) {
-                long topicNum = Long.parseLong(params[2]);
-                long termNum = Long.parseLong(params[3]);
-                param = Utility.parametersToFileNameString(topicNum, termNum);
-            } else if (model.equals("lda")) {
-                long topicNum = Long.parseLong(params[2]);
-                long termNum = Long.parseLong(params[3]);
-                param = Utility.parametersToFileNameString(topicNum, termNum);
+            } else if (model.equals("gmj")) {
+                String ranker = params[1];
+                facetParam = ranker;
+            } else if (model.equals("gmi")) {
 
-            } else if (model.equals("qd")) {
-                double qdDistanceMax = Double.parseDouble(params[2]);
-                double qdWebsiteCountMin = Double.parseDouble(params[3]);
-                double qdItemRatio = Double.parseDouble(params[4]);
-                param = Utility.parametersToFileNameString(qdDistanceMax, qdWebsiteCountMin, qdItemRatio);
+                String ranker = params[1];
+                String optMetricIdx = params[2];
+                facetParam = Utility.parametersToFileNameString(ranker, optMetricIdx);
+            } else {
+                throw new IOException("cannot recognize " + model);
             }
 
-            File evalFile = new File(Utility.getFacetEvalFileName(evalDir, model, param));
-
-            if (evalFile.exists()) {
-                Utility.infoFileExists(evalFile);
-                processor.process(folder);
-                return;
-            }
-
-            evaluator.eval(trainQueryFile, runFacetDir, model, param, evalFile);
+            File evalFile = new File(Utility.getFacetEvalFileName(evalDir, model, facetParam, numTopFacets));
+            evaluator.eval(queryFile, facetDir, model, facetParam, evalFile, numTopFacets);
             Utility.infoWritten(evalFile);
-            processor.process(folder);
+        }
+
+        @Override
+        public void close() throws IOException {
         }
     }
 
     @Verified
     @InputClass(className = "org.lemurproject.galago.tupleflow.types.FileName")
-    @OutputClass(className = "edu.umass.ciir.fws.types.TfFolder")
+    @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
     public static class SplitEvalRuns extends StandardStep<FileName, TfQueryParameters> {
 
         Parameters p;
@@ -174,28 +168,34 @@ public class EvalFacetModels extends AppFunction {
         public void close() throws IOException {
             List<String> models = p.getAsList("facetModelsToEval");
             List<Long> facetTuneMetricIndices = p.getAsList("facetTuneMetricIndices");
+            String[] gmRankers = new String[]{"sum", "avg"};
+            String allFacetDir = p.getString("facetDir");
 
             for (String model : models) {
-                if (model.equals("plsa") || model.equals("lda") || model.equals("qd")) {
-                    for (long idx : facetTuneMetricIndices) {
-                        String params = Utility.parametersToString(model, idx);
-                        processor.process(new TfQueryParameters("0", "", params));
-                    }
-                } else if (model.equals("gmj")) {
-                    processor.process(new TfQueryParameters("0", "", "sum"));
-                    processor.process(new TfQueryParameters("0", "", "avg"));
-                } else if (model.equals("gmi")) {
-                    for (long idx : facetTuneMetricIndices) {
-                        String params;
-                        params = Utility.parametersToString(model, "sum", idx);
-                        processor.process(new TfQueryParameters("0", "", params));
+                String evalDir = Utility.getFileName(allFacetDir, model, "eval");
+                Utility.createDirectory(evalDir);
+                for (int topFacets = 1; topFacets <= 10; topFacets++) {
+                    if (model.equals("plsa") || model.equals("lda") || model.equals("qd")) {
+                        for (long idx : facetTuneMetricIndices) {
+                            String params = Utility.parametersToString(model, idx, topFacets);
+                            processor.process(new TfQueryParameters("0", "", params));
+                        }
+                    } else if (model.equals("gmj")) {
+                        for (String ranker : gmRankers) {
+                            String params = Utility.parametersToString(model, ranker, topFacets);
+                            processor.process(new TfQueryParameters("0", "", params));
+                        }
+                    } else if (model.equals("gmi")) {
+                        for (long idx : facetTuneMetricIndices) {
+                            for (String ranker : gmRankers) {
+                                String params = Utility.parametersToString(model, ranker, idx, topFacets);
+                                processor.process(new TfQueryParameters("0", "", params));
+                            }
+                        }
 
-                        params = Utility.parametersToString(model, "avg", idx);
-                        processor.process(new TfQueryParameters("0", "", params));
+                    } else {
+                        throw new IOException("cannot recognize " + model);
                     }
-
-                } else {
-                    throw new IOException("cannot recognize " + model);
                 }
             }
 

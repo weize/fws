@@ -240,11 +240,13 @@ public class TuneFacetModel extends AppFunction {
         BufferedWriter writer;
         String modelDir;
         String model;
+        int facetTuneRank;
 
         public SelectBestParam(TupleFlowParameters parameters) throws IOException {
             p = parameters.getJSON();
             model = p.getString("facetModel");
             modelDir = Utility.getFileName(p.getString("facetDir"), model);
+            facetTuneRank = new Long(p.getLong("facetTuneRank")).intValue();
         }
 
         @Override
@@ -317,7 +319,7 @@ public class TuneFacetModel extends AppFunction {
             String maxScoreParams = "";
             for (String param : params) {
                 String filenameParam = Utility.parametersToFileNameString(param);
-                File evalFile = new File(Utility.getFacetEvalFileName(evalDir, model, filenameParam));
+                File evalFile = new File(Utility.getFacetEvalFileName(evalDir, model, filenameParam, facetTuneRank));
                 double score = QueryMetrics.getAvgScore(evalFile, metricIndex);
                 if (score > maxScore) {
                     maxScore = score;
