@@ -4,6 +4,7 @@ import edu.umass.ciir.fws.query.QueryFileParser;
 import edu.umass.ciir.fws.tool.app.ProcessQueryParametersApp;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.types.TfQueryParameters;
+import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -16,7 +17,6 @@ import org.lemurproject.galago.tupleflow.OutputClass;
 import org.lemurproject.galago.tupleflow.Parameters;
 import org.lemurproject.galago.tupleflow.StandardStep;
 import org.lemurproject.galago.tupleflow.TupleFlowParameters;
-import org.lemurproject.galago.tupleflow.Utility;
 import org.lemurproject.galago.tupleflow.execution.ConnectionAssignmentType;
 import org.lemurproject.galago.tupleflow.execution.InputStep;
 import org.lemurproject.galago.tupleflow.execution.Job;
@@ -59,17 +59,25 @@ public class PlsaClusterItems extends ProcessQueryParametersApp {
     public static class GeneratePlsaClusterParameters extends StandardStep<TfQuery, TfQueryParameters> {
 
         List<Long> plsaTopicNums;
+        String clusterDir;
 
         public GeneratePlsaClusterParameters(TupleFlowParameters parameters) {
             Parameters p = parameters.getJSON();
             plsaTopicNums = p.getList("plsaTopicNums");
+            String runDir = p.getString("plsaRunDir");
+            clusterDir = Utility.getFileName(runDir, "cluster");
         }
 
         @Override
         public void process(TfQuery query) throws IOException {
-            for (long plsaTopicNum : plsaTopicNums) {
-                String parameters = edu.umass.ciir.fws.utility.Utility.parametersToString(plsaTopicNum);
-                processor.process(new TfQueryParameters(query.id, query.text, parameters));
+            for (long topicNum : plsaTopicNums) {
+                File clusterFile = new File(Utility.getPlsaClusterFileName(clusterDir, query.id, topicNum));
+                if (clusterFile.exists()) {
+                    Utility.infoFileExists(clusterFile);
+                } else {
+                    String parameters = Utility.parametersToString(topicNum);
+                    processor.process(new TfQueryParameters(query.id, query.text, parameters));
+                }
             }
 
         }
