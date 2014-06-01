@@ -51,19 +51,27 @@ public class LdaClusterToFacet extends ProcessQueryParametersApp {
 
         List<Long> ldaTopicNums;
         List<Long> ldaTermNums;
+        String facetDir;
 
         public GenerateLdaFacetParameters(TupleFlowParameters parameters) {
             Parameters p = parameters.getJSON();
+            String runDir = p.getString("ldaRunDir");
+            facetDir = Utility.getFileName(runDir, "facet");
             ldaTopicNums = p.getList("ldaTopicNums");
             ldaTermNums = p.getList("ldaTermNums");
         }
 
         @Override
         public void process(TfQuery query) throws IOException {
-            for (long plsaTopicNum : ldaTopicNums) {
-                for (long plsaTermNum : ldaTermNums) {
-                    String parameters = Utility.parametersToString(plsaTopicNum, plsaTermNum);
-                    processor.process(new TfQueryParameters(query.id, query.text, parameters));
+            for (long topicNum : ldaTopicNums) {
+                for (long termNum : ldaTermNums) {
+                    File facetFile = new File(Utility.getLdaFacetFileName(facetDir, query.id, topicNum, termNum));
+                    if (facetFile.exists()) {
+                        Utility.infoFileExists(facetFile);
+                    } else {
+                        String parameters = Utility.parametersToString(topicNum, termNum);
+                        processor.process(new TfQueryParameters(query.id, query.text, parameters));
+                    }
                 }
             }
 
