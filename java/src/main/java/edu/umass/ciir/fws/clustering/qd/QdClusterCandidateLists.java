@@ -4,6 +4,7 @@ import edu.umass.ciir.fws.tool.app.ProcessQueryParametersApp;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.types.TfQueryParameters;
 import edu.umass.ciir.fws.utility.Utility;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.lemurproject.galago.tupleflow.InputClass;
@@ -47,11 +48,14 @@ public class QdClusterCandidateLists extends ProcessQueryParametersApp {
 
         List<Double> distanceMaxs;
         List<Double> websiteCountMins;
+        String clusterDir;
 
         public GenerateQdClusterParameters(TupleFlowParameters parameters) {
             Parameters p = parameters.getJSON();
             distanceMaxs = p.getList("qdDistanceMaxs");
             websiteCountMins = p.getList("qdWebsiteCountMins");
+            String runDir = p.getString("qdRunDir");
+            clusterDir = Utility.getFileName(runDir, "cluster");
 
         }
 
@@ -59,8 +63,13 @@ public class QdClusterCandidateLists extends ProcessQueryParametersApp {
         public void process(TfQuery query) throws IOException {
             for (double distanceMax : distanceMaxs) {
                 for (double websiteCountMin : websiteCountMins) {
-                    String parameters = Utility.parametersToString(distanceMax, websiteCountMin);
-                    processor.process(new TfQueryParameters(query.id, query.text, parameters));
+                    File clusterFile = new File(Utility.getQdClusterFileName(clusterDir, query.id, distanceMax, websiteCountMin));
+                    if (clusterFile.exists()) {
+                        Utility.infoFileExists(clusterFile);
+                    } else {
+                        String parameters = Utility.parametersToString(distanceMax, websiteCountMin);
+                        processor.process(new TfQueryParameters(query.id, query.text, parameters));
+                    }
                 }
             }
 
