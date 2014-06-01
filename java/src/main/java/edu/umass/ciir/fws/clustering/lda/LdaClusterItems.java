@@ -8,6 +8,8 @@ package edu.umass.ciir.fws.clustering.lda;
 import edu.umass.ciir.fws.tool.app.ProcessQueryParametersApp;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.types.TfQueryParameters;
+import edu.umass.ciir.fws.utility.Utility;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.lemurproject.galago.tupleflow.InputClass;
@@ -44,17 +46,25 @@ public class LdaClusterItems extends ProcessQueryParametersApp {
     public static class GenerateLdaClusterParameters extends StandardStep<TfQuery, TfQueryParameters> {
 
         List<Long> topicNums;
+        String clusterDir;
 
         public GenerateLdaClusterParameters(TupleFlowParameters parameters) {
             Parameters p = parameters.getJSON();
             topicNums = p.getList("ldaTopicNums");
+            String runDir = p.getString("ldaRunDir");
+            clusterDir = Utility.getFileName(runDir, "cluster");
         }
 
         @Override
         public void process(TfQuery query) throws IOException {
             for (long topicNum : topicNums) {
-                String parameters = edu.umass.ciir.fws.utility.Utility.parametersToString(topicNum);
-                processor.process(new TfQueryParameters(query.id, query.text, parameters));
+                File clusterFile = new File(Utility.getLdaClusterFileName(clusterDir, query.id, topicNum));
+                if (clusterFile.exists()) {
+                    Utility.infoFileExists(clusterFile);
+                } else {
+                    String parameters = Utility.parametersToString(topicNum);
+                    processor.process(new TfQueryParameters(query.id, query.text, parameters));
+                }
             }
 
         }
