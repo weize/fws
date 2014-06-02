@@ -225,7 +225,7 @@ public class TuneFacetModel extends AppFunction {
             System.err.println(runFacetFile.getAbsoluteFile());
             System.err.println(facetFile.getAbsoluteFile());
             if (facetFile.exists()) {
-                System.err.print("delete existing link");
+                System.err.println("delete existing link");
                 facetFile.delete();
             }
             Files.createSymbolicLink(Paths.get(facetFile.toURI()), Paths.get(runFacetFile.toURI()));

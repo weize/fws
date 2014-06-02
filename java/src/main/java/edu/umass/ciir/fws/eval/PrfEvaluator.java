@@ -50,8 +50,7 @@ public class PrfEvaluator {
             }
         }
     }
-    
-    
+
     public double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets, int numTopFacets) {
         this.numTopFacets = numTopFacets;
         loadFacets(afacets, sfacets);
@@ -74,7 +73,6 @@ public class PrfEvaluator {
 
         return new double[]{p, wp, r, wr, f1, wf1, f1c, wf1c, prf, wprf};
     }
-    
 
     /**
      *
@@ -124,7 +122,7 @@ public class PrfEvaluator {
             }
         }
 
-        return correct / total;
+        return total < Utility.epsilon ? 0 : correct / total;
     }
 
     private double recall(boolean toWeight) {

@@ -13,6 +13,8 @@ import java.io.PrintStream;
 import java.util.List;
 import org.lemurproject.galago.core.tools.AppFunction;
 import org.lemurproject.galago.tupleflow.Parameters;
+import org.lemurproject.galago.tupleflow.execution.ConnectionAssignmentType;
+import org.lemurproject.galago.tupleflow.execution.Job;
 
 /**
  *
@@ -30,6 +32,26 @@ public class ExtractSimulatedFfeedback extends AppFunction {
         return "fws extract-simulated-ffeedback --qfModel=<queryFacetModel> --qfParamStr=<param> config.json\n";
     }
 
+    
+//     @Override
+//    public void run(Parameters p, PrintStream output) throws Exception {
+//        Job job = createJob(p);
+//        AppFunction.runTupleFlowJob(job, p, output);
+//
+//    }
+//
+//    private Job createJob(Parameters parameters) {
+//        Job job = new Job();
+//
+//        job.add(getSplitStage(parameters));
+//        job.add(getProcessStage(parameters));
+//        
+//        job.connect("split", "process", ConnectionAssignmentType.Each);
+//
+//        return job;
+//    }
+
+    
     @Override
     public void run(Parameters p, PrintStream output) throws Exception {
         String qfModel = p.getString("qfModel"); // qd, plsa, lda, gmi, gmj...
