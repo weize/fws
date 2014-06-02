@@ -144,7 +144,7 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
     public static String getGmTermPairDataFileName(String clusterDir, String qid) {
         return getFileNameWithSuffix(clusterDir, qid, qid, "p.data.gz");
     }
-    
+
     public static String getGmPtTermPairDataFileName(String clusterDir, String qid) {
         return getFileNameWithSuffix(clusterDir, qid, qid, "p.pt.data.gz");
     }
@@ -223,7 +223,6 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         }
         return getFileName(facetDir, qid, name);
     }
-    
 
     public static String getPoolFileName(String poolDir, String qid) {
         return getFileName(poolDir, qid + ".pool");
@@ -243,7 +242,7 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         String str = parametersToString(parameters);
         return str.replace('.', '_');
     }
-    
+
     public static String parametersToFileNameString(Object... parameters) {
         String str = parametersToString(parameters);
         return str.replace('.', '_');
@@ -268,7 +267,7 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
     public static void infoProcessing(File infile) {
         System.err.println(String.format("Processing %s", infile.getAbsoluteFile()));
     }
-    
+
     public static void infoProcessing(Type object) {
         System.err.println(String.format("Processing %s", object.toString()));
     }
@@ -330,23 +329,22 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         String name = paramFileNameStr.isEmpty() ? String.format("%s.%s.facet", qid, model)
                 : String.format("%s.%s.%s.facet", qid, model, paramFileNameStr);
         return Utility.getFileName(facetDir, qid, name);
-        
+
     }
-    
+
     public static String getClusterFileName(String clusterDir, String qid, String model, String paramStr) {
         String name = paramStr.isEmpty() ? String.format("%s.%s.cluster", qid, model)
                 : String.format("%s.%s.%s.cluster", qid, model, paramStr);
         return Utility.getFileName(clusterDir, qid, name);
-        
+
     }
-    
+
     public static String getFacetEvalFileName(String evalDir, String model, String paramStr, int numTopFacets) {
         String name = paramStr.isEmpty() ? String.format("%s.%d.facet", model, numTopFacets)
                 : String.format("%s.%s.%d.eval", model, paramStr, numTopFacets);
         return Utility.getFileName(evalDir, name);
     }
-    
-    
+
     public static void add(double[] to, double[] from) {
         for (int i = 0; i < from.length; i++) {
             to[i] += from[i];
@@ -360,12 +358,17 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
     }
 
     public static void infoFileExists(File file) {
-        System.err.println("File exists "+ file.getAbsolutePath());
+        System.err.println("File exists " + file.getAbsolutePath());
     }
 
     public static void infoOpen(File file) {
         System.err.println("File opened " + file.getAbsolutePath());
     }
 
-    
+    public static String getAnnotatorFeedbackFileName(String feedbackDir, String model, String facetParam) {
+        String name = facetParam.isEmpty() ? String.format("%s.annnotator.fdbk", model)
+                : String.format("%s.%s.annnotator.fdbk", model, facetParam);
+        return Utility.getFileName(feedbackDir, name);
+    }
+
 }

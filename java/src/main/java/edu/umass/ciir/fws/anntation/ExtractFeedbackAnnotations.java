@@ -42,7 +42,7 @@ public class ExtractFeedbackAnnotations extends AppFunction {
         File annotatoTextFile = new File(p.getString("feedbackAnnotationText"));
         extractAeedbackAnnotationText(annotations, annotatoTextFile);
         Utility.infoWritten(annotatoTextFile);
-        
+
         File annotatorFeedbackFile = new File(p.getString("annotatorFeedback"));
         extractAnnotatorFeedback(annotations, annotatorFeedbackFile);
         Utility.infoWritten(annotatorFeedbackFile);
@@ -56,13 +56,15 @@ public class ExtractFeedbackAnnotations extends AppFunction {
             writer.write(feedbackAnnotation.list());
         }
         writer.close();
-        
+
     }
 
     private void extractAnnotatorFeedback(List<FeedbackAnnotation> annotations, File outfile) throws IOException {
         BufferedWriter writer = Utility.getWriter(outfile);
         for (FeedbackAnnotation an : annotations) {
-            writer.write(FacetFeedback.FeedbackAnnotationToFfeedbackString(an));
+            if (!an.qid.equals("106")) {//!!!!!!!!!!!!!!!!! need to change this later
+                writer.write(FacetFeedback.FeedbackAnnotationToFfeedbackString(an));
+            }
         }
         writer.close();
     }
