@@ -7,8 +7,10 @@ package edu.umass.ciir.fws.anntation;
 
 import edu.emory.mathcs.backport.java.util.Collections;
 import static edu.umass.ciir.fws.anntation.FacetAnnotation.load;
+import edu.umass.ciir.fws.query.QueryTopicSubtopicMap;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -115,6 +117,36 @@ public class FeedbackAnnotation implements Iterable<FeedbackList> {
     @Override
     public Iterator<FeedbackList> iterator() {
         return feedbacks.iterator();
+    }
+
+    public static void select(File jsonFile, File jsonFilteredFile, QueryTopicSubtopicMap queryMap) throws IOException {
+        BufferedReader reader = Utility.getReader(jsonFile);
+        BufferedWriter writer = Utility.getWriter(jsonFilteredFile);
+        String line;
+        while ((line = reader.readLine()) != null) {
+            Parameters p = filterJson(line, queryMap);
+            if (p!= null) {
+                writer.write(p.toString());
+                writer.newLine();
+            }
+        }
+        reader.close();
+        writer.close();
+
+    }
+
+    public static Parameters filterJson(String jsonDataString, QueryTopicSubtopicMap queryMap) throws IOException {
+        Parameters data = Parameters.parseString(jsonDataString);
+        String aid = data.getString("annotatorID");
+        String qid = data.getString("aolUserID");
+        //String sid = data.getString("subtopicID");
+        String sid = String.valueOf(Integer.parseInt(data.getString("subtopicID")) + 1); // change from zero-based to one-based
+
+        if (queryMap.hasTopic(qid) && queryMap.hasSubtopic(qid, sid) && !aid.startsWith("test-")) {
+            return data;
+        } else {
+            return null;
+        }
     }
 
 }

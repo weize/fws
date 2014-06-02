@@ -6,8 +6,11 @@
 package edu.umass.ciir.fws.anntation;
 
 import edu.emory.mathcs.backport.java.util.Collections;
+import static edu.umass.ciir.fws.anntation.FeedbackAnnotation.filterJson;
+import edu.umass.ciir.fws.query.QueryTopicSubtopicMap;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -99,6 +102,33 @@ public class FacetAnnotation {
         return fa;
     }
 
+    public static void select(File jsonFile, File jsonFilteredFile, QueryTopicSubtopicMap queryMap) throws IOException {
+        BufferedReader reader = Utility.getReader(jsonFile);
+        BufferedWriter writer = Utility.getWriter(jsonFilteredFile);
+        String line;
+        while ((line = reader.readLine()) != null) {
+            Parameters p = filterJson(line, queryMap);
+            if (p != null) {
+                writer.write(p.toString());
+                writer.newLine();
+            }
+        }
+        reader.close();
+        writer.close();
+    }
+
+    public static Parameters filterJson(String jsonDataString, QueryTopicSubtopicMap queryMap) throws IOException {
+        Parameters data = Parameters.parseString(jsonDataString);
+        String annotatorID = data.getString("annotatorID");
+        String queryID = data.getString("aolUserID");
+
+        if (!annotatorID.startsWith("test-") && queryMap.hasTopic(queryID)) {
+            return data;
+        } else {
+            return null;
+        }
+    }
+
     public static List<FacetAnnotation> load(File jsonFile) throws IOException {
         ArrayList<FacetAnnotation> annotations = new ArrayList<>();
         BufferedReader reader = Utility.getReader(jsonFile);
@@ -138,8 +168,8 @@ public class FacetAnnotation {
                 return 1;
             case 3: // good
                 return 2;
-            default :
-                throw new IOException("rating invalid");       
+            default:
+                throw new IOException("rating invalid");
         }
     }
 }

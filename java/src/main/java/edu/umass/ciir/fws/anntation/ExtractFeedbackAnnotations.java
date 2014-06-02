@@ -40,7 +40,7 @@ public class ExtractFeedbackAnnotations extends AppFunction {
         List<FeedbackAnnotation> annotations = FeedbackAnnotation.load(jsonFile);
 
         File annotatoTextFile = new File(p.getString("feedbackAnnotationText"));
-        extractAeedbackAnnotationText(annotations, annotatoTextFile);
+        extractFeedbackAnnotationText(annotations, annotatoTextFile);
         Utility.infoWritten(annotatoTextFile);
 
         File annotatorFeedbackFile = new File(p.getString("annotatorFeedback"));
@@ -48,7 +48,7 @@ public class ExtractFeedbackAnnotations extends AppFunction {
         Utility.infoWritten(annotatorFeedbackFile);
     }
 
-    private void extractAeedbackAnnotationText(List<FeedbackAnnotation> annotations, File outfile) throws IOException {
+    private void extractFeedbackAnnotationText(List<FeedbackAnnotation> annotations, File outfile) throws IOException {
         BufferedWriter writer = Utility.getWriter(outfile);
 
         writer.write("#anntatorID\tqid\tsid\tfid\tfidx\tterms(<fid-tid:term>|...)\n");
@@ -61,10 +61,8 @@ public class ExtractFeedbackAnnotations extends AppFunction {
 
     private void extractAnnotatorFeedback(List<FeedbackAnnotation> annotations, File outfile) throws IOException {
         BufferedWriter writer = Utility.getWriter(outfile);
-        for (FeedbackAnnotation an : annotations) {
-            if (!an.qid.equals("106")) {//!!!!!!!!!!!!!!!!! need to change this later
+        for (FeedbackAnnotation an : annotations) {            
                 writer.write(FacetFeedback.FeedbackAnnotationToFfeedbackString(an));
-            }
         }
         writer.close();
     }
