@@ -78,6 +78,7 @@
 	"facetModelsToEval" : ["plsa", "lda", "gmi", "gmj", "qd"],
 	"facetModelsToSimulateFeedback" : ["plsa", "lda", "gmi", "gmj", "qd"],
 	"facetSources" : ["plsa", "lda", "gmi", "gmj", "qd", "annotator"],
+	"feedbackSources" : ["annotator", "oracle"],
 	"operators" : {"exist" : "edu.umass.ciir.fws.retrieval.ExistIterator"},
 	"facetTuneMetricIndices" : [1, 3, 5, 7, 9, 11, 13, 15],
 	"topNum" : 100,
