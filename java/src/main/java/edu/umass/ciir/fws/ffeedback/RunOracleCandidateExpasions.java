@@ -49,7 +49,7 @@ public class RunOracleCandidateExpasions extends AppFunction {
 
     @Override
     public String getHelpString() {
-        return "fws run-oracle-candidate-expansions --expansionModel=";
+        return "fws run-oracle-candidate-expansions --expansionModel=(sts|stb)";
     }
 
     private Job createJob(Parameters parameters) {

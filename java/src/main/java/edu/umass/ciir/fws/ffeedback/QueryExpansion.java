@@ -64,7 +64,7 @@ public class QueryExpansion {
     
     private static String expandSingleTermBoolean(String originalQuery, String expansion) {
         FeedbackTerm ft = FeedbackTerm.parseFromString(expansion);
-        return String.format("#require(#exsit(#od:1( %s )) #sdm( %s )) ", ft.term, originalQuery);
+        return String.format("#require(#exist(#od:1( %s )) #sdm( %s )) ", ft.term, originalQuery);
     }
 
 
