@@ -22,7 +22,7 @@ public class ExpansionDirectory {
     public ExpansionDirectory(Parameters p) {
         allExpansionDir = p.getString("expansionDir");
         runDir = Utility.getFileName(allExpansionDir, "run");
-        expansionIdFile = new File(Utility.getFileName(allExpansionDir, "expansion-id.gz"));
+        expansionIdFile = new File(Utility.getFileName(allExpansionDir, "expansion.id.gz"));
     }
 
     public File getExpansionFile(String source, String expansionModel) {
