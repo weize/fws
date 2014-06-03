@@ -30,7 +30,7 @@ public class ExpansionDirectory {
     }
     
     public File getExpansionIdFile(String qid) {
-        return new File(Utility.getFileNameWithSuffix(allExpansionDir, "id", "expansion." + qid + ".id"));
+        return new File(Utility.getFileName(allExpansionDir, "id", "expansion." + qid + ".id"));
     }
 
 }
