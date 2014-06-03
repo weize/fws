@@ -45,6 +45,8 @@ public class FacetModelParamGenerator {
                 }
             }
 
+        } else if (model.equals("annotator"))    {
+            params.add("");
         } else {
             throw new IOException("cannot recognize " + model);
         }

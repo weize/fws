@@ -326,6 +326,7 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
     }
 
     public static String getFacetFileName(String facetDir, String qid, String model, String paramFileNameStr) {
+        paramFileNameStr = Utility.parametersToFileNameString(paramFileNameStr);
         String name = paramFileNameStr.isEmpty() ? String.format("%s.%s.facet", qid, model)
                 : String.format("%s.%s.%s.facet", qid, model, paramFileNameStr);
         return Utility.getFileName(facetDir, qid, name);
