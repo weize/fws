@@ -140,6 +140,7 @@ public class RunOracleCandidateExpasions extends AppFunction {
         Parameters p;
         ExpansionDirectory expansionDir;
         List<String> facetSources;
+        final static int  topFacetNum = 15;
 
         public ExpandQueryWithSingleFacetTerm(TupleFlowParameters parameters) throws IOException {
             p = parameters.getJSON();
@@ -184,8 +185,8 @@ public class RunOracleCandidateExpasions extends AppFunction {
             File facetFile = new File(Utility.getFacetFileName(facetDir, query.id, source, param));
             List<ScoredFacet> facets = ScoredFacet.loadFacets(facetFile);
 
-            // only use top 30
-            for (ScoredFacet facet : facets.subList(0, Math.min(facets.size(), 30))) {
+            // only use top facets
+            for (ScoredFacet facet : facets.subList(0, Math.min(facets.size(), topFacetNum))) {
                 String oriQuery = query.text;
 
                 int fidx = 0;
