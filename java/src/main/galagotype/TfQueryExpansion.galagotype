@@ -5,6 +5,8 @@ type TfQueryExpansion {
         String model;
         long expId;
 	String expanedQuery;
+        String oriQuery;
+        String expansion;
 	
 	order: +qid +model +expId;
 }
