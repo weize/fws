@@ -47,7 +47,7 @@ public class CreateExpansionFileAll extends AppFunction {
 
     @Override
     public String getHelpString() {
-        return "fws create-expansion-file --feedbackModel config.json\n";
+        return "fws create-expansion-file --expansionModel config.json\n";
     }
 
     @Override
@@ -171,6 +171,7 @@ public class CreateExpansionFileAll extends AppFunction {
             List<FacetFeedback> fdbkList = FacetFeedback.load(feedbackFile);
 
             Utility.infoOpen(expansionFie);
+            Utility.createDirectoryForFile(expansionFie);
             BufferedWriter writer = Utility.getWriter(expansionFie);
 
             for (FacetFeedback ff : fdbkList) {
