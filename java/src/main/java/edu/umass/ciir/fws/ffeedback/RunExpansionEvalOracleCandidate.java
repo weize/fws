@@ -7,7 +7,7 @@ package edu.umass.ciir.fws.ffeedback;
 
 import edu.umass.ciir.fws.eval.QueryMetrics;
 import edu.umass.ciir.fws.eval.TrecEvaluator;
-import static edu.umass.ciir.fws.ffeedback.RunExpasions.setParameters;
+import edu.umass.ciir.fws.query.QueryTopicSubtopicMap;
 import edu.umass.ciir.fws.types.TfQueryExpansionSubtopic;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedWriter;
@@ -156,6 +156,7 @@ public class RunExpansionEvalOracleCandidate extends AppFunction {
                 processor.process(qes);
             } catch (Exception ex) {
                 Logger.getLogger(RunExpansionEvalOracleCandidate.class.getName()).log(Level.SEVERE, "error in eval " + qes.toString(), ex);
+                throw new IOException();
             }
 
         }
@@ -177,17 +178,22 @@ public class RunExpansionEvalOracleCandidate extends AppFunction {
     public static class GetQExpansionSubtopics extends StandardStep<FileName, TfQueryExpansionSubtopic> {
 
         String model;
+        QueryTopicSubtopicMap queryMap;
 
         public GetQExpansionSubtopics(TupleFlowParameters parameters) throws IOException {
             Parameters p = parameters.getJSON();
             model = p.getString("expansionModel");
+            File selectionFile = new File(p.getString("subtopicSelectedIdFile"));
+            queryMap = new QueryTopicSubtopicMap(selectionFile);
         }
 
         @Override
         public void process(FileName file) throws IOException {
             List<QuerySubtopicExpansion> qses = QuerySubtopicExpansion.load(new File(file.filename), model);
             for (QuerySubtopicExpansion qse : qses) {
-                processor.process(qse.toTfQueryExpansionSubtopic());
+                if (queryMap.hasSubtopic(qse.qid, qse.sid)) {
+                    processor.process(qse.toTfQueryExpansionSubtopic());
+                }
             }
         }
 
