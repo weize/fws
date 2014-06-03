@@ -198,6 +198,7 @@ public class RunOracleCandidateExpasions extends AppFunction {
 
         public WriteExpansionFile(TupleFlowParameters parameters) throws IOException {
             Parameters p = parameters.getJSON();
+            expansionDir = new ExpansionDirectory(p);
             expansionModel = p.getString("expansionModel");
             File selectionFile = new File(p.getString("subtopicSelectedIdFile"));
             File queryFile = new File(p.getString("queryFile"));

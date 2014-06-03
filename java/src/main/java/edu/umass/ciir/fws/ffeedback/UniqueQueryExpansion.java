@@ -34,6 +34,7 @@ public class UniqueQueryExpansion extends StandardStep<TfQueryExpansion, TfQuery
         }
     }
     
+    @Override
     public void close()  throws IOException { 
         if (last != null) {
             processor.process(last);
