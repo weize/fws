@@ -376,10 +376,10 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
             String feedbackSource, String feedbackParams) {
         facetParams = Utility.parametersToFileNameString(facetParams);
         feedbackParams = Utility.parametersToFileNameString(feedbackParams);
-        String facetName = facetSource.isEmpty() ? String.format("%s", facetSource)
+        String facetName = facetParams.isEmpty() ? String.format("%s", facetSource)
                 : String.format("%s.%s", facetSource, facetParams);
 
-        String feedbackName = feedbackSource.isEmpty() ? String.format("%s", feedbackSource)
+        String feedbackName = feedbackParams.isEmpty() ? String.format("%s", feedbackSource)
                 : String.format("%s.%s", feedbackSource, feedbackParams);
         String name = String.format("%s.%s.fdbk", facetName, feedbackName);
         return Utility.getFileName(allFeedbackDir, facetSource, name);
