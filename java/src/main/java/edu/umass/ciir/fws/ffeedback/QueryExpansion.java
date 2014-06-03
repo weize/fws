@@ -16,6 +16,7 @@ import java.util.List;
  */
 public class QueryExpansion {
 
+    
     public String qid;
     public String model;
     public long expId;
@@ -46,6 +47,8 @@ public class QueryExpansion {
         switch (model) {
             case "sts":
                 return expandSingleTermSimple(originalQuery, expansion);
+            case "stb":
+                return expandSingleTermBoolean(originalQuery, expansion);
             case "fts":
                 return expandFeedbackTermSimple(originalQuery, expansion);
             case "ffs":
@@ -58,6 +61,12 @@ public class QueryExpansion {
         FeedbackTerm ft = FeedbackTerm.parseFromString(expansion);
         return String.format("#combine:0=0.6:1=0.4(#sdm( %s ) #combine( %s ))", originalQuery, ft.term);
     }
+    
+    private static String expandSingleTermBoolean(String originalQuery, String expansion) {
+        FeedbackTerm ft = FeedbackTerm.parseFromString(expansion);
+        return String.format("#require(#exsit(#od:1( %s )) #sdm( %s )) ", ft.term, originalQuery);
+    }
+
 
     /**
      * #combine( query #combine( #combine(term1) #combine(term2) ...))
