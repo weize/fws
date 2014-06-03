@@ -46,7 +46,7 @@ public class RunExpandedQuery implements Processor<TfQueryExpansion> {
     public void process(TfQueryExpansion qe) throws IOException {
         File outfile = new File(Utility.getExpansionRunFileName(runDir, qe));
         Utility.createDirectoryForFile(outfile);
-        BufferedWriter writer = Utility.getWriter(outfile);
+        
         Utility.infoProcessing(outfile);
         String queryNumber = qe.qid;
         String queryText = qe.expanedQuery;
@@ -66,6 +66,8 @@ public class RunExpandedQuery implements Processor<TfQueryExpansion> {
                     + qe.toString(), ex);
         }
 
+        Utility.infoOpen(outfile);
+        BufferedWriter writer = Utility.getWriter(outfile);
         // if we have some results -- print in to output stream
         if (!results.isEmpty()) {
             for (ScoredDocument sd : results) {
