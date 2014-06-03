@@ -60,9 +60,9 @@ public class RunOracleCandidateExpasions extends AppFunction {
         job.add(getCmbExpansionStage(parameters));
         job.add(getProcessStage(parameters));
 
-        job.connect("split", "splitExpansion", ConnectionAssignmentType.Each);
-        job.connect("splitExpansion", "cmbExpansion", ConnectionAssignmentType.Combined);
-        job.connect("cmbExpansion", "process", ConnectionAssignmentType.Each);
+        job.connect("split", "splitExpansions", ConnectionAssignmentType.Each);
+        job.connect("splitExpansions", "cmbExpansions", ConnectionAssignmentType.Combined);
+        job.connect("cmbExpansions", "process", ConnectionAssignmentType.Each);
 
         return job;
     }
