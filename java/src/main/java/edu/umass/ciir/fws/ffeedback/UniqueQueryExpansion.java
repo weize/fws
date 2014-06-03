@@ -17,8 +17,8 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
  * @author wkong
  */
 @Verified
-@InputClass(className = "edu.umass.ciir.fws.types.TfQueryExpansionSubtopic", order = { "+qid", "+model", "+expId" })
-@OutputClass(className = "edu.umass.ciir.fws.types.TfQueryExpansionSubtopic", order = { "+qid", "+model", "+expId" })
+@InputClass(className = "edu.umass.ciir.fws.types.TfQueryExpansion", order = { "+qid", "+model", "+expId" })
+@OutputClass(className = "edu.umass.ciir.fws.types.TfQueryExpansion", order = { "+qid", "+model", "+expId" })
 public class UniqueQueryExpansion extends StandardStep<TfQueryExpansion, TfQueryExpansion>{
     TfQueryExpansion last = null;
 
