@@ -135,7 +135,7 @@ public class RunExpansionAll extends AppFunction {
         FacetModelParamGenerator facetParamGen;
         FeedbackParameterGenerator feedbackParamGen;
 
-        String allFacetDir;
+        String allFeedbackDir;
         ExpansionIdMap expIdMap;
         String expansionModel;
         ExpansionDirectory expansionDir;
@@ -148,7 +148,7 @@ public class RunExpansionAll extends AppFunction {
             expansionModel = p.getString("expansionModel");
             facetParamGen = new FacetModelParamGenerator(p);
             feedbackParamGen = new FeedbackParameterGenerator(p);
-            allFacetDir = p.getString("facetDir");
+            allFeedbackDir = p.getString("feedbackDir");
             expansionDir = new ExpansionDirectory(p);
             facetSources = p.getAsList("facetSources");
             feedbackSources = p.getAsList("feedbackSources");
@@ -184,7 +184,7 @@ public class RunExpansionAll extends AppFunction {
 
 
         private void processAndEmit(TfQuery query, String facetSource, String facetParam, String feedbackSource, String feedbackParam) throws IOException {
-            File feedbackFile = new File(Utility.getFeedbackFileName(allFacetDir, facetSource, facetParam, feedbackSource, feedbackParam));
+            File feedbackFile = new File(Utility.getFeedbackFileName(allFeedbackDir, facetSource, facetParam, feedbackSource, feedbackParam));
             Utility.infoProcessing(feedbackFile);
             List<FacetFeedback> fdbkList = FacetFeedback.load(feedbackFile);
 
