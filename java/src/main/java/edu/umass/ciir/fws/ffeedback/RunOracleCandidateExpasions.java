@@ -97,7 +97,7 @@ public class RunOracleCandidateExpasions extends AppFunction {
         stage.addInput("queries", new TfQuery.IdOrder());
         stage.addOutput("expansions", new TfQueryExpansion.QidModelExpIdOrder());
 
-        stage.addInput("queries", new TfQuery.IdOrder());
+        stage.add(new InputStep("queries"));
         stage.add(new Step(ExpandQueryWithSingleFacetTerm.class, parameters));
         stage.add(Utility.getSorter(new TfQueryExpansion.QidModelExpIdOrder()));
         stage.add(new OutputStep("expansions"));
@@ -110,7 +110,7 @@ public class RunOracleCandidateExpasions extends AppFunction {
         stage.addInput("expansions", new TfQueryExpansion.QidModelExpIdOrder());
         stage.addOutput("expansions2", new TfQueryExpansion.QidModelExpIdOrder());
 
-        stage.addInput("expansions", new TfQueryExpansion.QidModelExpIdOrder());
+        stage.add(new InputStep("expansions"));
         stage.add(new Step(UniqueQueryExpansion.class));
         stage.add(new Step(WriteExpansionFile.class, parameters));
         stage.add(new OutputStep("expansions2"));
