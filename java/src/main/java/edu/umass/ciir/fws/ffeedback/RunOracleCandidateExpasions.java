@@ -215,9 +215,14 @@ public class RunOracleCandidateExpasions extends AppFunction {
             for (String sid : sidList) {
                 QuerySubtopicExpansion qse = new QuerySubtopicExpansion(qe, sid);
                 writer.write(qse.toString());
-                processor.process(qe);
             }
 
+            File runFile = new File(Utility.getExpansionRunFileName(expansionDir.runDir, qe));
+            if (runFile.exists()) {
+                System.err.println("exists results for " + runFile.getAbsolutePath());
+            } else {
+                processor.process(qe);
+            }
         }
 
         @Override
