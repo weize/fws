@@ -31,26 +31,25 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 @Verified
 @InputClass(className = "edu.umass.ciir.fws.types.TfQueryExpansion")
 public class RunExpandedQuery implements Processor<TfQueryExpansion> {
-
-    String runDir;
+    
     Retrieval retrieval;
     Parameters p;
+    ExpansionDirectory expansionDir;
 
     public RunExpandedQuery(TupleFlowParameters parameters) throws Exception {
         p = parameters.getJSON();
-        runDir = p.getString("expansionRunDir");
+        expansionDir = new ExpansionDirectory(p);
         retrieval = RetrievalFactory.instance(p);
     }
 
     @Override
     public void process(TfQueryExpansion qe) throws IOException {
-        File outfile = new File(Utility.getExpansionRunFileName(runDir, qe));
+        Utility.infoProcessing(qe);
+        File outfile = new File(Utility.getExpansionRunFileName(expansionDir.runDir, qe));
         Utility.createDirectoryForFile(outfile);
         
-        Utility.infoProcessing(outfile);
         String queryNumber = qe.qid;
         String queryText = qe.expanedQuery;
-        System.err.println(queryNumber + "\t" + queryText);
 
         // parse and transform query into runnable form
         List<ScoredDocument> results = null;

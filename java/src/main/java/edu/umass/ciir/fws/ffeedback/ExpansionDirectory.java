@@ -22,11 +22,11 @@ public class ExpansionDirectory {
     public ExpansionDirectory(Parameters p) {
         allExpansionDir = p.getString("expansionDir");
         runDir = Utility.getFileName(allExpansionDir, "run");
-        expansionIdFile = new File(Utility.getFileName(allExpansionDir, "expansion-id"));
+        expansionIdFile = new File(Utility.getFileName(allExpansionDir, "expansion-id.gz"));
     }
 
     public File getExpansionFile(String source, String expansionModel) {
-        return new File(Utility.getFileName(allExpansionDir, source, "expansion." + expansionModel));
+        return new File(Utility.getFileNameWithSuffix(allExpansionDir, source, "expansion." + expansionModel, ".gz"));
     }
 
 }
