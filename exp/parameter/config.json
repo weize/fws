@@ -67,12 +67,8 @@
 	"gmiFeedback" : "../exp/feedback/gmi/gmi-0_6-0_5.fdbk",
 	"oracleFeedbackDir" : "../exp/feedback/oracle",
 	"feedbackDir" : "../exp/feedback",
-<<<<<<< HEAD
-	"oracleFeedbackImprvThresholds": [0.005, 0.01, 0.02, 0.04],
-=======
-	"oracleFeedbackImprvThresholds": [0.001, 0.005, 0.01, 0.02, 0.03, 0.04, 0.05],
+	"oracleFeedbackImprvThresholds": [0.005, 0.01, 0.02, 0.05],
 	"oracleExpansionModels": ["sts"],
->>>>>>> 8038fd8048882a4e1e00044ab7095b2bc5142bd0
 	"expansionDir" : "../exp/expansion",
 	"sdmSrank" : "../exp/srank/sdm/sdm.srank",
 	"sdmSeval" : "../exp/srank/sdm/sdm.srank.eval",
