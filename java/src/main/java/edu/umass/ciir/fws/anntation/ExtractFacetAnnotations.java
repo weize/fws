@@ -8,6 +8,7 @@ package edu.umass.ciir.fws.anntation;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
 import org.lemurproject.galago.core.tools.AppFunction;
@@ -41,6 +42,23 @@ public class ExtractFacetAnnotations extends AppFunction {
         }
         writer.close();
         Utility.infoWritten(outfile);
+        
+        createAnnotatorFacetDir(anootations, p);
+    }
+
+    private void createAnnotatorFacetDir(List<FacetAnnotation> anootations, Parameters p) throws IOException {
+        String allFacetDir = p.getString("facetDir");
+        String facetDir = Utility.getFileName(allFacetDir, "annotator");
+        Utility.createDirectory(facetDir);
+        
+        for(FacetAnnotation fa : anootations) {
+            File outfile =  new File(Utility.getFacetFileName(facetDir, fa.qid, "annotator", ""));
+            Utility.createDirectoryForFile(outfile);
+            FacetAnnotation.outputAsFacet(fa, outfile);
+            Utility.infoWritten(outfile);
+        }
+        
+       
     }
 
 }

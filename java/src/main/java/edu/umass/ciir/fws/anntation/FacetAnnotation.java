@@ -6,7 +6,7 @@
 package edu.umass.ciir.fws.anntation;
 
 import edu.emory.mathcs.backport.java.util.Collections;
-import static edu.umass.ciir.fws.anntation.FeedbackAnnotation.filterJson;
+import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.query.QueryTopicSubtopicMap;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
@@ -150,6 +150,17 @@ public class FacetAnnotation {
             map.put(f.qid, f);
         }
         return map;
+    }
+
+    public static void outputAsFacet(FacetAnnotation fa, File outfile) throws IOException {
+        List<ScoredFacet> facets = new ArrayList<>();
+        Collections.sort(fa.facets);//sort by rating then id
+        for (AnnotatedFacet f : fa.facets) {
+            if (f.isValid()) {
+                facets.add(f.toScoredFacet());
+            }
+        }
+        ScoredFacet.outputAsFacets(facets, outfile);
     }
 
     /**

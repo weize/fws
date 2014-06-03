@@ -5,6 +5,8 @@
  */
 package edu.umass.ciir.fws.anntation;
 
+import edu.umass.ciir.fws.clustering.ScoredFacet;
+import edu.umass.ciir.fws.clustering.ScoredItem;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,6 +56,15 @@ public class AnnotatedFacet implements Comparable<AnnotatedFacet> {
     
     public String get(int index) {
         return terms.get(index);
+    }
+
+    public ScoredFacet toScoredFacet() {
+        ArrayList<ScoredItem> items = new ArrayList<>();
+        for(String t:terms) {
+            items.add(new ScoredItem(t, 0));
+        }
+        
+        return new ScoredFacet(items, rating);
     }
 
 }
