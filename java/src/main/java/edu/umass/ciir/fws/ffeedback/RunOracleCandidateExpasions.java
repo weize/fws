@@ -112,7 +112,7 @@ public class RunOracleCandidateExpasions extends AppFunction {
     @Verified
     @InputClass(className = "org.lemurproject.galago.tupleflow.types.FileName")
     @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryExpansion")
-    public class ExpandQueryWithSingleFacetTerm extends StandardStep<FileName, TfQueryExpansion> {
+    public static class ExpandQueryWithSingleFacetTerm extends StandardStep<FileName, TfQueryExpansion> {
 
         QueryTopicSubtopicMap queryMap;
         FacetModelParamGenerator modelParams;
