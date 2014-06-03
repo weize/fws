@@ -28,8 +28,8 @@ public class ExpansionIdMap {
     public ExpansionIdMap() {
         idMap = new TreeMap<>();
     }
-
-    private void load(File file) throws IOException {
+    
+    public void load(File file) throws IOException {
         idMap = new TreeMap<>();
         BufferedReader reader = Utility.getReader(file);
         String line;

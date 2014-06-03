@@ -5,6 +5,7 @@
  */
 package edu.umass.ciir.fws.ffeedback;
 
+import edu.umass.ciir.fws.types.TfFacetFeedbackParams;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import org.lemurproject.galago.tupleflow.Parameters;
@@ -30,17 +31,24 @@ public class ExpansionDirectory {
     public File getExpansionFile(String source, String expansionModel) {
         return new File(Utility.getFileNameWithSuffix(allExpansionDir, source, "expansion." + expansionModel, "gz"));
     }
-    
+
     public File getExpansionEvalFile(String source, String expansionModel) {
         return new File(Utility.getFileNameWithSuffix(allExpansionDir, source, "expansion." + expansionModel, "eval"));
     }
-    
+
     public File getExpansionIdFile(String qid) {
         return new File(Utility.getFileName(allExpansionDir, "id", "expansion." + qid + ".id"));
     }
 
     public File getExpansionEvalImprvFile(String source, String expansionModel) {
         return new File(Utility.getFileNameWithSuffix(allExpansionDir, source, "expansion." + expansionModel, "eval.imprv"));
+    }
+
+    File getExpansionFile(TfFacetFeedbackParams param, String expansionModel) {
+        File feedbackFile = new File(Utility.getFeedbackFileName("test", param));
+        String dirName = feedbackFile.getName();
+        return new File(Utility.getFileNameWithSuffix(allExpansionDir, param.facetSource, dirName, "expansion." + expansionModel, "gz"));
+
     }
 
 }
