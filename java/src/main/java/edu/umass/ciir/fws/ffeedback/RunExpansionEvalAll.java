@@ -5,20 +5,24 @@
  */
 package edu.umass.ciir.fws.ffeedback;
 
+import edu.umass.ciir.fws.anntation.FeedbackTerm;
 import edu.umass.ciir.fws.clustering.FacetModelParamGenerator;
-import edu.umass.ciir.fws.eval.QueryMetrics;
-import edu.umass.ciir.fws.eval.TrecEvaluator;
+import edu.umass.ciir.fws.clustering.ScoredFacet;
+import edu.umass.ciir.fws.clustering.ScoredItem;
+import edu.umass.ciir.fws.query.QueryFileParser;
+import edu.umass.ciir.fws.query.QueryTopicSubtopicMap;
+import edu.umass.ciir.fws.types.TfFacetFeedbackParams;
+import edu.umass.ciir.fws.types.TfQuery;
+import edu.umass.ciir.fws.types.TfQueryExpansion;
 import edu.umass.ciir.fws.types.TfQueryExpansionSubtopic;
+import edu.umass.ciir.fws.types.TfQueryParameters;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.lemurproject.galago.core.tools.AppFunction;
 import org.lemurproject.galago.tupleflow.FileSource;
 import org.lemurproject.galago.tupleflow.InputClass;
@@ -38,8 +42,6 @@ import org.lemurproject.galago.tupleflow.types.FileName;
 
 /**
  *
- * Evaluate expansion runs with respect to each subtopics.
- *
  * @author wkong
  */
 public class RunExpansionEvalAll extends AppFunction {
@@ -51,8 +53,22 @@ public class RunExpansionEvalAll extends AppFunction {
 
     @Override
     public String getHelpString() {
-        return "fws " + getName() + " [parameters...]\n"
-                + AppFunction.getTupleFlowParameterString();
+        return "fws run-expansion-eval-all --expansionModel=";
+    }
+
+    private Job createJob(Parameters parameters) {
+        Job job = new Job();
+
+        job.add(getSplitFeedbackStage(parameters));
+        job.add(getSplitExpansionStage(parameters));
+        job.add(getCmbExpansionStage(parameters));
+        job.add(getProcessStage(parameters));
+
+        job.connect("splitFeedbacks", "splitExpansions", ConnectionAssignmentType.Each);
+        job.connect("splitExpansions", "cmbExpansions", ConnectionAssignmentType.Combined);
+        job.connect("cmbExpansions", "process", ConnectionAssignmentType.Each);
+
+        return job;
     }
 
     @Override
@@ -62,208 +78,159 @@ public class RunExpansionEvalAll extends AppFunction {
 
     }
 
-    private Job createJob(Parameters parameters) {
-        Job job = new Job();
+    private Stage getSplitFeedbackStage(Parameters parameter) {
+        Stage stage = new Stage("splitFeedbacks");
 
-        job.add(getSplitStage(parameters));
-        job.add(getProcessStage(parameters));
-        job.add(getWriterStage(parameters));
+        stage.addOutput("feedbacks", new TfFacetFeedbackParams.FacetSourceFacetParamsFeedbackSourceFeedbackParamsOrder());
 
-        job.connect("split", "process", ConnectionAssignmentType.Each);
-        job.connect("process", "write", ConnectionAssignmentType.Combined);
+        List<String> inputFiles = parameter.getAsList("queryFile");
 
-        return job;
-    }
-
-    private Stage getSplitStage(Parameters parameter) {
-        Stage stage = new Stage("split");
-
-        stage.addOutput("expansionSubtopics", new TfQueryExpansionSubtopic.QidModelExpIdSidOrder());
-
-        File expFile = new File(parameter.getString("queryFile"));
         Parameters p = new Parameters();
         p.set("input", new ArrayList());
-        p.getList("input").add(expFile.getAbsolutePath());
+        for (String input : inputFiles) {
+            p.getList("input").add(new File(input).getAbsolutePath());
+        }
 
         stage.add(new Step(FileSource.class, p));
-        stage.add(new Step(GetQExpansionSubtopics.class, parameter));
+        stage.add(new Step(CreateExpansionFileAll.SplitFeedbacks.class, parameter));
+        stage.add(Utility.getSorter(new TfFacetFeedbackParams.FacetSourceFacetParamsFeedbackSourceFeedbackParamsOrder()));
+        stage.add(new OutputStep("feedbacks"));
+
+        return stage;
+    }
+
+    private Stage getSplitExpansionStage(Parameters parameter) {
+        Stage stage = new Stage("splitExpansions");
+
+        stage.addInput("feedbacks", new TfFacetFeedbackParams.FacetSourceFacetParamsFeedbackSourceFeedbackParamsOrder());
+        stage.addOutput("expansionSubtopics", new TfQueryExpansionSubtopic.QidModelExpIdSidOrder());
+
+        stage.add(new InputStep("feedbacks"));
+        stage.add(new Step(GetExpansions.class, parameter));
         stage.add(Utility.getSorter(new TfQueryExpansionSubtopic.QidModelExpIdSidOrder()));
         stage.add(new OutputStep("expansionSubtopics"));
 
         return stage;
     }
 
-    private Stage getProcessStage(Parameters parameters) {
-        Stage stage = new Stage("process");
+    private Stage getCmbExpansionStage(Parameters parameters) {
+        Stage stage = new Stage("cmbExpansions");
 
         stage.addInput("expansionSubtopics", new TfQueryExpansionSubtopic.QidModelExpIdSidOrder());
         stage.addOutput("expansionSubtopics2", new TfQueryExpansionSubtopic.QidModelExpIdSidOrder());
 
         stage.add(new InputStep("expansionSubtopics"));
-        stage.add(new Step(Eval.class, parameters));
-        stage.add(Utility.getSorter(new TfQueryExpansionSubtopic.QidModelExpIdSidOrder()));
+        stage.add(new Step(UniqueQueryExpansionSubtopic.class));
+        stage.add(new Step(FilterExpansionSubtopic.class, parameters));
         stage.add(new OutputStep("expansionSubtopics2"));
         return stage;
     }
-
-    private Stage getWriterStage(Parameters parameters) {
-        Stage stage = new Stage("write");
+    
+    private Stage getProcessStage(Parameters parameters) {
+        Stage stage = new Stage("process");
 
         stage.addInput("expansionSubtopics2", new TfQueryExpansionSubtopic.QidModelExpIdSidOrder());
 
         stage.add(new InputStep("expansionSubtopics2"));
-        stage.add(new Step(CombineAllEval.class, parameters));
-
+        stage.add(new Step(RunExpansionEvalOracleCandidate.Eval.class, parameters));
+        stage.add(new Step(DoNonethingForExpansionSubtopic.class, parameters));
         return stage;
     }
 
+    
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.TfQueryExpansionSubtopic")
-    @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryExpansionSubtopic")
-    public static class Eval extends StandardStep<TfQueryExpansionSubtopic, TfQueryExpansionSubtopic> {
-
-        String runDir;
-        String evalDir;
-        String sqrelDir;
-        TrecEvaluator evaluator;
-
-        public Eval(TupleFlowParameters parameters) throws Exception {
-            Parameters p = parameters.getJSON();
-            runDir = p.getString("expansionRunDir");
-            evalDir = p.getString("expansionEvalDir");
-            sqrelDir = p.getString("sqrelSplitDir");
-            evaluator = new TrecEvaluator(p.getString("trecEval"));
-        }
-
-        @Override
-        public void process(TfQueryExpansionSubtopic qes) throws IOException {
-            String rankFileName = Utility.getExpansionRunFileName(runDir, qes);
-            String qrelFileName = Utility.getQrelForOneSubtopic(sqrelDir, qes.qid, qes.sid);
-            File tevalFile = new File(Utility.getQExpSubtopicTevalFileName(evalDir, qes));
-            try {
-                if (tevalFile.exists()) {
-                    System.err.println("exsits " + tevalFile.getAbsolutePath());
-                } else {
-                    Utility.createDirectoryForFile(tevalFile);
-                    evaluator.evalAndOutput(qrelFileName, rankFileName, tevalFile);
-                    Utility.infoWritten(tevalFile);
-                }
-                processor.process(qes);
-            } catch (Exception ex) {
-                Logger.getLogger(RunExpansionEvalAll.class.getName()).log(Level.SEVERE, "error in eval " + qes.toString(), ex);
-            }
-
-        }
+    public static class DoNonethingForExpansionSubtopic implements Processor<TfQueryExpansionSubtopic> {
 
         @Override
         public void close() throws IOException {
-            processor.close();
         }
 
+        @Override
+        public void process(TfQueryExpansionSubtopic object) throws IOException {
+        }
     }
-
     /**
      * Read expansion from expansion file, and emit expansion with each
      * subtopics that has qrel in splitSqrel.
      */
     @Verified
-    @InputClass(className = "org.lemurproject.galago.tupleflow.types.FileName")
+    @InputClass(className = "edu.umass.ciir.fws.types.TfFacetFeedbackParams")
     @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryExpansionSubtopic")
-    public static class GetQExpansionSubtopics extends StandardStep<FileName, TfQueryExpansionSubtopic> {
+    public static class GetExpansions extends StandardStep<TfFacetFeedbackParams, TfQueryExpansionSubtopic> {
 
-        String model;
-        Parameters p;
+        ExpansionDirectory expansionDir;
+        String expansionModel;
 
-        public GetQExpansionSubtopics(TupleFlowParameters parameters) throws IOException {
-            p = parameters.getJSON();
-
+        public GetExpansions(TupleFlowParameters parameters) throws IOException {
+            Parameters p = parameters.getJSON();
+            expansionDir = new ExpansionDirectory(p);
+            expansionModel = p.getString("expansionModel");
         }
 
         @Override
-        public void process(FileName file) throws IOException {
+        public void process(TfFacetFeedbackParams ffParam) throws IOException {
+            Utility.infoProcessing(ffParam);
 
-        }
-
-        @Override
-        public void close() throws IOException {
-            model = p.getString("expansionModel");
-            FacetModelParamGenerator modelParams = new FacetModelParamGenerator(p);
-
-            List<String> expansionSources = p.getAsList("expansionSources");
-
-            for (String source : expansionSources) {
-                List<String> params = modelParams.getParams(source);
-                for (String param : params) {
-                    processAndEmit(source, param);
-
-                }
+            File expansionFie = expansionDir.getExpansionFile(ffParam, expansionModel);
+            List<QuerySubtopicExpansion> qses = QuerySubtopicExpansion.load(expansionFie, expansionModel);
+            for (QuerySubtopicExpansion qse : qses) {
+                processor.process(qse.toTfQueryExpansionSubtopic());
             }
-
-            processor.close();
-        }
-
-        private void processAndEmit(String source, String param) {
-//            List<QuerySubtopicExpansion> qses = QuerySubtopicExpansion.load(new File(file.filename), model);
-//            for (QuerySubtopicExpansion qse : qses) {
-//                File qrelFile = new File(Utility.getQrelForOneSubtopic(sqrelDir, qse.qid, qse.sid));
-//                if (qrelFile.exists()) {
-//                    processor.process(qse.toTfQueryExpansionSubtopic());
-//                }
-//            }
         }
     }
 
     @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.TfQueryExpansionSubtopic")
-    public static class CombineAllEval implements Processor<TfQueryExpansionSubtopic> {
+    @InputClass(className = "edu.umass.ciir.fws.types.TfQueryExpansionSubtopic", order = {"+qid", "+model", "+expId", "+sid"})
+    @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryExpansionSubtopic", order = {"+qid", "+model", "+expId", "+sid"})
+    public static class UniqueQueryExpansionSubtopic extends StandardStep<TfQueryExpansionSubtopic, TfQueryExpansionSubtopic> {
 
-        String evalDir;
-        File outfile;
-        BufferedWriter writer;
-        boolean first;
-        String[] metrics;
-
-        public CombineAllEval(TupleFlowParameters parameters) throws IOException {
-            Parameters p = parameters.getJSON();
-            evalDir = p.getString("expansionEvalDir");
-            outfile = new File(p.getString("expansionEvalFile"));
-            writer = Utility.getWriter(outfile);
-            first = true;
-        }
+        TfQueryExpansionSubtopic last = null;
 
         @Override
         public void process(TfQueryExpansionSubtopic qes) throws IOException {
-            File tevalFile = new File(Utility.getQExpSubtopicTevalFileName(evalDir, qes));
-            TrecEvaluator evaluator = new TrecEvaluator(tevalFile);
-            List<QueryMetrics> qms = evaluator.resultToQueryMetrics();
-
-            // verify metrics are consistent across different evaluation files
-            if (first) {
-                metrics = Arrays.copyOf(evaluator.metrics, evaluator.metrics.length);
-                first = false;
-                writer.write(evaluator.getHeader());
-                writer.newLine();
-            } else {
-                assert metrics.length == evaluator.metrics.length : "number of metrics not match " + tevalFile.getAbsolutePath();
-                for (int i = 0; i < metrics.length; i++) {
-                    assert metrics[i].equals(evaluator.metrics[i]) : "metrics not match " + tevalFile.getAbsolutePath();
-                }
-            }
-
-            for (QueryMetrics qm : qms) {
-                if (!qm.qid.equals("all")) {
-                    qm.qid = QuerySubtopicExpansion.toId(qes);
-                    writer.write(qm.toString());
-                    writer.newLine();
-                }
+            if (last == null) {
+                last = qes;
+            } else if (!qes.qid.equals(last.qid)
+                    || !qes.model.equals(last.model)
+                    || qes.expId != last.expId
+                    || !qes.sid.equals(last.sid)) {
+                processor.process(last);
+                last = qes;
             }
         }
 
         @Override
         public void close() throws IOException {
-            writer.close();
-            Utility.infoWritten(outfile);
+            if (last != null) {
+                processor.process(last);
+            }
+            processor.close();
         }
+
     }
 
+    @Verified
+    @InputClass(className = "edu.umass.ciir.fws.types.TfQueryExpansionSubtopic", order = {"+qid", "+model", "+expId", "+sid"})
+    @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryExpansionSubtopic", order = {"+qid", "+model", "+expId", "+sid"})
+    public static class FilterExpansionSubtopic extends StandardStep<TfQueryExpansionSubtopic, TfQueryExpansionSubtopic> {
+
+        ExpansionIdMap expIdMap;
+        ExpansionDirectory expansionDir;
+
+        public FilterExpansionSubtopic(TupleFlowParameters parameters) throws IOException {
+            Parameters p = parameters.getJSON();
+            expansionDir = new ExpansionDirectory(p);
+        }
+
+        @Override
+        public void process(TfQueryExpansionSubtopic qes) throws IOException {
+            File evalFile = new File(Utility.getQExpSubtopicTevalFileName(expansionDir.evalDir, qes));
+            if (evalFile.exists()) {
+                System.err.println("exists results for " + evalFile.getAbsolutePath());
+            } else {
+                processor.process(qes);
+            }
+        }
+    }
 }

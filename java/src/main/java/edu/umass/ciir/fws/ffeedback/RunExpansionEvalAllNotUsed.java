@@ -5,9 +5,9 @@
  */
 package edu.umass.ciir.fws.ffeedback;
 
+import edu.umass.ciir.fws.clustering.FacetModelParamGenerator;
 import edu.umass.ciir.fws.eval.QueryMetrics;
 import edu.umass.ciir.fws.eval.TrecEvaluator;
-import edu.umass.ciir.fws.query.QueryTopicSubtopicMap;
 import edu.umass.ciir.fws.types.TfQueryExpansionSubtopic;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedWriter;
@@ -42,11 +42,11 @@ import org.lemurproject.galago.tupleflow.types.FileName;
  *
  * @author wkong
  */
-public class RunExpansionEvalOracleCandidate extends AppFunction {
+public class RunExpansionEvalAllNotUsed extends AppFunction {
 
     @Override
     public String getName() {
-        return "run-expansion-eval-oracle";
+        return "run-expansion-eval-all";
     }
 
     @Override
@@ -78,12 +78,9 @@ public class RunExpansionEvalOracleCandidate extends AppFunction {
     private Stage getSplitStage(Parameters parameter) {
         Stage stage = new Stage("split");
 
-        ExpansionDirectory expansionDir = new ExpansionDirectory(parameter);
-
         stage.addOutput("expansionSubtopics", new TfQueryExpansionSubtopic.QidModelExpIdSidOrder());
 
-        String expansionModel = parameter.getString("expansionModel");
-        File expFile = expansionDir.getExpansionFile("oracle", expansionModel);
+        File expFile = new File(parameter.getString("queryFile"));
         Parameters p = new Parameters();
         p.set("input", new ArrayList());
         p.getList("input").add(expFile.getAbsolutePath());
@@ -132,9 +129,8 @@ public class RunExpansionEvalOracleCandidate extends AppFunction {
 
         public Eval(TupleFlowParameters parameters) throws Exception {
             Parameters p = parameters.getJSON();
-            ExpansionDirectory expansionDir = new ExpansionDirectory(p);
-            runDir = expansionDir.runDir;
-            evalDir = expansionDir.evalDir;
+            runDir = p.getString("expansionRunDir");
+            evalDir = p.getString("expansionEvalDir");
             sqrelDir = p.getString("sqrelSplitDir");
             evaluator = new TrecEvaluator(p.getString("trecEval"));
         }
@@ -148,15 +144,13 @@ public class RunExpansionEvalOracleCandidate extends AppFunction {
                 if (tevalFile.exists()) {
                     System.err.println("exsits " + tevalFile.getAbsolutePath());
                 } else {
-                    Utility.infoOpen(tevalFile);
                     Utility.createDirectoryForFile(tevalFile);
                     evaluator.evalAndOutput(qrelFileName, rankFileName, tevalFile);
                     Utility.infoWritten(tevalFile);
                 }
                 processor.process(qes);
             } catch (Exception ex) {
-                Logger.getLogger(RunExpansionEvalOracleCandidate.class.getName()).log(Level.SEVERE, "error in eval " + qes.toString(), ex);
-                throw new IOException();
+                Logger.getLogger(RunExpansionEvalAllNotUsed.class.getName()).log(Level.SEVERE, "error in eval " + qes.toString(), ex);
             }
 
         }
@@ -178,26 +172,44 @@ public class RunExpansionEvalOracleCandidate extends AppFunction {
     public static class GetQExpansionSubtopics extends StandardStep<FileName, TfQueryExpansionSubtopic> {
 
         String model;
-        QueryTopicSubtopicMap queryMap;
+        Parameters p;
 
         public GetQExpansionSubtopics(TupleFlowParameters parameters) throws IOException {
-            Parameters p = parameters.getJSON();
-            model = p.getString("expansionModel");
-            File selectionFile = new File(p.getString("subtopicSelectedIdFile"));
-            queryMap = new QueryTopicSubtopicMap(selectionFile);
+            p = parameters.getJSON();
+
         }
 
         @Override
         public void process(FileName file) throws IOException {
-            List<QuerySubtopicExpansion> qses = QuerySubtopicExpansion.load(new File(file.filename), model);
-            for (QuerySubtopicExpansion qse : qses) {
-                processor.process(qse.toTfQueryExpansionSubtopic());
-            }
+
         }
 
         @Override
         public void close() throws IOException {
+            model = p.getString("expansionModel");
+            FacetModelParamGenerator modelParams = new FacetModelParamGenerator(p);
+
+            List<String> expansionSources = p.getAsList("expansionSources");
+
+            for (String source : expansionSources) {
+                List<String> params = modelParams.getParams(source);
+                for (String param : params) {
+                    processAndEmit(source, param);
+
+                }
+            }
+
             processor.close();
+        }
+
+        private void processAndEmit(String source, String param) {
+//            List<QuerySubtopicExpansion> qses = QuerySubtopicExpansion.load(new File(file.filename), model);
+//            for (QuerySubtopicExpansion qse : qses) {
+//                File qrelFile = new File(Utility.getQrelForOneSubtopic(sqrelDir, qse.qid, qse.sid));
+//                if (qrelFile.exists()) {
+//                    processor.process(qse.toTfQueryExpansionSubtopic());
+//                }
+//            }
         }
     }
 
@@ -213,11 +225,8 @@ public class RunExpansionEvalOracleCandidate extends AppFunction {
 
         public CombineAllEval(TupleFlowParameters parameters) throws IOException {
             Parameters p = parameters.getJSON();
-            ExpansionDirectory expansionDir = new ExpansionDirectory(p);
-            evalDir = expansionDir.evalDir;
-            String model = p.getString("expansionModel");
-            outfile = expansionDir.getExpansionEvalFile("oracle", model);
-            Utility.infoOpen(outfile);
+            evalDir = p.getString("expansionEvalDir");
+            outfile = new File(p.getString("expansionEvalFile"));
             writer = Utility.getWriter(outfile);
             first = true;
         }
