@@ -48,7 +48,7 @@ public class ExtractFacetAnnotations extends AppFunction {
 
     private void createAnnotatorFacetDir(List<FacetAnnotation> anootations, Parameters p) throws IOException {
         String allFacetDir = p.getString("facetDir");
-        String facetDir = Utility.getFileName(allFacetDir, "annotator");
+        String facetDir = Utility.getFileName(allFacetDir, "annotator", "facet");
         Utility.createDirectory(facetDir);
         
         for(FacetAnnotation fa : anootations) {
