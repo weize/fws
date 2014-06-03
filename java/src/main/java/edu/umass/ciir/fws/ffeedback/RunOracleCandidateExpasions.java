@@ -170,13 +170,8 @@ public class RunOracleCandidateExpasions extends AppFunction {
                 for (ScoredItem item : facet.items) {
                     FeedbackTerm ft = new FeedbackTerm(item.item, fidx, tidx);
                     QueryExpansion qe = new QueryExpansion(qid, oriQuery, expansionModel, ft.toString(), expIdMap);
-                    File runFile = new File(Utility.getExpansionRunFileName(expansionDir.runDir, qe));
-                    if (runFile.exists()) {
-                        System.err.println("exists results for " + runFile.getAbsolutePath());
-                    } else {
-                        qe.expand();
-                        processor.process(qe.toTfQueryExpansion());
-                    }
+                    qe.expand();
+                    processor.process(qe.toTfQueryExpansion());
                 }
             }
 
