@@ -1,0 +1,8 @@
+package edu.umass.ciir.fws.types;
+
+type TfFeedbackParams {
+	String source;
+        String params;
+	
+	order: +source +params;
+}

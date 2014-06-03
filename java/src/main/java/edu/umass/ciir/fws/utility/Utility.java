@@ -2,6 +2,7 @@ package edu.umass.ciir.fws.utility;
 
 import edu.emory.mathcs.backport.java.util.Arrays;
 import edu.umass.ciir.fws.ffeedback.QueryExpansion;
+import edu.umass.ciir.fws.types.TfFacetFeedbackParams;
 import edu.umass.ciir.fws.types.TfQueryExpansion;
 import edu.umass.ciir.fws.types.TfQueryExpansionSubtopic;
 import java.io.BufferedReader;
@@ -311,11 +312,10 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         return getFileNameWithSuffix(evalDir, qid, name, "teval");
     }
 
-    public static String getOracleFeedbackFile(String feedbackDir, String model, double threshold) {
-        String name = "oracle." + model + "." + parametersToFileNameString(threshold);
-        return getFileNameWithSuffix(feedbackDir, name, "fdbk");
-    }
-
+//    public static String getOracleFeedbackFile(String feedbackDir, String model, double threshold) {
+//        String name = "all.oracle." + parametersToFileNameString(model, threshold);
+//        return getFileNameWithSuffix(feedbackDir, name, "fdbk");
+//    }
     public static String getQExpSubtopicTevalFileName(String evalDir, TfQueryExpansionSubtopic qes) {
         String name = String.format("%s-%s-%s-%d", qes.qid, qes.sid, qes.model, qes.expId);
         return getFileNameWithSuffix(evalDir, qes.qid, name, "teval");
@@ -370,6 +370,23 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         String name = facetParam.isEmpty() ? String.format("%s.annnotator.fdbk", model)
                 : String.format("%s.%s.annnotator.fdbk", model, facetParam);
         return Utility.getFileName(feedbackDir, name);
+    }
+
+    public static String getFeedbackFileName(String allFeedbackDir, String facetSource, String facetParams,
+            String feedbackSource, String feedbackParams) {
+        facetParams = Utility.parametersToFileNameString(facetParams);
+        feedbackParams = Utility.parametersToFileNameString(feedbackParams);
+        String facetName = facetParams.isEmpty() ? String.format("%s", facetSource)
+                : String.format("%s.%s", facetSource, facetParams);
+
+        String feedbackName = feedbackParams.isEmpty() ? String.format("%s", feedbackSource)
+                : String.format("%s.%s", feedbackSource, feedbackParams);
+        String name = String.format("%s.%s.fdbk", facetName, feedbackName);
+        return Utility.getFileName(allFeedbackDir, facetSource, name);
+    }
+
+    public static String getFeedbackFileName(String allFeedbackDir, TfFacetFeedbackParams param) {
+        return getFeedbackFileName(allFeedbackDir, param.facetSource, param.facetParams, param.feedbackSource, param.feedbackParams);
     }
 
 }

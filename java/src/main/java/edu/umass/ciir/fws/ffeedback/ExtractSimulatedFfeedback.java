@@ -5,13 +5,11 @@
  */
 package edu.umass.ciir.fws.ffeedback;
 
-import edu.emory.mathcs.backport.java.util.Arrays;
-import edu.umass.ciir.fws.clustering.EvalFacetModels;
 import edu.umass.ciir.fws.clustering.FacetModelParamGenerator;
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.eval.QueryFacetEvaluator;
-import edu.umass.ciir.fws.types.TfParameters;
-import edu.umass.ciir.fws.types.TfQueryParameters;
+import edu.umass.ciir.fws.types.TfFacetFeedbackParams;
+import edu.umass.ciir.fws.types.TfFeedbackParams;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -49,7 +47,7 @@ public class ExtractSimulatedFfeedback extends AppFunction {
 
     @Override
     public String getHelpString() {
-        return "fws extract-simulated-ffeedback config.json\n";
+        return "fws extract-simulated-ffeedback --feedbackSourceType=(oracle|annotator) config.json\n";
     }
 
     @Override
@@ -68,11 +66,11 @@ public class ExtractSimulatedFfeedback extends AppFunction {
 
         return job;
     }
-    
+
     private Stage getSplitStage(Parameters parameter) {
         Stage stage = new Stage("split");
 
-        stage.addOutput("params", new TfParameters.ParamsOrder());
+        stage.addOutput("params", new TfFacetFeedbackParams.FacetSourceFacetParamsFeedbackSourceFeedbackParamsOrder());
 
         List<String> inputFiles = parameter.getAsList("queryFile");
 
@@ -83,8 +81,9 @@ public class ExtractSimulatedFfeedback extends AppFunction {
         }
 
         stage.add(new Step(FileSource.class, p));
-        stage.add(new Step(SplitParams.class, parameter));
-        stage.add(Utility.getSorter(new TfParameters.ParamsOrder()));
+        stage.add(new Step(SplitFeedbacks.class, parameter));
+        stage.add(new Step(SplitFacets.class, parameter));
+        stage.add(Utility.getSorter(new TfFacetFeedbackParams.FacetSourceFacetParamsFeedbackSourceFeedbackParamsOrder()));
         stage.add(new OutputStep("params"));
 
         return stage;
@@ -93,7 +92,7 @@ public class ExtractSimulatedFfeedback extends AppFunction {
     private Stage getProcessStage(Parameters parameters) {
         Stage stage = new Stage("process");
 
-        stage.addInput("params", new TfParameters.ParamsOrder());
+        stage.addInput("params", new TfFacetFeedbackParams.FacetSourceFacetParamsFeedbackSourceFeedbackParamsOrder());
 
         stage.add(new InputStep("params"));
         stage.add(new Step(ExtractFeedback.class, parameters));
@@ -102,15 +101,14 @@ public class ExtractSimulatedFfeedback extends AppFunction {
 
     @Verified
     @InputClass(className = "org.lemurproject.galago.tupleflow.types.FileName")
-    @OutputClass(className = "edu.umass.ciir.fws.types.TfParameters")
-    public static class SplitParams extends StandardStep<FileName, TfParameters> {
+    @OutputClass(className = "edu.umass.ciir.fws.types.TfFeedbackParams")
+    public static class SplitFeedbacks extends StandardStep<FileName, TfFeedbackParams> {
 
         Parameters p;
         FacetModelParamGenerator facetParam;
 
-        public SplitParams(TupleFlowParameters parameters) throws IOException {
+        public SplitFeedbacks(TupleFlowParameters parameters) throws IOException {
             p = parameters.getJSON();
-            facetParam = new FacetModelParamGenerator(p);
 
         }
 
@@ -120,16 +118,13 @@ public class ExtractSimulatedFfeedback extends AppFunction {
 
         @Override
         public void close() throws IOException {
-            List<String> models = p.getAsList("facetModelsToSimulateFeedback");
-            String allFeedbackDir = p.getString("feedbackDir");
+            FeedbackParameterGenerator paramGen = new FeedbackParameterGenerator(p);
+            String feedbackType = p.getString("feedbackSource");
 
-            for (String model : models) {
-                String fdbkDir = Utility.getFileName(allFeedbackDir, model);
-                Utility.createDirectory(fdbkDir);
-                for (String param : facetParam.getParams(model)) {
-                    String newParam = Utility.parametersToString(model, param);
-                    processor.process(new TfParameters(newParam));
-                }
+            List<String> params = paramGen.getParams(feedbackType);
+
+            for (String param : params) {
+                processor.process(new TfFeedbackParams(feedbackType, param));
             }
 
             processor.close();
@@ -138,36 +133,61 @@ public class ExtractSimulatedFfeedback extends AppFunction {
     }
 
     @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.TfParameters")
-    public static class ExtractFeedback implements Processor<TfParameters> {
+    @InputClass(className = "edu.umass.ciir.fws.types.TfFeedbackParams")
+    @OutputClass(className = "edu.umass.ciir.fws.types.TfFacetFeedbackParams")
+    public static class SplitFacets extends StandardStep<TfFeedbackParams, TfFacetFeedbackParams> {
+
+        Parameters p;
+        FacetModelParamGenerator facetParam;
+
+        public SplitFacets(TupleFlowParameters parameters) throws IOException {
+            p = parameters.getJSON();
+            facetParam = new FacetModelParamGenerator(p);
+
+        }
+
+        @Override
+        public void process(TfFeedbackParams fdbkParams) throws IOException {
+            List<String> models = p.getAsList("facetModelsToSimulateFeedback");
+            String allFeedbackDir = p.getString("feedbackDir");
+
+            for (String model : models) {
+                String fdbkDir = Utility.getFileName(allFeedbackDir, model);
+                Utility.createDirectory(fdbkDir);
+                for (String param : facetParam.getParams(model)) {
+                    processor.process(new TfFacetFeedbackParams(model, param, fdbkParams.source, fdbkParams.params));
+                }
+            }
+        }
+    }
+
+    @Verified
+    @InputClass(className = "edu.umass.ciir.fws.types.TfFacetFeedbackParams")
+    public static class ExtractFeedback implements Processor<TfFacetFeedbackParams> {
 
         QueryFacetEvaluator evaluator;
         String allFacetDir;
         String allFeedbackDir;
-        File annotatorFdbkFile;
 
         public ExtractFeedback(TupleFlowParameters parameters) throws IOException {
             Parameters p = parameters.getJSON();
-            allFacetDir= p.getString("facetDir");
-            allFeedbackDir= p.getString("feedbackDir");
-            annotatorFdbkFile = new File(p.getString("annotatorFeedback"));
+            allFacetDir = p.getString("facetDir");
+            allFeedbackDir = p.getString("feedbackDir");
         }
 
         @Override
-        public void process(TfParameters param) throws IOException {
+        public void process(TfFacetFeedbackParams param) throws IOException {
             Utility.infoProcessing(param);
-            String [] params = Utility.splitParameters(param.params);
-            String model = params[0];
-            String facetParam = Utility.parametersToString(Arrays.asList(params).subList(1, params.length));
-            
-            String facetDir = Utility.getFileName(allFacetDir, model, "facet");
-            String feedbackDir = Utility.getFileName(allFeedbackDir, model);
-            File outfile = new File(Utility.getAnnotatorFeedbackFileName(feedbackDir, model, facetParam));
 
+            File srcFdbkFile = new File(Utility.getFeedbackFileName(allFeedbackDir, param.feedbackSource, "", param.feedbackSource, param.feedbackParams));
+            String facetDir = Utility.getFileName(allFacetDir, param.facetSource, "facet");
+            File outfile = new File(Utility.getFeedbackFileName(allFeedbackDir, param));
+
+            Utility.infoOpen(outfile);
             BufferedWriter writer = Utility.getWriter(outfile);
-            List<FacetFeedback> anntatorFkList = FacetFeedback.load(annotatorFdbkFile);
+            List<FacetFeedback> anntatorFkList = FacetFeedback.load(srcFdbkFile);
             for (FacetFeedback anFk : anntatorFkList) {
-                File facetFile = new File(Utility.getFacetFileName(facetDir, anFk.qid, model, facetParam));
+                File facetFile = new File(Utility.getFacetFileName(facetDir, anFk.qid, param.facetSource, param.facetParams));
                 List<ScoredFacet> facets = ScoredFacet.loadFacets(facetFile);
                 FacetFeedback simulatedFdbk = FacetFeedback.getSimulatedFfeedback(anFk, facets);
                 writer.write(simulatedFdbk.toString());
