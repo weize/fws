@@ -148,16 +148,18 @@ public class RunOracleCandidateExpasions extends AppFunction {
             modelParams = new FacetModelParamGenerator(p);
             allFacetDir = p.getString("facetDir");
             expansionDir = new ExpansionDirectory(p);
-            if (expansionDir.expansionIdFile.exists()) {
-                expIdMap = new ExpansionIdMap(expansionDir.expansionIdFile);
-            } else {
-                expIdMap = new ExpansionIdMap();
-            }
             facetSources = p.getAsList("facetSources");
         }
 
         @Override
         public void process(TfQuery query) throws IOException {
+            File expIdFile = expansionDir.getExpansionIdFile(query.id);
+            if (expIdFile.exists()) {
+                expIdMap = new ExpansionIdMap(expIdFile);
+            } else {
+                expIdMap = new ExpansionIdMap();
+            }
+
             for (String source : facetSources) {
                 List<String> params = modelParams.getParams(source);
                 for (String param : params) {
@@ -165,16 +167,16 @@ public class RunOracleCandidateExpasions extends AppFunction {
 
                 }
             }
+            
+            Utility.infoOpen(expIdFile);
+            expIdMap.output(expIdFile); // update ids
+            Utility.infoWritten(expIdFile);
         }
 
         @Override
         public void close() throws IOException {
             // closing
             processor.close();
-            Utility.infoOpen(expansionDir.expansionIdFile);
-            expIdMap.output(expansionDir.expansionIdFile); // update ids
-            Utility.infoWritten(expansionDir.expansionIdFile);
-
         }
 
         private void processAndEmit(String source, TfQuery query, String param) throws IOException {

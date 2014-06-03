@@ -28,5 +28,9 @@ public class ExpansionDirectory {
     public File getExpansionFile(String source, String expansionModel) {
         return new File(Utility.getFileNameWithSuffix(allExpansionDir, source, "expansion." + expansionModel, "gz"));
     }
+    
+    public File getExpansionIdFile(String qid) {
+        return new File(Utility.getFileNameWithSuffix(allExpansionDir, "id", "expansion." + qid + ".id"));
+    }
 
 }
