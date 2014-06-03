@@ -177,7 +177,7 @@ public class RunOracleCandidateExpasions extends AppFunction {
         }
 
         private void processAndEmit(String source, String qid, String param) throws IOException {
-            String facetDir = Utility.getFileName(allFacetDir, source);
+            String facetDir = Utility.getFileName(allFacetDir, source, "facet");
             File facetFile = new File(Utility.getFacetFileName(facetDir, qid, source, param));
             List<ScoredFacet> facets = ScoredFacet.loadFacets(facetFile);
 
