@@ -5,7 +5,7 @@
  */
 package edu.umass.ciir.fws.ffeedback;
 
-import edu.umass.ciir.fws.anntation.FeedbackTerm;
+import edu.umass.ciir.fws.types.TfQueryExpansion;
 import edu.umass.ciir.fws.types.TfQueryExpansionSubtopic;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
@@ -30,6 +30,12 @@ public class QuerySubtopicExpansion extends QueryExpansion {
     }
 
     public QuerySubtopicExpansion(QueryExpansion qe, String sid) {
+        super(qe.qid, qe.oriQuery, qe.model, qe.expansion, qe.expId);
+        this.sid = sid;
+        this.id = toId(qid, sid, model, expId);
+    }
+    
+    public QuerySubtopicExpansion(TfQueryExpansion qe, String sid) {
         super(qe.qid, qe.oriQuery, qe.model, qe.expansion, qe.expId);
         this.sid = sid;
         this.id = toId(qid, sid, model, expId);

@@ -118,7 +118,7 @@ public class QueryExpansion {
     }
 
     public TfQueryExpansion toTfQueryExpansion() {
-        return new TfQueryExpansion(qid, model, expId, expQuery);
+        return new TfQueryExpansion(qid, model, expId, expQuery, oriQuery, expansion);
     }
 
 //    @Override
