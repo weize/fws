@@ -68,6 +68,7 @@
 	"oracleFeedbackDir" : "../exp/feedback/oracle",
 	"feedbackDir" : "../exp/feedback",
 	"oracleFeedbackImprvThresholds": [0.001, 0.005, 0.01, 0.02, 0.03, 0.04, 0.05],
+	"oracleExpansionModels": ["sts"],
 	"expansionDir" : "../exp/expansion",
 	"sdmSrank" : "../exp/srank/sdm/sdm.srank",
 	"sdmSeval" : "../exp/srank/sdm/sdm.srank.eval",

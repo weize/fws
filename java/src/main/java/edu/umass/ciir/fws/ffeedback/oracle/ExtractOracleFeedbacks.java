@@ -6,8 +6,10 @@
 package edu.umass.ciir.fws.ffeedback.oracle;
 
 import edu.umass.ciir.fws.anntation.FeedbackTerm;
+import edu.umass.ciir.fws.clustering.FacetModelParamGenerator;
 import edu.umass.ciir.fws.eval.QueryMetrics;
 import edu.umass.ciir.fws.eval.TrecEvaluator;
+import edu.umass.ciir.fws.ffeedback.ExpansionDirectory;
 import edu.umass.ciir.fws.ffeedback.FacetFeedback;
 import edu.umass.ciir.fws.ffeedback.QuerySubtopicExpansion;
 import static edu.umass.ciir.fws.ffeedback.RunExpasions.setParameters;
@@ -55,26 +57,23 @@ public class ExtractOracleFeedbacks extends AppFunction {
 
     @Override
     public void run(Parameters p, PrintStream output) throws Exception {
-        p.set("expansionSource", "allterm");
-        p.set("expansionModel", "sts");
-        setParameters(p);
-        
-        File expansionFile = new File(p.getString("expansionFile"));
-        String model = p.getString("expansionModel");
+        String expansionModel = p.getString("expansionModel");
+        ExpansionDirectory expansionDir = new ExpansionDirectory(p);
+
+        File expansionFile = expansionDir.getExpansionFile("oracle", expansionModel);
         File sdmSevalFile = new File(p.getString("sdmSeval"));
-        File expansionEvalFile = new File(p.getString("expansionEvalFile"));
-        String expansionEvalImprFile = expansionEvalFile + ".imprv";
-        String feedbackDir = p.getString("oracleFeedbackDir");
+        File expansionEvalFile = expansionDir.getExpansionEvalFile("oracle", expansionModel);
+        File expansionEvalImprFile = expansionDir.getExpansionEvalImprvFile("oracle", expansionModel);
+        String feedbackDir = Utility.getFileName(p.getString("feedbackDir"));
         List<Double> threshoulds = p.getAsList("oracleFeedbackImprvThresholds", Double.class);
 
-        
         TreeMap<String, ArrayList<Improvement>> subtopicImprvs = calcImprovements(
-                expansionEvalFile, sdmSevalFile, expansionFile, model);
+                expansionEvalFile, sdmSevalFile, expansionFile, expansionModel);
 
-        outputImprovementFile(subtopicImprvs, expansionEvalImprFile, model);
+        outputImprovementFile(subtopicImprvs, expansionEvalImprFile, expansionModel);
 
         for (double threshold : threshoulds) {
-            outputFeedbackTerms(subtopicImprvs, threshold, feedbackDir, model);
+            outputFeedbackTerms(subtopicImprvs, threshold, feedbackDir, expansionModel);
         }
 
     }
@@ -122,7 +121,8 @@ public class ExtractOracleFeedbacks extends AppFunction {
     }
 
     private void outputFeedbackTerms(TreeMap<String, ArrayList<Improvement>> subtopicImprvs, double threshold, String feedbackDir, String model) throws IOException {
-        File outfile = new File(Utility.getOracleFeedbackFile(feedbackDir, model, threshold));
+        String params = Utility.parametersToString(model, threshold);
+        File outfile = new File(Utility.getFeedbackFileName(feedbackDir, "oracle", "", "oracle", params));
         BufferedWriter writer = Utility.getWriter(outfile);
         for (String qidSid : subtopicImprvs.keySet()) {
             ArrayList<FeedbackTerm> selected = new ArrayList<>();
@@ -139,8 +139,7 @@ public class ExtractOracleFeedbacks extends AppFunction {
         Utility.infoWritten(outfile);
     }
 
-    private void outputImprovementFile(TreeMap<String, ArrayList<Improvement>> subtopicImprvs, String expansionEvalImprFile, String model) throws IOException {
-        File outfile = new File(expansionEvalImprFile);
+    private void outputImprovementFile(TreeMap<String, ArrayList<Improvement>> subtopicImprvs, File outfile, String model) throws IOException {
         BufferedWriter writer = Utility.getWriter(outfile);
 
         for (String qidSid : subtopicImprvs.keySet()) {

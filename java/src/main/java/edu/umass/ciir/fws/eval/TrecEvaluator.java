@@ -14,7 +14,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -25,8 +24,8 @@ import java.util.TreeMap;
 public class TrecEvaluator {
 
     public String trecEval;
-    String metricParam = "-m map -m ndcg_cut.10,20 -m P.10,20,100,1000";
-    int metricsNum = 7;
+    String metricParam = "-m map -m map_cut.10,20 -m ndcg_cut.10,20 -m P.10,20 -m recip_rank";
+    int metricsNum = 8;
     String results; // stdout returned from trec_eval
     public String[] metrics; // name of metrics read from trec_eval results
 
