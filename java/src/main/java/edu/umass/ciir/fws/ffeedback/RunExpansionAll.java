@@ -132,7 +132,7 @@ public class RunExpansionAll extends AppFunction {
 
         FacetModelParamGenerator facetParamGen;
         FeedbackParameterGenerator feedbackParamGen;
-        final static int  maxFeedbackTime = 100;
+        final static int  maxFeedbackTime = 50;
 
         String allFeedbackDir;
         ExpansionIdMap expIdMap;
@@ -197,7 +197,7 @@ public class RunExpansionAll extends AppFunction {
 
                         FacetFeedback ffbk = FacetFeedback.parseFromExpansionString(expansion);
                         int time = FfeedbackTimeEstimator.time(ffbk);
-                        if (time < maxFeedbackTime) {
+                        if (time <= maxFeedbackTime) {
                             QueryExpansion qe = new QueryExpansion(query.id, oriQuery, expansionModel, expansion, expIdMap);
                             qe.expand();
                             processor.process(qe.toTfQueryExpansion());
