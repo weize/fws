@@ -31,7 +31,7 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 @Verified
 @InputClass(className = "edu.umass.ciir.fws.types.TfQueryExpansion")
 public class RunExpandedQuery implements Processor<TfQueryExpansion> {
-    
+
     Retrieval retrieval;
     Parameters p;
     ExpansionDirectory expansionDir;
@@ -47,7 +47,7 @@ public class RunExpandedQuery implements Processor<TfQueryExpansion> {
         Utility.infoProcessing(qe);
         File outfile = new File(Utility.getExpansionRunFileName(expansionDir.runDir, qe));
         Utility.createDirectoryForFile(outfile);
-        
+
         String queryNumber = qe.qid;
         String queryText = qe.expanedQuery;
 
@@ -73,6 +73,9 @@ public class RunExpandedQuery implements Processor<TfQueryExpansion> {
                 writer.write(sd.toTRECformat(queryNumber));
                 writer.newLine();
             }
+        } else {
+            writer.write(String.format("%s Q0 clueweb09-xxxxxx-xx-xxxxx 1 -1 galago", queryNumber));
+            writer.newLine();
         }
         writer.close();
         Utility.infoWritten(outfile);
