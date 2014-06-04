@@ -17,6 +17,7 @@ import java.util.List;
 public class QueryExpansion {
 
     
+
     public String qid;
     public String model;
     public long expId;
@@ -53,6 +54,8 @@ public class QueryExpansion {
                 return expandFeedbackTermSimple(originalQuery, expansion);
             case "ffs":
                 return expandFacetFeedbackSimple(originalQuery, expansion);
+            case "ftor":
+                return expandFeedbackTermOr(originalQuery, expansion);
         }
         return null;
     }
@@ -61,12 +64,26 @@ public class QueryExpansion {
         FeedbackTerm ft = FeedbackTerm.parseFromString(expansion);
         return String.format("#combine:0=0.6:1=0.4(#sdm( %s ) #combine( %s ))", originalQuery, ft.term);
     }
-    
+
     private static String expandSingleTermBoolean(String originalQuery, String expansion) {
         FeedbackTerm ft = FeedbackTerm.parseFromString(expansion);
         return String.format("#require(#exist(#od:1( %s )) #sdm( %s )) ", ft.term, originalQuery);
     }
-
+    
+    private static String expandFeedbackTermOr(String originalQuery, String expansion) {
+        FacetFeedback feedback = FacetFeedback.parseFromExpansionString(expansion);
+        StringBuilder query = new StringBuilder();
+        if (feedback.terms.isEmpty()) {
+            return String.format("#sdm( %s )", originalQuery);
+        } else {
+            query.append("#require( #any( ");
+            for (FeedbackTerm term : feedback.terms) {
+                query.append(String.format(" #exist(#od:1( %s )) ", term.term));
+            }
+            query.append(String.format(") #sdm( %s ))", originalQuery));
+        }
+        return query.toString();
+    }
 
     /**
      * #combine( query #combine( #combine(term1) #combine(term2) ...))
