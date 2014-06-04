@@ -51,4 +51,22 @@ public class ExpansionDirectory {
 
     }
 
+    File getExpansionEvalFile(TfFacetFeedbackParams param, String expansionModel) {
+        File feedbackFile = new File(Utility.getFeedbackFileName("test", param));
+        String dirName = feedbackFile.getName();
+        return new File(Utility.getFileNameWithSuffix(allExpansionDir, param.facetSource, dirName, "expansion." + expansionModel, "eval"));
+    }
+
+    File getExpansionTimeCostEvalFile(TfFacetFeedbackParams param, String expansionModel) {
+        File feedbackFile = new File(Utility.getFeedbackFileName("test", param));
+        String dirName = feedbackFile.getName();
+        return new File(Utility.getFileNameWithSuffix(allExpansionDir, param.facetSource, dirName, "expansion." + expansionModel, "tceval"));
+    }
+
+    File getExpansionTimeCostEvalAvgFile(TfFacetFeedbackParams param, String expansionModel) {
+        File feedbackFile = new File(Utility.getFeedbackFileName("test", param));
+        String dirName = feedbackFile.getName();
+        return new File(Utility.getFileNameWithSuffix(allExpansionDir, param.facetSource, dirName, "expansion." + expansionModel, "avgtceval"));
+    }
+
 }

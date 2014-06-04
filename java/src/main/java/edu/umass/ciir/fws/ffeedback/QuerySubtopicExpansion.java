@@ -21,7 +21,7 @@ import java.util.List;
  */
 public class QuerySubtopicExpansion extends QueryExpansion {
 
-    String sid;
+    public String sid;
 
     public QuerySubtopicExpansion(String qid, String sid, String oriQuery, String model, String expansion, long expId) {
         super(qid, oriQuery, model, expansion, expId);
@@ -63,6 +63,10 @@ public class QuerySubtopicExpansion extends QueryExpansion {
     }
 
     public static String toId(TfQueryExpansionSubtopic qes) {
+        return toId(qes.qid, qes.sid, qes.model, qes.expId);
+    }
+    
+    public static String toId(QuerySubtopicExpansion qes) {
         return toId(qes.qid, qes.sid, qes.model, qes.expId);
     }
     

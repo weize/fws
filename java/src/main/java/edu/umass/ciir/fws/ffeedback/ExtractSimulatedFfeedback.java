@@ -184,8 +184,8 @@ public class ExtractSimulatedFfeedback extends AppFunction {
             File outfile = new File(Utility.getFeedbackFileName(allFeedbackDir, param));
 
             Utility.infoOpen(outfile);
-            BufferedWriter writer = Utility.getWriter(outfile);
             List<FacetFeedback> anntatorFkList = FacetFeedback.load(srcFdbkFile);
+            BufferedWriter writer = Utility.getWriter(outfile);
             for (FacetFeedback anFk : anntatorFkList) {
                 File facetFile = new File(Utility.getFacetFileName(facetDir, anFk.qid, param.facetSource, param.facetParams));
                 List<ScoredFacet> facets = ScoredFacet.loadFacets(facetFile);

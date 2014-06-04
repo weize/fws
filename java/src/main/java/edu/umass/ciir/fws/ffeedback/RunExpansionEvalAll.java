@@ -5,19 +5,9 @@
  */
 package edu.umass.ciir.fws.ffeedback;
 
-import edu.umass.ciir.fws.anntation.FeedbackTerm;
-import edu.umass.ciir.fws.clustering.FacetModelParamGenerator;
-import edu.umass.ciir.fws.clustering.ScoredFacet;
-import edu.umass.ciir.fws.clustering.ScoredItem;
-import edu.umass.ciir.fws.query.QueryFileParser;
-import edu.umass.ciir.fws.query.QueryTopicSubtopicMap;
 import edu.umass.ciir.fws.types.TfFacetFeedbackParams;
-import edu.umass.ciir.fws.types.TfQuery;
-import edu.umass.ciir.fws.types.TfQueryExpansion;
 import edu.umass.ciir.fws.types.TfQueryExpansionSubtopic;
-import edu.umass.ciir.fws.types.TfQueryParameters;
 import edu.umass.ciir.fws.utility.Utility;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -38,7 +28,6 @@ import org.lemurproject.galago.tupleflow.execution.OutputStep;
 import org.lemurproject.galago.tupleflow.execution.Stage;
 import org.lemurproject.galago.tupleflow.execution.Step;
 import org.lemurproject.galago.tupleflow.execution.Verified;
-import org.lemurproject.galago.tupleflow.types.FileName;
 
 /**
  *

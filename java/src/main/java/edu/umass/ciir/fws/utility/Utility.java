@@ -2,6 +2,7 @@ package edu.umass.ciir.fws.utility;
 
 import edu.emory.mathcs.backport.java.util.Arrays;
 import edu.umass.ciir.fws.ffeedback.QueryExpansion;
+import edu.umass.ciir.fws.ffeedback.QuerySubtopicExpansion;
 import edu.umass.ciir.fws.types.TfFacetFeedbackParams;
 import edu.umass.ciir.fws.types.TfQueryExpansion;
 import edu.umass.ciir.fws.types.TfQueryExpansionSubtopic;
@@ -320,6 +321,11 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         String name = String.format("%s-%s-%s-%d", qes.qid, qes.sid, qes.model, qes.expId);
         return getFileNameWithSuffix(evalDir, qes.qid, name, "teval");
     }
+    
+    public static String getQExpSubtopicTevalFileName(String evalDir, QuerySubtopicExpansion qes) {
+        String name = String.format("%s-%s-%s-%d", qes.qid, qes.sid, qes.model, qes.expId);
+        return getFileNameWithSuffix(evalDir, qes.qid, name, "teval");
+    }
 
     public static String getExpansionImprFile(String expansionDir, String model) {
         return getFileName(expansionDir, "expansion." + model + ".imprv");
@@ -389,4 +395,5 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         return getFeedbackFileName(allFeedbackDir, param.facetSource, param.facetParams, param.feedbackSource, param.feedbackParams);
     }
 
+    
 }
