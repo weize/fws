@@ -3,7 +3,7 @@ require 'config.pl';
 my $dir = $ARGV[0];
 my $rmOrNot = $ARGV[1]  ? $ARGV[1] : "no";
 my @files = <$dir/*>; 
-
+print "processing $dir/*\n";
 for my $file (@files) {
 	process($file);
 }
