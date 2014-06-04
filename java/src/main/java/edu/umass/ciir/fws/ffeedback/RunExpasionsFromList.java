@@ -56,8 +56,8 @@ public class RunExpasionsFromList extends AppFunction {
         Job job = new Job();
 
         job.add(getSplitStage(parameters));
-        job.add(getSplitExpansionStage(parameters));
-        job.add(getCmbExpansionStage(parameters));
+        //job.add(getSplitExpansionStage(parameters));
+        //job.add(getCmbExpansionStage(parameters));
         job.add(getProcessStage(parameters));
 
         job.connect("split", "splitExpansions", ConnectionAssignmentType.Each);
@@ -110,7 +110,7 @@ public class RunExpasionsFromList extends AppFunction {
 
         @Override
         public void process(FileName fileName) throws IOException {
-//            BufferedReader reader = Utility.ge
+            
         }
     }
 
