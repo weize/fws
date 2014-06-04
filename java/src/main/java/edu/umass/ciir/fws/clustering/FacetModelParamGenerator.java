@@ -19,14 +19,17 @@ import org.lemurproject.galago.tupleflow.Parameters;
 public class FacetModelParamGenerator {
 
     Parameters p;
-    final static String[] gmRankers = new String[]{"sum", "avg"};
+    List<Long> facetTuneMetricIndices;
+    List<String> gmRankers;
 
     public FacetModelParamGenerator(Parameters p) {
         this.p = p;
+        facetTuneMetricIndices = p.getAsList("facetTuneMetricIndices");
+        gmRankers = p.getAsList("gmFacetRanker");
+        
     }
 
     public List<String> getParams(String model) throws IOException {
-        List<Long> facetTuneMetricIndices = p.getAsList("facetTuneMetricIndices");
 
         ArrayList<String> params = new ArrayList<>();
         if (model.equals("plsa") || model.equals("lda") || model.equals("qd")) {
@@ -45,7 +48,7 @@ public class FacetModelParamGenerator {
                 }
             }
 
-        } else if (model.equals("annotator"))    {
+        } else if (model.equals("annotator")) {
             params.add("");
         } else {
             throw new IOException("cannot recognize " + model);

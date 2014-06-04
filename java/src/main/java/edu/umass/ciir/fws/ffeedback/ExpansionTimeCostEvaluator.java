@@ -56,9 +56,14 @@ public class ExpansionTimeCostEvaluator {
         // output
         File expansionTimeEvalFile = expansionDir.getExpansionTimeCostEvalFile(ffParam, expansionModel);
         File expansionTimeEvalAvgFile = expansionDir.getExpansionTimeCostEvalAvgFile(ffParam, expansionModel);
-        QueryMetricsTime.outputAvg(expansionTimeEvalAvgFile, agvQmt);
+        
+        Utility.infoOpen(expansionTimeEvalFile);
         QueryMetricsTime.output(expQmtMap, expansionTimeEvalFile);
         Utility.infoWritten(expansionTimeEvalFile);
+        
+        
+        Utility.infoOpen(expansionTimeEvalAvgFile);
+        QueryMetricsTime.outputAvg(expansionTimeEvalAvgFile, agvQmt);
         Utility.infoWritten(expansionTimeEvalAvgFile);
 
     }

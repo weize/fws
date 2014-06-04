@@ -169,59 +169,23 @@ public class RunExpansionCollectEvalAll extends AppFunction {
      */
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.TfFacetFeedbackParams")
-    @OutputClass(className = "edu.umass.ciir.fws.types.TfFacetFeedbackParams")
-    public static class CollectTimeCostEvals extends StandardStep<TfFacetFeedbackParams, TfFacetFeedbackParams> {
+    public static class CollectTimeCostEvals implements Processor<TfFacetFeedbackParams> {
 
-        ExpansionDirectory expansionDir;
-        String expansionModel;
-        boolean first;
-        String[] metrics;
-
+        ExpansionTimeCostEvaluator timeCostEvaluator;
+        
         public CollectTimeCostEvals(TupleFlowParameters parameters) throws IOException {
             Parameters p = parameters.getJSON();
-            expansionDir = new ExpansionDirectory(p);
-            expansionModel = p.getString("expansionModel");
-            first = true;
+            timeCostEvaluator = new ExpansionTimeCostEvaluator(p);
         }
 
         @Override
         public void process(TfFacetFeedbackParams ffParam) throws IOException {
             Utility.infoProcessing(ffParam);
-            File outfile = expansionDir.getExpansionEvalFile(ffParam, model);
-            File expansionFie = expansionDir.getExpansionFile(ffParam, expansionModel);
-            List<QuerySubtopicExpansion> qses = QuerySubtopicExpansion.load(expansionFie, expansionModel);
-            
-            Utility.infoOpen(outfile);
-            BufferedWriter writer = Utility.getWriter(outfile);
-            for (QuerySubtopicExpansion qse : qses) {
-                File tevalFile = new File(Utility.getQExpSubtopicTevalFileName(expansionDir.evalDir, qse));
-                TrecEvaluator evaluator = new TrecEvaluator(tevalFile);
-                List<QueryMetrics> qms = evaluator.resultToQueryMetrics();
+            timeCostEvaluator.run(ffParam);
+        }
 
-                // verify metrics are consistent across different evaluation files
-                if (first) {
-                    metrics = Arrays.copyOf(evaluator.metrics, evaluator.metrics.length);
-                    first = false;
-                    writer.write(evaluator.getHeader());
-                    writer.newLine();
-                } else {
-                    assert metrics.length == evaluator.metrics.length : "number of metrics not match " + tevalFile.getAbsolutePath();
-                    for (int i = 0; i < metrics.length; i++) {
-                        assert metrics[i].equals(evaluator.metrics[i]) : "metrics not match " + tevalFile.getAbsolutePath();
-                    }
-                }
-
-                for (QueryMetrics qm : qms) {
-                    if (!qm.qid.equals("all")) {
-                        qm.qid = QuerySubtopicExpansion.toId(qse);
-                        writer.write(qm.toString());
-                        writer.newLine();
-                    }
-                }
-            }
-            writer.close();
-            Utility.infoWritten(outfile);
-            processor.process(ffParam);
+        @Override
+        public void close() throws IOException {
         }
     }
 

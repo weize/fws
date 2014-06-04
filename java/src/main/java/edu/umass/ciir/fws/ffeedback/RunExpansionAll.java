@@ -210,7 +210,6 @@ public class RunExpansionAll extends AppFunction {
     @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryExpansion", order = {"+qid", "+model", "+expId"})
     public static class FilterExpansion extends StandardStep<TfQueryExpansion, TfQueryExpansion> {
 
-        ExpansionIdMap expIdMap;
         ExpansionDirectory expansionDir;
 
         public FilterExpansion(TupleFlowParameters parameters) throws IOException {
