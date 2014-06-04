@@ -206,10 +206,12 @@ public class RunExpansionEvalAll extends AppFunction {
 
         ExpansionIdMap expIdMap;
         ExpansionDirectory expansionDir;
+        long count;
 
         public FilterExpansionSubtopic(TupleFlowParameters parameters) throws IOException {
             Parameters p = parameters.getJSON();
             expansionDir = new ExpansionDirectory(p);
+            count = 0;
         }
 
         @Override
@@ -219,7 +221,13 @@ public class RunExpansionEvalAll extends AppFunction {
                 System.err.println("exists results for " + evalFile.getAbsolutePath());
             } else {
                 processor.process(qes);
+                count ++;
             }
+        }
+        
+        @Override
+        public void close() {
+            System.err.println("Submit " + count + " runs");
         }
     }
 }

@@ -9,11 +9,11 @@ import edu.umass.ciir.fws.anntation.FeedbackTerm;
 import edu.umass.ciir.fws.clustering.FacetModelParamGenerator;
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.clustering.ScoredItem;
-import edu.umass.ciir.fws.query.QueryFileParser;
 import edu.umass.ciir.fws.query.QueryTopicSubtopicMap;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.types.TfQueryExpansion;
 import edu.umass.ciir.fws.utility.Utility;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
@@ -37,6 +37,7 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 import org.lemurproject.galago.tupleflow.types.FileName;
 
 /**
+ * Not finished
  *
  * @author wkong
  */
@@ -56,8 +57,8 @@ public class RunExpasionsFromList extends AppFunction {
         Job job = new Job();
 
         job.add(getSplitStage(parameters));
-        //job.add(getSplitExpansionStage(parameters));
-        //job.add(getCmbExpansionStage(parameters));
+//        job.add(getSplitExpansionStage(parameters));
+//        job.add(getCmbExpansionStage(parameters));
         job.add(getProcessStage(parameters));
 
         job.connect("split", "splitExpansions", ConnectionAssignmentType.Each);
@@ -91,7 +92,6 @@ public class RunExpasionsFromList extends AppFunction {
         return stage;
     }
 
-
     private Stage getProcessStage(Parameters parameters) {
         Stage stage = new Stage("process");
 
@@ -101,16 +101,50 @@ public class RunExpasionsFromList extends AppFunction {
         stage.add(new Step(RunExpandedQuery.class, parameters));
         return stage;
     }
-    
-    
+
     @Verified
     @InputClass(className = "org.lemurproject.galago.tupleflow.types.FileName")
     @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryExpansion")
     public class SplitExpansion extends StandardStep<FileName, TfQueryExpansion> {
 
+        ExpansionIdMap map;
+        ExpansionDirectory expansionDir;
+        String lastQid;
+
+        public SplitExpansion(TupleFlowParameters parameters) {
+            Parameters p = parameters.getJSON();
+            expansionDir = new ExpansionDirectory(p);
+            map = new ExpansionIdMap();
+        }
+
         @Override
         public void process(FileName fileName) throws IOException {
-            
+            BufferedReader reader = Utility.getReader(fileName.filename);
+            String line;
+            while ((line = reader.readLine()) != null) {
+                QueryExpansion qe = getQueryExpansion(line);
+                processor.process(qe.toTfQueryExpansion());
+            }
+            reader.close();
+
+        }
+
+        private QueryExpansion getQueryExpansion(String line) throws IOException {
+
+            String[] elems = line.split("\t");
+            String qid = elems[0];
+            String model = elems[1];
+            String expId = elems[2];
+
+            if (lastQid == null || !lastQid.equals(qid)) {
+                File file = expansionDir.getExpansionIdFile(qid);
+                map.load(file);
+                lastQid = qid;
+            }
+
+//            String expansion = map
+            return null;
+
         }
     }
 

@@ -25,7 +25,7 @@ public class QueryExpansion {
     public String oriQuery; // original query
     public String expQuery; // expanded query
     public String id; // id for query expansion
-
+    
     public QueryExpansion(String qid, String oriQuery, String model, String expansion, ExpansionIdMap expIdMap) {
         this.qid = qid;
         this.model = model;

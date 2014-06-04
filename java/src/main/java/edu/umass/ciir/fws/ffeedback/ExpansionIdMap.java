@@ -25,6 +25,9 @@ public class ExpansionIdMap {
         load(file);
     }
 
+    public void clean() {
+        idMap.clear();
+    }
     public ExpansionIdMap() {
         idMap = new TreeMap<>();
     }

@@ -7,10 +7,8 @@ package edu.umass.ciir.fws.ffeedback;
 
 import edu.umass.ciir.fws.anntation.FeedbackTerm;
 import edu.umass.ciir.fws.clustering.FacetModelParamGenerator;
-import edu.umass.ciir.fws.clustering.ScoredFacet;
-import edu.umass.ciir.fws.clustering.ScoredItem;
+import edu.umass.ciir.fws.eval.FfeedbackTimeEstimator;
 import edu.umass.ciir.fws.query.QueryFileParser;
-import edu.umass.ciir.fws.query.QueryTopicSubtopicMap;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.types.TfQueryExpansion;
 import edu.umass.ciir.fws.utility.Utility;
@@ -134,6 +132,7 @@ public class RunExpansionAll extends AppFunction {
 
         FacetModelParamGenerator facetParamGen;
         FeedbackParameterGenerator feedbackParamGen;
+        final static int  maxFeedbackTime = 100;
 
         String allFeedbackDir;
         ExpansionIdMap expIdMap;
@@ -195,9 +194,14 @@ public class RunExpansionAll extends AppFunction {
                     for (FeedbackTerm term : ff.terms) {
                         selected.add(term);
                         String expansion = FacetFeedback.toExpansionString(selected);
-                        QueryExpansion qe = new QueryExpansion(query.id, oriQuery, expansionModel, expansion, expIdMap);
-                        qe.expand();
-                        processor.process(qe.toTfQueryExpansion());
+
+                        FacetFeedback ffbk = FacetFeedback.parseFromExpansionString(expansion);
+                        int time = FfeedbackTimeEstimator.time(ffbk);
+                        if (time < maxFeedbackTime) {
+                            QueryExpansion qe = new QueryExpansion(query.id, oriQuery, expansionModel, expansion, expIdMap);
+                            qe.expand();
+                            processor.process(qe.toTfQueryExpansion());
+                        }
                     }
                 }
             }
@@ -211,10 +215,12 @@ public class RunExpansionAll extends AppFunction {
 
         ExpansionDirectory expansionDir;
         long count;
+        BufferedWriter writer;
 
         public FilterExpansion(TupleFlowParameters parameters) throws IOException {
             Parameters p = parameters.getJSON();
             expansionDir = new ExpansionDirectory(p);
+            writer = Utility.getWriter(new File(expansionDir.getRunListFile()));
             count = 0;
         }
 
@@ -225,6 +231,7 @@ public class RunExpansionAll extends AppFunction {
                 System.err.println("exists results for " + runFile.getAbsolutePath());
             } else {
                 processor.process(qe);
+                writer.write(String.format("%s\t%s\n", QueryExpansion.toId(qe), qe.expanedQuery));
                 count++;
             }
         }
@@ -232,6 +239,7 @@ public class RunExpansionAll extends AppFunction {
         @Override
         public void close() throws IOException {
             processor.close();
+            writer.close();
             System.err.println("Submit " + count + " runs");
         }
     }

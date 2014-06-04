@@ -69,4 +69,8 @@ public class ExpansionDirectory {
         return new File(Utility.getFileNameWithSuffix(allExpansionDir, param.facetSource, dirName, "expansion." + expansionModel, "avgtceval"));
     }
 
+    String getRunListFile() {
+        return Utility.getFileName(allExpansionDir, "run.list");
+    }
+
 }
