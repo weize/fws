@@ -72,7 +72,6 @@ public class RunExpansionAll extends AppFunction {
         AppFunction.runTupleFlowJob(job, p, output);
 
     }
-    
 
     private Stage getSplitStage(Parameters parameter) {
         Stage stage = new Stage("split");
@@ -183,7 +182,6 @@ public class RunExpansionAll extends AppFunction {
             Utility.infoWritten(expIdFile);
         }
 
-
         private void processAndEmit(TfQuery query, String facetSource, String facetParam, String feedbackSource, String feedbackParam) throws IOException {
             File feedbackFile = new File(Utility.getFeedbackFileName(allFeedbackDir, facetSource, facetParam, feedbackSource, feedbackParam));
             Utility.infoProcessing(feedbackFile);
@@ -212,10 +210,12 @@ public class RunExpansionAll extends AppFunction {
     public static class FilterExpansion extends StandardStep<TfQueryExpansion, TfQueryExpansion> {
 
         ExpansionDirectory expansionDir;
+        long count;
 
         public FilterExpansion(TupleFlowParameters parameters) throws IOException {
             Parameters p = parameters.getJSON();
             expansionDir = new ExpansionDirectory(p);
+            count = 0;
         }
 
         @Override
@@ -225,7 +225,14 @@ public class RunExpansionAll extends AppFunction {
                 System.err.println("exists results for " + runFile.getAbsolutePath());
             } else {
                 processor.process(qe);
+                count++;
             }
+        }
+
+        @Override
+        public void close() throws IOException {
+            processor.close();
+            System.err.println("Submit " + count + " runs");
         }
     }
 }

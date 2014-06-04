@@ -122,6 +122,15 @@ public class ExtractFeedbackTimeFromSubtopicActions extends AppFunction {
     
     
     private void emit() throws IOException {
+        ArrayList<SubtopicAction> part = new ArrayList<>();
+        for (SubtopicAction action : session) {
+            part.add(action);
+            emitSessionPart(part);
+        }
+    }
+    
+    
+    private void emitSessionPart(List<SubtopicAction> session) throws IOException {
         long numFacetScanned = -1;
         long numTermScanned = 0;
         long lastTime = -1;
@@ -143,6 +152,7 @@ public class ExtractFeedbackTimeFromSubtopicActions extends AppFunction {
         writer.write(String.format("%s\t%s\t%s\t%d\t%d\t%d\n",  last.aid, last.qid, last.sid, numFacetScanned, numTermScanned, time));
         
     }
+    
 
     private boolean isValidSession() {
         return !hasUnchecked

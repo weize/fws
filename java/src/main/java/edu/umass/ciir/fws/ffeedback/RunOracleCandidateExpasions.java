@@ -215,6 +215,7 @@ public class RunOracleCandidateExpasions extends AppFunction {
         ExpansionIdMap expIdMap;
         String expansionModel;
         ExpansionDirectory expansionDir;
+        long count;
 
         public WriteExpansionFile(TupleFlowParameters parameters) throws IOException {
             Parameters p = parameters.getJSON();
@@ -226,6 +227,7 @@ public class RunOracleCandidateExpasions extends AppFunction {
             expFile = expansionDir.getExpansionFile("oracle", expansionModel);
             Utility.infoOpen(expFile);
             writer = Utility.getWriter(expFile);
+            count = 0;
 
         }
 
@@ -242,6 +244,7 @@ public class RunOracleCandidateExpasions extends AppFunction {
                 System.err.println("exists results for " + runFile.getAbsolutePath());
             } else {
                 processor.process(qe);
+                count ++;
             }
         }
 
@@ -251,6 +254,7 @@ public class RunOracleCandidateExpasions extends AppFunction {
             processor.close();
             writer.close();
             Utility.infoWritten(expFile);
+            System.err.println("Submit " + count + " runs");
 
         }
     }
