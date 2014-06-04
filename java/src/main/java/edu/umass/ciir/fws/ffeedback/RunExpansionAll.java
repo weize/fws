@@ -100,6 +100,7 @@ public class RunExpansionAll extends AppFunction {
         stage.add(new InputStep("queries"));
         stage.add(new Step(ExpandQueryWithFeedbacks.class, parameters));
         stage.add(Utility.getSorter(new TfQueryExpansion.QidModelExpIdOrder()));
+        stage.add(new Step(UniqueQueryExpansion.class));
         stage.add(new OutputStep("expansions"));
         return stage;
     }
