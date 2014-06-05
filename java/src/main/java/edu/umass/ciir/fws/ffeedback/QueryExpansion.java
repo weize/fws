@@ -16,8 +16,6 @@ import java.util.List;
  */
 public class QueryExpansion {
 
-    
-
     public String qid;
     public String model;
     public long expId;
@@ -25,7 +23,7 @@ public class QueryExpansion {
     public String oriQuery; // original query
     public String expQuery; // expanded query
     public String id; // id for query expansion
-    
+
     public QueryExpansion(String qid, String oriQuery, String model, String expansion, ExpansionIdMap expIdMap) {
         this.qid = qid;
         this.model = model;
@@ -56,6 +54,10 @@ public class QueryExpansion {
                 return expandFacetFeedbackSimple(originalQuery, expansion);
             case "ftor":
                 return expandFeedbackTermOr(originalQuery, expansion);
+            case "ftand":
+                return expandFeedbackTermAnd(originalQuery, expansion);
+            case "ftandOr":
+                return expandFeedbackTermAndOr(originalQuery, expansion);
         }
         return null;
     }
@@ -69,7 +71,7 @@ public class QueryExpansion {
         FeedbackTerm ft = FeedbackTerm.parseFromString(expansion);
         return String.format("#require(#exist(#od:1( %s )) #sdm( %s )) ", ft.term, originalQuery);
     }
-    
+
     private static String expandFeedbackTermOr(String originalQuery, String expansion) {
         FacetFeedback feedback = FacetFeedback.parseFromExpansionString(expansion);
         StringBuilder query = new StringBuilder();
@@ -80,6 +82,43 @@ public class QueryExpansion {
             for (FeedbackTerm term : feedback.terms) {
                 query.append(String.format(" #exist(#od:1( %s )) ", term.term));
             }
+            query.append(String.format(") #sdm( %s ))", originalQuery));
+        }
+        return query.toString();
+    }
+
+    private static String expandFeedbackTermAnd(String originalQuery, String expansion) {
+        FacetFeedback feedback = FacetFeedback.parseFromExpansionString(expansion);
+        StringBuilder query = new StringBuilder();
+        if (feedback.terms.isEmpty()) {
+            return String.format("#sdm( %s )", originalQuery);
+        } else {
+            query.append("#require( #all( ");
+            for (FeedbackTerm term : feedback.terms) {
+                query.append(String.format(" #exist(#od:1( %s )) ", term.term));
+            }
+            query.append(String.format(") #sdm( %s ))", originalQuery));
+        }
+        return query.toString();
+    }
+
+    private static String expandFeedbackTermAndOr(String originalQuery, String expansion) {
+        FacetFeedback feedback = FacetFeedback.parseFromExpansionString(expansion);
+        StringBuilder query = new StringBuilder();
+        if (feedback.terms.isEmpty()) {
+            return String.format("#sdm( %s )", originalQuery);
+        } else {
+            query.append("#require( #all( ");
+
+            for (List<FeedbackTerm> terms : feedback.facets) {
+                query.append("#any ( ");
+                // terms inside a facets
+                for (FeedbackTerm term : terms) {
+                    query.append(String.format(" #exist(#od:1( %s )) ", term.term));
+                }
+                query.append(")"); // end of #any
+            }
+
             query.append(String.format(") #sdm( %s ))", originalQuery));
         }
         return query.toString();
