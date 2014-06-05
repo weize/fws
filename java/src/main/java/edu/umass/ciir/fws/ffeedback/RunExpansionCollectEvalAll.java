@@ -7,9 +7,7 @@ package edu.umass.ciir.fws.ffeedback;
 
 import edu.umass.ciir.fws.eval.QueryMetrics;
 import edu.umass.ciir.fws.eval.TrecEvaluator;
-import static edu.umass.ciir.fws.ffeedback.ExpandQueryWithSingleFacetTerm.model;
 import edu.umass.ciir.fws.types.TfFacetFeedbackParams;
-import edu.umass.ciir.fws.types.TfQueryExpansionSubtopic;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedWriter;
 import java.io.File;
