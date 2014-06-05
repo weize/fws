@@ -457,8 +457,8 @@ public class TunePRM extends AppFunction {
             String[] params = Utility.splitParameters(folder.id);
             String folderId = params[0];
             double fbOrigWt = Double.parseDouble(params[1]);
-            long fbDoc = Long.parseLong(params[1]);
-            long fbTerm = Long.parseLong(params[1]);
+            long fbDoc = Long.parseLong(params[2]);
+            long fbTerm = Long.parseLong(params[3]);
 
             File trainQueryFile = prmDir.getTuneCurTrainQueryFile(folderId);
             File rankFile = prmDir.getRankFile(folderId, fbOrigWt, fbDoc, fbTerm);
