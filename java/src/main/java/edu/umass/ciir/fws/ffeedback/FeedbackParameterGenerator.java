@@ -5,7 +5,6 @@
  */
 package edu.umass.ciir.fws.ffeedback;
 
-import static edu.umass.ciir.fws.ffeedback.ExpansionParamGenerator.gmRankers;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.IOException;
 import java.util.ArrayList;

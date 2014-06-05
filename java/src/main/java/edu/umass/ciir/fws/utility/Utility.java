@@ -372,12 +372,6 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         System.err.println("File opened " + file.getAbsolutePath());
     }
 
-    public static String getAnnotatorFeedbackFileName(String feedbackDir, String model, String facetParam) {
-        String name = facetParam.isEmpty() ? String.format("%s.annnotator.fdbk", model)
-                : String.format("%s.%s.annnotator.fdbk", model, facetParam);
-        return Utility.getFileName(feedbackDir, name);
-    }
-
     public static String getFeedbackFileName(String allFeedbackDir, String facetSource, String facetParams,
             String feedbackSource, String feedbackParams) {
         facetParams = Utility.parametersToFileNameString(facetParams);

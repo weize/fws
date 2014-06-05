@@ -42,7 +42,7 @@ public class CreateExpansionFileAll extends AppFunction {
 
     @Override
     public String getName() {
-        return "create-feedback-file";
+        return "create-expansion-file";
     }
 
     @Override
