@@ -150,7 +150,7 @@ public class CreateExpansionFileAll extends AppFunction {
         QueryTopicSubtopicMap queryMap;
         ExpansionDirectory expansionDir;
         String expansionModel;
-        
+
         BufferedWriter writer;
         HashMap<String, List<FacetFeedback>> fdbkMap;
 
@@ -174,19 +174,17 @@ public class CreateExpansionFileAll extends AppFunction {
                 Utility.infoFileExists(expansionFie);
                 return;
             }
-            
+
             File feedbackFile = new File(Utility.getFeedbackFileName(allFeedbackDir, param));
             fdbkMap = FacetFeedback.loadGroupByQid(feedbackFile);
-            
-            
+
             Utility.infoOpen(expansionFie);
             Utility.createDirectoryForFile(expansionFie);
             writer = Utility.getWriter(expansionFie);
 
-            for(String qid : fdbkMap.keySet()) {
+            for (String qid : fdbkMap.keySet()) {
                 processEachQuery(qid);
             }
-            
 
             writer.close();
             Utility.infoWritten(expansionFie);
@@ -196,14 +194,12 @@ public class CreateExpansionFileAll extends AppFunction {
         public void close() throws IOException {
         }
 
-
         private void processEachQuery(String qid) throws IOException {
             File expIdFile = expansionDir.getExpansionIdFile(qid);
             ExpansionIdMap expIdMap = new ExpansionIdMap(expIdFile);
-            
+
             for (FacetFeedback ff : fdbkMap.get(qid)) {
                 String oriQuery = queryMap.getQuery(ff.qid);
-                List<String> sidList = queryMap.getSidSet(ff.qid);
                 // each time append a feedback term, and do expansion
                 ArrayList<FeedbackTerm> selected = new ArrayList<>();
                 for (FeedbackTerm term : ff.terms) {
@@ -223,12 +219,8 @@ public class CreateExpansionFileAll extends AppFunction {
                     QueryExpansion qe = new QueryExpansion(ff.qid, oriQuery, expansionModel, expansion, expIdMap);
                     qe.expand();
 
-                    // for each subtopic
-                    for (String sid : sidList) {
-                        QuerySubtopicExpansion qse = new QuerySubtopicExpansion(qe, sid);
-                        writer.write(qse.toString());
-                    }
-
+                    QuerySubtopicExpansion qse = new QuerySubtopicExpansion(qe, ff.sid);
+                    writer.write(qse.toString());
                 }
             }
         }
