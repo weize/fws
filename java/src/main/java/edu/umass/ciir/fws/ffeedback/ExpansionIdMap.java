@@ -22,6 +22,7 @@ public class ExpansionIdMap {
     TreeMap<String, TreeMap<String, TreeMap<String, Long>>> idMap; // qid->model->exp-> id
 
     public ExpansionIdMap(File file) throws IOException {
+        idMap = new TreeMap<>();
         load(file);
     }
 
