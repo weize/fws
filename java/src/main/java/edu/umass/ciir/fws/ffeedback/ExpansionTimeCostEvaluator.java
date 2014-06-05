@@ -71,8 +71,8 @@ public class ExpansionTimeCostEvaluator {
     private TreeMap<String, List<QueryMetricsTime>> calcQueryMetricTimes(TfFacetFeedbackParams ffParam) throws IOException {
         
 
-        File expansionFile = expansionDir.getExpansionFile(ffParam.facetSource, expansionModel);
-        File expansionEvalFile = expansionDir.getExpansionEvalFile(ffParam.facetSource, expansionModel);
+        File expansionFile = expansionDir.getExpansionFile(ffParam, expansionModel);
+        File expansionEvalFile = expansionDir.getExpansionEvalFile(ffParam, expansionModel);
 
         // baseline, no expansion, time cost = 0
         TreeMap<String, QueryMetrics> sdmQmMap = TrecEvaluator.loadQueryMetricsMap(sdmSevalFile, true);
