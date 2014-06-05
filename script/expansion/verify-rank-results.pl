@@ -8,7 +8,10 @@ for my $file (@files) {
 	if ($flag == 1) {
 		print "error in $file\n";
 	} elsif ($flag == 2){
-		print "not 1000 lines in $file\n";
+		#print "not 1000 lines in $file\n";
+	} elsif ($flag == 3){
+		print "empty $file\n";
+		#print "not 1000 lines in $file\n";
 	}
 }
 
@@ -25,6 +28,9 @@ sub check {
 		}
 	}
 	close $in;
+	if ($ln == 0) {
+		return 3;
+	}
 	if ($ln != 1000) {
 		return 2;
 	}
