@@ -56,7 +56,7 @@ public class QueryExpansion {
                 return expandFeedbackTermOr(originalQuery, expansion);
             case "ftand":
                 return expandFeedbackTermAnd(originalQuery, expansion);
-            case "ftandOr":
+            case "ftandor":
                 return expandFeedbackTermAndOr(originalQuery, expansion);
         }
         return null;
