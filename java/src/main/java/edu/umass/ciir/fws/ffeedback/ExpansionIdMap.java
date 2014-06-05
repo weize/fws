@@ -33,7 +33,6 @@ public class ExpansionIdMap {
     }
     
     public void load(File file) throws IOException {
-        idMap = new TreeMap<>();
         BufferedReader reader = Utility.getReader(file);
         String line;
         while ((line = reader.readLine()) != null) {
