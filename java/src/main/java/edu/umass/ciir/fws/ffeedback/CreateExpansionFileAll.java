@@ -172,6 +172,11 @@ public class CreateExpansionFileAll extends AppFunction {
             File feedbackFile = new File(Utility.getFeedbackFileName(allFeedbackDir, param));
             List<FacetFeedback> fdbkList = FacetFeedback.load(feedbackFile);
 
+            if (expansionFie.exists()) {
+                Utility.infoFileExists(expansionFie);
+                return;
+            }
+            
             Utility.infoOpen(expansionFie);
             Utility.createDirectoryForFile(expansionFie);
             BufferedWriter writer = Utility.getWriter(expansionFie);
