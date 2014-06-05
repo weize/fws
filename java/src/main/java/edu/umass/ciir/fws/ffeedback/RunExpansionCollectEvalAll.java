@@ -69,7 +69,7 @@ public class RunExpansionCollectEvalAll extends AppFunction {
     }
 
     private Stage getSplitStage(Parameters parameter) {
-        Stage stage = new Stage("splitFeedbacks");
+        Stage stage = new Stage("split");
 
         stage.addOutput("feedbacks", new TfFacetFeedbackParams.FacetSourceFacetParamsFeedbackSourceFeedbackParamsOrder());
 

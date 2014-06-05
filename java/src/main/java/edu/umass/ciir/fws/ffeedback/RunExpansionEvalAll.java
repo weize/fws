@@ -204,7 +204,6 @@ public class RunExpansionEvalAll extends AppFunction {
     @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryExpansionSubtopic", order = {"+qid", "+model", "+expId", "+sid"})
     public static class FilterExpansionSubtopic extends StandardStep<TfQueryExpansionSubtopic, TfQueryExpansionSubtopic> {
 
-        ExpansionIdMap expIdMap;
         ExpansionDirectory expansionDir;
         long count;
 
