@@ -125,7 +125,7 @@ public class RunExpansionCollectEvalAll extends AppFunction {
         @Override
         public void process(TfFacetFeedbackParams ffParam) throws IOException {
             Utility.infoProcessing(ffParam);
-            File outfile = expansionDir.getExpansionEvalFile(ffParam, model);
+            File outfile = expansionDir.getExpansionEvalFile(ffParam, expansionModel);
             File expansionFie = expansionDir.getExpansionFile(ffParam, expansionModel);
             List<QuerySubtopicExpansion> qses = QuerySubtopicExpansion.load(expansionFie, expansionModel);
             
