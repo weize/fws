@@ -274,6 +274,7 @@ public class TunePRM extends AppFunction {
             Node root = StructuredQuery.parse(queryText);
             Node transformed;
             try {
+                System.err.println("run " + queryParams.id + " " + queryText);
                 transformed = retrieval.transformQuery(root, p);
                 // run query
                 results = retrieval.executeQuery(transformed, p).scoredDocuments;
@@ -482,6 +483,7 @@ public class TunePRM extends AppFunction {
                 Node root = StructuredQuery.parse(queryText);
                 Node transformed;
                 try {
+                    System.err.println("run " + q.id + " " + queryText);
                     transformed = retrieval.transformQuery(root, p);
                     // run query
                     results = retrieval.executeQuery(transformed, p).scoredDocuments;
@@ -519,7 +521,7 @@ public class TunePRM extends AppFunction {
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.TfFolder")
     @OutputClass(className = "edu.umass.ciir.fws.types.TfFolder")
-    public class RunEvalForTuning extends StandardStep<TfFolder, TfFolder> {
+    public static class RunEvalForTuning extends StandardStep<TfFolder, TfFolder> {
 
         Parameters p;
         PrmDirectory prmDir;
