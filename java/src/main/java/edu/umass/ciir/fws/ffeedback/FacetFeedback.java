@@ -17,6 +17,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -47,7 +48,7 @@ public class FacetFeedback {
         Collections.sort(terms);
         this.terms = terms;
     }
-    
+
     public FacetFeedback(String qid, String sid, ArrayList<FeedbackTerm> terms) {
         this.qid = qid;
         this.sid = sid;
@@ -129,7 +130,6 @@ public class FacetFeedback {
         return parseTerms(expansion);
     }
 
-
     public static List<FacetFeedback> load(File file) throws IOException {
         ArrayList<FacetFeedback> list = new ArrayList<>();
         BufferedReader reader = Utility.getReader(file);
@@ -140,6 +140,18 @@ public class FacetFeedback {
         }
         reader.close();
         return list;
+    }
+
+    public static HashMap<String, List<FacetFeedback>> loadGroupByQid(File file) throws IOException {
+        List<FacetFeedback> all = load(file);
+        HashMap<String, List<FacetFeedback>> map = new HashMap<>();
+        for (FacetFeedback ff : all) {
+            if (!map.containsKey(ff.qid)) {
+                map.put(ff.qid, new ArrayList<FacetFeedback>());
+            }
+            map.get(ff.qid).add(ff);
+        }
+        return map;
     }
 
     public static HashSet<String> loadFeedbackQidSidSet(File file) throws IOException {
@@ -163,7 +175,7 @@ public class FacetFeedback {
         ArrayList<FeedbackTerm> fterms = new ArrayList<>();
         for (int fidx = 0; fidx < facets.size(); fidx++) {
             List<ScoredItem> items = facets.get(fidx).items;
-            for(int tidx = 0; tidx < items.size(); tidx ++) {
+            for (int tidx = 0; tidx < items.size(); tidx++) {
                 String term = items.get(tidx).item;
                 if (selected.contains(term)) {
                     fterms.add(new FeedbackTerm(term, fidx, tidx));
@@ -171,7 +183,7 @@ public class FacetFeedback {
                 }
             }
         }
-        
+
         return new FacetFeedback(feedbackSource.qid, feedbackSource.sid, fterms);
     }
 

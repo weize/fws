@@ -8,7 +8,6 @@ package edu.umass.ciir.fws.ffeedback;
 import edu.umass.ciir.fws.anntation.FeedbackTerm;
 import edu.umass.ciir.fws.clustering.FacetModelParamGenerator;
 import edu.umass.ciir.fws.eval.FfeedbackTimeEstimator;
-import edu.umass.ciir.fws.eval.QueryFacetEvaluator;
 import static edu.umass.ciir.fws.ffeedback.RunExpansionAll.ExpandQueryWithFeedbacks.maxFeedbackTime;
 import edu.umass.ciir.fws.query.QueryTopicSubtopicMap;
 import edu.umass.ciir.fws.types.TfFacetFeedbackParams;
@@ -18,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import org.lemurproject.galago.core.tools.AppFunction;
 import org.lemurproject.galago.tupleflow.FileSource;
@@ -150,7 +150,9 @@ public class CreateExpansionFileAll extends AppFunction {
         QueryTopicSubtopicMap queryMap;
         ExpansionDirectory expansionDir;
         String expansionModel;
-        ExpansionIdMap expIdMap;
+        
+        BufferedWriter writer;
+        HashMap<String, List<FacetFeedback>> fdbkMap;
 
         public CreateExpansionFile(TupleFlowParameters parameters) throws IOException {
             Parameters p = parameters.getJSON();
@@ -160,7 +162,6 @@ public class CreateExpansionFileAll extends AppFunction {
             File queryFile = new File(p.getString("queryFile"));
             queryMap = new QueryTopicSubtopicMap(selectionFile, queryFile);
             expansionModel = p.getString("expansionModel");
-            loadExpIdMap();
 
         }
 
@@ -169,19 +170,38 @@ public class CreateExpansionFileAll extends AppFunction {
             Utility.infoProcessing(param);
 
             File expansionFie = expansionDir.getExpansionFile(param, expansionModel);
+//            if (expansionFie.exists()) {
+//                Utility.infoFileExists(expansionFie);
+//                return;
+//            }
+            
             File feedbackFile = new File(Utility.getFeedbackFileName(allFeedbackDir, param));
-            List<FacetFeedback> fdbkList = FacetFeedback.load(feedbackFile);
-
-            if (expansionFie.exists()) {
-                Utility.infoFileExists(expansionFie);
-                return;
-            }
+            fdbkMap = FacetFeedback.loadGroupByQid(feedbackFile);
+            
             
             Utility.infoOpen(expansionFie);
             Utility.createDirectoryForFile(expansionFie);
-            BufferedWriter writer = Utility.getWriter(expansionFie);
+            writer = Utility.getWriter(expansionFie);
 
-            for (FacetFeedback ff : fdbkList) {
+            for(String qid : fdbkMap.keySet()) {
+                processEachQuery(qid);
+            }
+            
+
+            writer.close();
+            Utility.infoWritten(expansionFie);
+        }
+
+        @Override
+        public void close() throws IOException {
+        }
+
+
+        private void processEachQuery(String qid) throws IOException {
+            File expIdFile = expansionDir.getExpansionIdFile(qid);
+            ExpansionIdMap expIdMap = new ExpansionIdMap(expIdFile);
+            
+            for (FacetFeedback ff : fdbkMap.get(qid)) {
                 String oriQuery = queryMap.getQuery(ff.qid);
                 List<String> sidList = queryMap.getSidSet(ff.qid);
                 // each time append a feedback term, and do expansion
@@ -210,21 +230,6 @@ public class CreateExpansionFileAll extends AppFunction {
                     }
 
                 }
-            }
-
-            writer.close();
-            Utility.infoWritten(expansionFie);
-        }
-
-        @Override
-        public void close() throws IOException {
-        }
-
-        private void loadExpIdMap() throws IOException {
-            expIdMap = new ExpansionIdMap();
-            for (String qid : queryMap.getQidSet()) {
-                File expIdFile = expansionDir.getExpansionIdFile(qid);
-                expIdMap.load(expIdFile);
             }
         }
     }
