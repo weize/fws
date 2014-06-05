@@ -227,6 +227,7 @@ public class RunExpansionEvalAll extends AppFunction {
         
         @Override
         public void close() {
+            this.close();
             System.err.println("Submit " + count + " runs");
         }
     }
