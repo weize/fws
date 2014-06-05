@@ -8,18 +8,14 @@ package edu.umass.ciir.fws.ffeedback;
 import edu.umass.ciir.fws.eval.FfeedbackTimeEstimator;
 import edu.umass.ciir.fws.eval.QueryMetrics;
 import edu.umass.ciir.fws.eval.TrecEvaluator;
-import static edu.umass.ciir.fws.ffeedback.RunExpasions.setParameters;
 import edu.umass.ciir.fws.types.TfFacetFeedbackParams;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.TreeMap;
-import org.lemurproject.galago.core.tools.AppFunction;
 import org.lemurproject.galago.tupleflow.Parameters;
 
 /**
@@ -30,7 +26,7 @@ import org.lemurproject.galago.tupleflow.Parameters;
 public class ExpansionTimeCostEvaluator {
 
     Parameters p;
-    TreeMap<String, List<QueryMetricsTime>> expQmtMap;
+    TreeMap<String, List<QueryMetricsTime>> expQmtMap; // qid-sid -> [(map, ndcg, ..., time), ...]
     final static String avgQidSid = "all-all";
     String allFeedbackDir;
     File sdmSevalFile;
@@ -43,12 +39,14 @@ public class ExpansionTimeCostEvaluator {
         sdmSevalFile = new File(p.getString("sdmSeval"));
         expansionModel = p.getString("expansionModel");
         expansionDir = new ExpansionDirectory(p);
+        
     }
 
     public void run(TfFacetFeedbackParams ffParam) throws IOException {
         expQmtMap = calcQueryMetricTimes(ffParam);
 
         // to average
+        // each line all-all time metrics
         List<QueryMetricsTime> agvQmt = avgQmts(expQmtMap, avgQidSid);
         expQmtMap.put(avgQidSid, agvQmt);
 
@@ -56,6 +54,7 @@ public class ExpansionTimeCostEvaluator {
         // output
         File expansionTimeEvalFile = expansionDir.getExpansionTimeCostEvalFile(ffParam, expansionModel);
         File expansionTimeEvalAvgFile = expansionDir.getExpansionTimeCostEvalAvgFile(ffParam, expansionModel);
+        File expansionTimeEvalQueryAvgFile = expansionDir.getExpansionTimeCostEvalQueryAvgFile(ffParam, expansionModel);
         
         Utility.infoOpen(expansionTimeEvalFile);
         QueryMetricsTime.output(expQmtMap, expansionTimeEvalFile);
@@ -65,9 +64,17 @@ public class ExpansionTimeCostEvaluator {
         Utility.infoOpen(expansionTimeEvalAvgFile);
         QueryMetricsTime.outputAvg(expansionTimeEvalAvgFile, agvQmt);
         Utility.infoWritten(expansionTimeEvalAvgFile);
+        
+        averageByQuery(expansionTimeEvalQueryAvgFile);
 
     }
 
+    /**
+     * form eval of expansions to : qid sid [(time, metrics)]
+     * @param ffParam
+     * @return
+     * @throws IOException 
+     */
     private TreeMap<String, List<QueryMetricsTime>> calcQueryMetricTimes(TfFacetFeedbackParams ffParam) throws IOException {
         
 
@@ -165,5 +172,37 @@ public class ExpansionTimeCostEvaluator {
             }
         }
         return hasResult ? minTime : -1;
+    }
+
+    private void averageByQuery(File file) throws IOException {
+        // qid-> sid-> [QueryMetrics]
+        HashMap<String, TreeMap<String, List<QueryMetricsTime>>> expQmtMapByQid = new HashMap<>();
+        
+        for (String qidSid : expQmtMap.keySet()) {
+            String [] elems= qidSid.split("-");
+            String qid = elems[0];
+            String sid = elems[1];
+            
+            if (!expQmtMapByQid.containsKey(qid)) {
+                expQmtMapByQid.put(qid, new TreeMap<String,List<QueryMetricsTime>>());
+            }
+            
+            expQmtMapByQid.get(qid).put(sid, expQmtMap.get(qidSid));
+        }
+        
+        TreeMap<String, List<QueryMetricsTime>> expAvgBySubtopicQmtMap = new TreeMap<>();
+        for(String qid : expQmtMapByQid.keySet()) {
+            // avg within a query
+            List<QueryMetricsTime> avgQmt = avgQmts(expQmtMapByQid.get(qid), qid);
+            expAvgBySubtopicQmtMap.put(qid, avgQmt);
+        }
+        
+        //avg between queries
+        List<QueryMetricsTime> avgByQueryQmt = avgQmts(expAvgBySubtopicQmtMap, "all");
+        
+        Utility.infoOpen(file);
+        QueryMetricsTime.outputAvg(file, avgByQueryQmt);
+        Utility.infoWritten(file);
+        
     }
 }
