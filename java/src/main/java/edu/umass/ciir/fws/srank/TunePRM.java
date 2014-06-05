@@ -5,11 +5,11 @@
  */
 package edu.umass.ciir.fws.srank;
 
-import edu.umass.ciir.fws.clustering.*;
 import edu.emory.mathcs.backport.java.util.Arrays;
 import edu.umass.ciir.fws.clustering.gm.GmLearn;
-import edu.umass.ciir.fws.eval.QueryFacetEvaluator;
 import edu.umass.ciir.fws.eval.QueryMetrics;
+import edu.umass.ciir.fws.eval.TrecEvaluator;
+import edu.umass.ciir.fws.ffeedback.RunOracleCandidateExpasions;
 import edu.umass.ciir.fws.query.QueryFileParser;
 import edu.umass.ciir.fws.types.TfFolder;
 import edu.umass.ciir.fws.types.TfQuery;
@@ -20,10 +20,15 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.lemurproject.galago.core.retrieval.Retrieval;
+import org.lemurproject.galago.core.retrieval.RetrievalFactory;
+import org.lemurproject.galago.core.retrieval.ScoredDocument;
+import org.lemurproject.galago.core.retrieval.query.Node;
+import org.lemurproject.galago.core.retrieval.query.StructuredQuery;
 import org.lemurproject.galago.core.tools.AppFunction;
 import org.lemurproject.galago.tupleflow.FileSource;
 import org.lemurproject.galago.tupleflow.InputClass;
@@ -61,7 +66,7 @@ public class TunePRM extends AppFunction {
     public void run(Parameters p, PrintStream output) throws Exception {
         prepareDir(p);
         Job job = createJob(p);
-        //AppFunction.runTupleFlowJob(job, p, output);
+        AppFunction.runTupleFlowJob(job, p, output);
 
     }
 
@@ -69,11 +74,45 @@ public class TunePRM extends AppFunction {
 
         String headDir;
         String tuneDir;
+        private File bestParamFile;
 
         public PrmDirectory(Parameters p) {
             headDir = Utility.getFileName(p.getString("srankDir"), "prm");
             tuneDir = Utility.getFileName(headDir, "tune");
+            bestParamFile = new File(Utility.getFileName(tuneDir, "params"));
         }
+
+        public String getTuneCurFolderDir(String folderId) {
+            return Utility.getFileName(tuneDir, folderId);
+        }
+        
+        public File getTuneCurTrainQueryFile(String folderId) {
+            return new File(Utility.getFileName(getTuneCurFolderDir(folderId), "train.query"));
+        }
+
+        private File getRankFile(String folderId, double fbOrigWt, long fbDoc, long fbTerm) {
+            String name = String.format("prm.%s.rank", Utility.parametersToFileNameString(fbOrigWt, fbDoc, fbTerm));
+            return new File(Utility.getFileName(getTuneCurFolderDir(folderId), "rank", name));
+        }
+
+        private File getEvalFile(String folderId, double fbOrigWt, long fbDoc, long fbTerm) {
+            String name = String.format("prm.%s.eval", Utility.parametersToFileNameString(fbOrigWt, fbDoc, fbTerm));
+            return new File(Utility.getFileName(getTuneCurFolderDir(folderId), "eval", name));
+        }
+
+        private File getTevalFile(String folderId, double fbOrigWt, long fbDoc, long fbTerm) {
+            String name = String.format("prm.%s.teval", Utility.parametersToFileNameString(fbOrigWt, fbDoc, fbTerm));
+            return new File(Utility.getFileName(getTuneCurFolderDir(folderId), "eval", name));
+        }
+
+        private File getTuneCurTestQueryFile(String folderId) {
+            return new File(Utility.getFileName(getTuneCurFolderDir(folderId), "test.query"));
+        }
+
+        private File getTestRankFile(String qid) {
+            return new File(Utility.getFileName(headDir, "rank", String.format("%s.prm.rank", qid)));
+        }
+
     }
 
     private void prepareDir(Parameters p) throws IOException {
@@ -98,7 +137,7 @@ public class TunePRM extends AppFunction {
 
             String evalDir = Utility.getFileName(folderDir, "eval");
             Utility.createDirectory(evalDir);
-                       
+
             Utility.createDirectory(Utility.getFileName(folderDir, "rank"));
             Utility.createDirectory(Utility.getFileName(folderDir, "param"));
 
@@ -124,13 +163,13 @@ public class TunePRM extends AppFunction {
         Job job = new Job();
 
         job.add(getSplitStage(parameters));
-        job.add(getEvalStage(parameters));
+        job.add(getProcessStage(parameters));
         job.add(getSelectStage(parameters));
-        job.add(getCopyRunStage(parameters));
+        job.add(getRunStage(parameters));
 
-        job.connect("split", "eval", ConnectionAssignmentType.Each);
-        job.connect("eval", "select", ConnectionAssignmentType.Combined);
-        job.connect("select", "copyRun", ConnectionAssignmentType.Each);
+        job.connect("split", "process", ConnectionAssignmentType.Each);
+        job.connect("process", "select", ConnectionAssignmentType.Combined);
+        job.connect("select", "run", ConnectionAssignmentType.Each);
 
         return job;
     }
@@ -156,14 +195,15 @@ public class TunePRM extends AppFunction {
         return stage;
     }
 
-    private Stage getEvalStage(Parameters parameter) {
-        Stage stage = new Stage("eval");
+    private Stage getProcessStage(Parameters parameter) {
+        Stage stage = new Stage("process");
 
         stage.addInput("folderParams", new TfFolder.IdOrder());
         stage.addOutput("folderParams2", new TfFolder.IdOrder());
 
         stage.add(new InputStep("folderParams"));
-        stage.add(new Step(EvalFacetModelForTuning.class, parameter));
+        stage.add(new Step(RunQueryForTuning.class, parameter));
+        stage.add(new Step(RunEvalForTuning.class, parameter));
         stage.add(Utility.getSorter(new TfFolder.IdOrder()));
         stage.add(new OutputStep("folderParams2"));
 
@@ -184,13 +224,13 @@ public class TunePRM extends AppFunction {
         return stage;
     }
 
-    private Stage getCopyRunStage(Parameters parameters) {
-        Stage stage = new Stage("copyRun");
+    private Stage getRunStage(Parameters parameters) {
+        Stage stage = new Stage("run");
 
         stage.addInput("queryParams", new TfQueryParameters.IdParametersOrder());
 
         stage.add(new InputStep("queryParams"));
-        stage.add(new Step(CopyRun.class, parameters));
+        stage.add(new Step(Run.class, parameters));
         stage.add(new Step(GmLearn.DoNonethingForQueryParams.class));
         return stage;
     }
@@ -198,53 +238,66 @@ public class TunePRM extends AppFunction {
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
     @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
-    public static class CopyRun extends StandardStep<TfQueryParameters, TfQueryParameters> {
+    public static class Run extends StandardStep<TfQueryParameters, TfQueryParameters> {
 
+        Retrieval retrieval;
         Parameters p;
+        PrmDirectory prmDir;
         BufferedWriter writer;
-        String modelDir;
-        String model;
-        String facetDir;
-        String runFacetDir;
 
-        public CopyRun(TupleFlowParameters parameters) throws IOException {
+        public Run(TupleFlowParameters parameters) throws Exception {
             p = parameters.getJSON();
-            model = p.getString("facetModel");
-            modelDir = Utility.getFileName(p.getString("facetDir"), model);
-            runFacetDir = Utility.getFileName(modelDir, "run", "facet");
-            facetDir = Utility.getFileName(modelDir, "facet");
+            prmDir = new PrmDirectory(p);
+            retrieval = RetrievalFactory.instance(p);
         }
 
         @Override
         public void process(TfQueryParameters queryParams) throws IOException {
+            Utility.infoProcessing(queryParams);
             String[] params = Utility.splitParameters(queryParams.parameters);
             String folderId = params[0];
-            String predictOrTune = params[1];
-            String metricIndex = params[2];
+            String metricIndex = params[1];
+            double fbOrigWt = Double.parseDouble(params[2]);
+            long fbDoc = Long.parseLong(params[3]);
+            long fbTerm = Long.parseLong(params[4]);
 
-            String[] modelParams = new String[params.length - 3];
-            for (int i = 0; i < modelParams.length; i++) {
-                modelParams[i] = params[i + 3];
+            File rankFile = prmDir.getTestRankFile(queryParams.id);
+            Utility.infoOpen(rankFile);
+            BufferedWriter writer = Utility.getWriter(rankFile);
+
+            String queryNumber = queryParams.id;
+            String queryText = RunQueryForTuning.getPrmQuery(queryParams.text, fbOrigWt, fbDoc, fbTerm);
+
+            // parse and transform query into runnable form
+            List<ScoredDocument> results = null;
+
+            Node root = StructuredQuery.parse(queryText);
+            Node transformed;
+            try {
+                transformed = retrieval.transformQuery(root, p);
+                // run query
+                results = retrieval.executeQuery(transformed, p).scoredDocuments;
+            } catch (Exception ex) {
+                Logger.getLogger(RunOracleCandidateExpasions.class.getName()).log(Level.SEVERE, "error in running for "
+                        + queryParams.toString(), ex);
+                throw new IOException();
             }
 
-            String modelParamsFileStr = Utility.parametersToFileNameString(modelParams);
-            File runFacetFile = new File(Utility.getFacetFileName(runFacetDir, queryParams.id, model, modelParamsFileStr));
-            File facetFile = new File(Utility.getFacetFileName(facetDir, queryParams.id, model, metricIndex));
-            Utility.infoOpen(facetFile);
-            Utility.createDirectoryForFile(facetFile);
-            makesLink(runFacetFile, facetFile);
-            Utility.infoWritten(facetFile);
-
-        }
-
-        private void makesLink(File runFacetFile, File facetFile) throws IOException {
-            System.err.println(runFacetFile.getAbsoluteFile());
-            System.err.println(facetFile.getAbsoluteFile());
-            if (facetFile.exists()) {
-                System.err.println("delete existing link");
-                facetFile.delete();
+            // if we have some results -- print in to output stream
+            if (!results.isEmpty()) {
+                for (ScoredDocument sd : results) {
+                    writer.write(sd.toTRECformat(queryNumber));
+                    writer.newLine();
+                }
+            } else {
+                writer.write(String.format("%s Q0 clueweb09-xxxxxx-xx-xxxxx 1 -1 galago", queryNumber));
+                writer.newLine();
             }
-            Files.createSymbolicLink(Paths.get(facetFile.toURI()), Paths.get(runFacetFile.toURI()));
+
+            writer.close();
+            Utility.infoWritten(rankFile);
+
+            processor.process(queryParams);
         }
     }
 
@@ -254,16 +307,13 @@ public class TunePRM extends AppFunction {
     public static class SelectBestParam extends StandardStep<TfFolder, TfQueryParameters> {
 
         Parameters p;
+        PrmDirectory prmDir;
+        PrmParameterGenerator paramGen;
         BufferedWriter writer;
-        String modelDir;
-        String model;
-        int facetTuneRank;
+        final static int metricIndex = 0; // map
 
         public SelectBestParam(TupleFlowParameters parameters) throws IOException {
             p = parameters.getJSON();
-            model = p.getString("facetModel");
-            modelDir = Utility.getFileName(p.getString("facetDir"), model);
-            facetTuneRank = new Long(p.getLong("facetTuneRank")).intValue();
         }
 
         @Override
@@ -274,14 +324,15 @@ public class TunePRM extends AppFunction {
         @Override
         public void close() throws IOException {
             long numFolders = p.getLong("cvFolderNum");
-            List<Long> metricIndices = p.getAsList("facetTuneMetricIndices", Long.class);
-            File bestParamFile = new File(Utility.getFileName(modelDir, "params"));
+            paramGen = new PrmParameterGenerator(p);
+            prmDir = new PrmDirectory(p);
+
+            File bestParamFile = prmDir.bestParamFile;
+            Utility.infoOpen(bestParamFile);
             writer = Utility.getWriter(bestParamFile);
 
-            for (Long metricIdx : metricIndices) {
-                for (int i = 1; i <= numFolders; i++) {
-                    findBestParamAndEmitRun(String.valueOf(i), metricIdx.intValue());
-                }
+            for (int i = 1; i <= numFolders; i++) {
+                findBestParamAndEmitRun(String.valueOf(i));
             }
 
             processor.close();
@@ -289,71 +340,34 @@ public class TunePRM extends AppFunction {
             Utility.infoWritten(bestParamFile);
         }
 
-        private void findBestParamAndEmitRun(String folderId, int metricIndex) throws IOException {
-
-            String folderDir = Utility.getFileName(modelDir, "tune", folderId);
-            String evalDir = Utility.getFileName(folderDir, "eval");
-
-            ArrayList<String> params = new ArrayList<>();
-
-            if (model.equals("plsa")) {
-                List<Long> topicNums = p.getAsList("plsaTopicNums");
-                List<Long> termNums = p.getAsList("plsaTermNums");
-
-                for (long topic : topicNums) {
-                    for (long term : termNums) {
-                        String newParams = Utility.parametersToString(topic, term);
-                        params.add(newParams);
-                    }
-                }
-            } else if (model.equals("lda")) {
-                List<Long> topicNums = p.getAsList("ldaTopicNums");
-                List<Long> termNums = p.getAsList("ldaTermNums");
-
-                for (long topic : topicNums) {
-                    for (long term : termNums) {
-                        String newParams = Utility.parametersToString(topic, term);
-                        params.add(newParams);
-                    }
-                }
-
-            } else if (model.equals("qd")) {
-                List<Double> qdDistanceMaxs = p.getAsList("qdDistanceMaxs");
-                List<Double> qdWebsiteCountMins = p.getAsList("qdWebsiteCountMins");
-                List<Double> qdItemRatios = p.getAsList("qdItemRatios");
-
-                for (double dx : qdDistanceMaxs) {
-                    for (double wc : qdWebsiteCountMins) {
-                        for (double ir : qdItemRatios) {
-                            String newParams = Utility.parametersToString(dx, wc, ir);
-                            params.add(newParams);
-                        }
-                    }
-                }
-            }
+        private void findBestParamAndEmitRun(String folderId) throws IOException {
+            List<String> prmParams = paramGen.getAllParams();
 
             double maxScore = Double.NEGATIVE_INFINITY;
             String maxScoreParams = "";
-            for (String param : params) {
-                String filenameParam = Utility.parametersToFileNameString(param);
-                File evalFile = new File(Utility.getFacetEvalFileName(evalDir, model, filenameParam, facetTuneRank));
+            for (String prmParam : prmParams) {
+                String[] params = Utility.splitParameters(prmParam);
+                double fbOrigWt = Double.parseDouble(params[0]);
+                long fbDoc = Long.parseLong(params[1]);
+                long fbTerm = Long.parseLong(params[2]);
+
+                File evalFile = prmDir.getEvalFile(folderId, fbOrigWt, fbDoc, fbTerm);
                 double score = QueryMetrics.getAvgScore(evalFile, metricIndex);
                 if (score > maxScore) {
                     maxScore = score;
-                    maxScoreParams = param;
+                    maxScoreParams = prmParam;
                 }
             }
 
-            writer.write(String.format("%s\t%s\t%d\t%s\n", model, folderId,
+            writer.write(String.format("%s\t%s\t%d\t%s\n", "prm", folderId,
                     metricIndex, TextProcessing.join(Utility.splitParameters(maxScoreParams), "\t")));
 
-            String testQueryFileName = Utility.getFileName(folderDir, "test.query");
-            TfQuery[] queries = QueryFileParser.loadQueryList(testQueryFileName);
+            File testQueryFile = prmDir.getTuneCurTestQueryFile(folderId);
+            TfQuery[] queries = QueryFileParser.loadQueryList(testQueryFile);
             for (TfQuery q : queries) {
-                String qParams = Utility.parametersToString(folderId, "predict", metricIndex, maxScoreParams);
+                String qParams = Utility.parametersToString(folderId, metricIndex, maxScoreParams);
                 processor.process(new TfQueryParameters(q.id, q.text, qParams));
             }
-
         }
 
     }
@@ -376,7 +390,7 @@ public class TunePRM extends AppFunction {
             ArrayList<String> params = new ArrayList<>();
             for (Double fbOrigWt : fbOrigWts) {
                 for (long docNum : fbDocs) {
-                    for (long termNum : fbDocs) {
+                    for (long termNum : fbTerms) {
                         params.add(Utility.parametersToString(fbOrigWt, docNum, termNum));
                     }
                 }
@@ -422,24 +436,18 @@ public class TunePRM extends AppFunction {
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.TfFolder")
     @OutputClass(className = "edu.umass.ciir.fws.types.TfFolder")
-    public class EvalFacetModelForTuning extends StandardStep<TfFolder, TfFolder> {
+    public static class RunQueryForTuning extends StandardStep<TfFolder, TfFolder> {
 
-        String tuneDir;
-        String runFacetDir;
-        QueryFacetEvaluator evaluator;
-        String model;
-        int facetTuneRank;
+        Retrieval retrieval;
+        Parameters p;
+        PrmDirectory prmDir;
+        PrmParameterGenerator paramGen;
 
-        public EvalFacetModelForTuning(TupleFlowParameters parameters) throws IOException {
-            Parameters p = parameters.getJSON();
-            model = p.getString("facetModel");
-            String modelDir = Utility.getFileName(p.getString("facetDir"), model);
-            tuneDir = Utility.getFileName(modelDir, "tune");
-            runFacetDir = Utility.getFileName(modelDir, "run", "facet");
-            facetTuneRank = new Long(p.getLong("facetTuneRank")).intValue();
-            File facetJsonFile = new File(p.getString("facetAnnotationJson"));
-
-            evaluator = new QueryFacetEvaluator(10, facetJsonFile);
+        public RunQueryForTuning(TupleFlowParameters parameters) throws Exception {
+            p = parameters.getJSON();
+            paramGen = new PrmParameterGenerator(p);
+            prmDir = new PrmDirectory(p);
+            retrieval = RetrievalFactory.instance(p);
         }
 
         @Override
@@ -447,31 +455,98 @@ public class TunePRM extends AppFunction {
             Utility.infoProcessing(folder);
             String[] params = Utility.splitParameters(folder.id);
             String folderId = params[0];
-            String predictOrTune = params[1];
+            double fbOrigWt = Double.parseDouble(params[1]);
+            long fbDoc = Long.parseLong(params[1]);
+            long fbTerm = Long.parseLong(params[1]);
 
-            String folderDir = Utility.getFileName(tuneDir, folderId);
-            String evalDir = Utility.getFileName(folderDir, "eval");
-            File trainQueryFile = new File(Utility.getFileName(folderDir, "train.query"));
+            File trainQueryFile = prmDir.getTuneCurTrainQueryFile(folderId);
+            File rankFile = prmDir.getRankFile(folderId, fbOrigWt, fbDoc, fbTerm);
 
-            String param = "";
-
-            if (model.equals("plsa")) {
-                long topicNum = Long.parseLong(params[2]);
-                long termNum = Long.parseLong(params[3]);
-                param = Utility.parametersToFileNameString(topicNum, termNum);
-            } else if (model.equals("lda")) {
-                long topicNum = Long.parseLong(params[2]);
-                long termNum = Long.parseLong(params[3]);
-                param = Utility.parametersToFileNameString(topicNum, termNum);
-
-            } else if (model.equals("qd")) {
-                double qdDistanceMax = Double.parseDouble(params[2]);
-                double qdWebsiteCountMin = Double.parseDouble(params[3]);
-                double qdItemRatio = Double.parseDouble(params[4]);
-                param = Utility.parametersToFileNameString(qdDistanceMax, qdWebsiteCountMin, qdItemRatio);
+            if (rankFile.exists()) {
+                Utility.infoFileExists(rankFile);
+                processor.close();
+                return;
             }
 
-            File evalFile = new File(Utility.getFacetEvalFileName(evalDir, model, param, facetTuneRank));
+            Utility.infoOpen(rankFile);
+            BufferedWriter writer = Utility.getWriter(rankFile);
+            List<TfQuery> queries = QueryFileParser.loadQueries(trainQueryFile);
+            for (TfQuery q : queries) {
+
+                String queryNumber = q.id;
+                String queryText = getPrmQuery(q.text, fbOrigWt, fbDoc, fbTerm);
+
+                // parse and transform query into runnable form
+                List<ScoredDocument> results = null;
+
+                Node root = StructuredQuery.parse(queryText);
+                Node transformed;
+                try {
+                    transformed = retrieval.transformQuery(root, p);
+                    // run query
+                    results = retrieval.executeQuery(transformed, p).scoredDocuments;
+                } catch (Exception ex) {
+                    Logger.getLogger(RunOracleCandidateExpasions.class.getName()).log(Level.SEVERE, "error in running for "
+                            + q.toString(), ex);
+                    throw new IOException();
+                }
+
+                // if we have some results -- print in to output stream
+                if (!results.isEmpty()) {
+                    for (ScoredDocument sd : results) {
+                        writer.write(sd.toTRECformat(queryNumber));
+                        writer.newLine();
+                    }
+                } else {
+                    writer.write(String.format("%s Q0 clueweb09-xxxxxx-xx-xxxxx 1 -1 galago", queryNumber));
+                    writer.newLine();
+                }
+            }
+
+            writer.close();
+            Utility.infoWritten(rankFile);
+
+            processor.process(folder);
+        }
+
+        public static String getPrmQuery(String text, double fbOrigWt, long fbDoc, long fbTerm) {
+            //* #rm:fbOrigWt=0.5:fbDocs=10:fbTerms=10( query )
+            return String.format("#rm:fbOrigWt=%f:fbDocs=%d:fbTerms=%d( #sdm( %s ))",
+                    fbOrigWt, fbDoc, fbTerm, text);
+        }
+    }
+
+    @Verified
+    @InputClass(className = "edu.umass.ciir.fws.types.TfFolder")
+    @OutputClass(className = "edu.umass.ciir.fws.types.TfFolder")
+    public class RunEvalForTuning extends StandardStep<TfFolder, TfFolder> {
+
+        Parameters p;
+        PrmDirectory prmDir;
+        PrmParameterGenerator paramGen;
+        TrecEvaluator evaluator;
+        String qrelFileName;
+
+        public RunEvalForTuning(TupleFlowParameters parameters) throws Exception {
+            p = parameters.getJSON();
+            paramGen = new PrmParameterGenerator(p);
+            prmDir = new PrmDirectory(p);
+            evaluator = new TrecEvaluator(p.getString("trecEval"));
+            qrelFileName = p.getString("qrelTopic");
+        }
+
+        @Override
+        public void process(TfFolder folder) throws IOException {
+            Utility.infoProcessing(folder);
+            String[] params = Utility.splitParameters(folder.id);
+            String folderId = params[0];
+            double fbOrigWt = Double.parseDouble(params[1]);
+            long fbDoc = Long.parseLong(params[2]);
+            long fbTerm = Long.parseLong(params[3]);
+
+            File rankFile = prmDir.getRankFile(folderId, fbOrigWt, fbDoc, fbTerm);
+            File evalFile = prmDir.getEvalFile(folderId, fbOrigWt, fbDoc, fbTerm);
+            File tevalFile = prmDir.getTevalFile(folderId, fbOrigWt, fbDoc, fbTerm);
 
             if (evalFile.exists()) {
                 Utility.infoFileExists(evalFile);
@@ -479,9 +554,17 @@ public class TunePRM extends AppFunction {
                 return;
             }
 
-            Utility.infoOpen(evalFile);
-            evaluator.eval(trainQueryFile, runFacetDir, model, param, evalFile, facetTuneRank);
+            try {
+                Utility.infoOpen(evalFile);
+                Utility.infoOpen(tevalFile);
+                evaluator.evalAndOutput(qrelFileName, rankFile.getAbsolutePath(), tevalFile, evalFile);
+            } catch (Exception ex) {
+                Logger.getLogger(TunePRM.class.getName()).log(Level.SEVERE, null, ex);
+                throw new IOException();
+            }
             Utility.infoWritten(evalFile);
+            Utility.infoWritten(tevalFile);
+
             processor.process(folder);
         }
     }
