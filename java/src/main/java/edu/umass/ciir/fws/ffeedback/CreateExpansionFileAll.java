@@ -170,10 +170,10 @@ public class CreateExpansionFileAll extends AppFunction {
             Utility.infoProcessing(param);
 
             File expansionFie = expansionDir.getExpansionFile(param, expansionModel);
-            if (expansionFie.exists()) {
-                Utility.infoFileExists(expansionFie);
-                return;
-            }
+//            if (expansionFie.exists()) {
+//                Utility.infoFileExists(expansionFie);
+//                return;
+//            }
 
             File feedbackFile = new File(Utility.getFeedbackFileName(allFeedbackDir, param));
             fdbkMap = FacetFeedback.loadGroupByQid(feedbackFile);
