@@ -7,7 +7,9 @@ package edu.umass.ciir.fws.ffeedback;
 
 import edu.umass.ciir.fws.anntation.FeedbackTerm;
 import edu.umass.ciir.fws.clustering.FacetModelParamGenerator;
+import edu.umass.ciir.fws.eval.FfeedbackTimeEstimator;
 import edu.umass.ciir.fws.eval.QueryFacetEvaluator;
+import static edu.umass.ciir.fws.ffeedback.RunExpansionAll.ExpandQueryWithFeedbacks.maxFeedbackTime;
 import edu.umass.ciir.fws.query.QueryTopicSubtopicMap;
 import edu.umass.ciir.fws.types.TfFacetFeedbackParams;
 import edu.umass.ciir.fws.utility.Utility;
@@ -183,14 +185,19 @@ public class CreateExpansionFileAll extends AppFunction {
                     selected.add(term);
                     String expansion = FacetFeedback.toExpansionString(selected);
 
+                    FacetFeedback ffbk = FacetFeedback.parseFromExpansionString(expansion);
+                    int time = FfeedbackTimeEstimator.time(ffbk);
+                    if (time > maxFeedbackTime) {
+                        continue;
+                    }
                     // should be in the map
                     if (!expIdMap.contains(ff.qid, expansionModel, expansion)) {
                         throw new IOException("expansion id not found for " + expansion);
                     }
-                    
+
                     QueryExpansion qe = new QueryExpansion(ff.qid, oriQuery, expansionModel, expansion, expIdMap);
                     qe.expand();
-                    
+
                     // for each subtopic
                     for (String sid : sidList) {
                         QuerySubtopicExpansion qse = new QuerySubtopicExpansion(qe, sid);
