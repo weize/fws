@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package edu.umass.ciir.fws.eval;
 
 import edu.umass.ciir.fws.utility.TextProcessing;
@@ -21,16 +20,15 @@ import java.util.List;
  */
 public class QueryMetrics {
 
-    
     public String qid;
-    public String [] valueStrs; // metric values;
-    public double [] values;
+    public String[] valueStrs; // metric values;
+    public double[] values;
 
     public QueryMetrics(String qid, String[] valueStrs) {
         this.qid = qid;
         this.valueStrs = valueStrs;
         this.values = new double[valueStrs.length];
-        for(int i = 0; i < valueStrs.length; i ++) {
+        for (int i = 0; i < valueStrs.length; i++) {
             values[i] = Double.parseDouble(valueStrs[i]);
         }
     }
@@ -38,43 +36,45 @@ public class QueryMetrics {
     public QueryMetrics(String qid, double[] values) {
         this.qid = qid;
         this.values = values;
-        this.valueStrs = new String [values.length];
-        for(int i = 0; i < values.length; i ++) {
+        this.valueStrs = new String[values.length];
+        for (int i = 0; i < values.length; i++) {
             valueStrs[i] = String.format("%.4f", values[i]);
         }
     }
-    
+
     @Override
     public String toString() {
-        return qid +'\t' + TextProcessing.join(valueStrs, "\t");
+        return qid + '\t' + TextProcessing.join(valueStrs, "\t");
     }
-    
-    public static void output(List<QueryMetrics> results,  File file) throws IOException {
+
+    public static void output(List<QueryMetrics> results, File file) throws IOException {
         BufferedWriter writer = Utility.getWriter(file);
-        for(QueryMetrics qm : results) {
+        for (QueryMetrics qm : results) {
             writer.write(qm.toString());
             writer.newLine();
         }
         writer.close();
     }
-    
+
     public static double getAvgScore(File evalFile, int metricIdx) throws IOException {
         BufferedReader reader = Utility.getReader(evalFile);
         String line;
-        while((line = reader.readLine())!= null) {
-            QueryMetrics qm = QueryMetrics.parse(line);
-            if (qm.qid.equals("all")) {
-                return qm.values[metricIdx];
+        while ((line = reader.readLine()) != null) {
+            if (!line.trim().startsWith("#")) {
+                QueryMetrics qm = QueryMetrics.parse(line);
+                if (qm.qid.equals("all")) {
+                    return qm.values[metricIdx];
+                }
             }
         }
         reader.close();
         throw new IOException("cannot find avg score for index " + metricIdx + " in " + evalFile);
     }
-    
+
     private static QueryMetrics parse(String line) {
-        String [] elems = line.split("\t");
+        String[] elems = line.split("\t");
         String qid = elems[0];
-        String [] valueStrs = Arrays.copyOfRange(elems, 1, elems.length);
+        String[] valueStrs = Arrays.copyOfRange(elems, 1, elems.length);
         return new QueryMetrics(qid, valueStrs);
     }
 }
