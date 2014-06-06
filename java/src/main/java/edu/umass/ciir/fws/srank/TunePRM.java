@@ -85,7 +85,7 @@ public class TunePRM extends AppFunction {
         public String getTuneCurFolderDir(String folderId) {
             return Utility.getFileName(tuneDir, folderId);
         }
-        
+
         public File getTuneCurTrainQueryFile(String folderId) {
             return new File(Utility.getFileName(getTuneCurFolderDir(folderId), "train.query"));
         }

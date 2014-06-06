@@ -25,7 +25,9 @@ import java.util.Map;
  */
 public class QueryMetricsTime extends QueryMetrics {
 
-    int time;
+    
+
+    public int time;
 
     public QueryMetricsTime(QueryMetrics qm, int time) {
         super(qm.qid, qm.valueStrs);
@@ -52,6 +54,14 @@ public class QueryMetricsTime extends QueryMetrics {
         return time + ":" + TextProcessing.join(valueStrs, ",");
     }
 
+    public static QueryMetricsTime parse(String qid, String qmtStr) {
+        String [] elems = qmtStr.split(":");
+        int time = Integer.parseInt(elems[0]);
+        String [] scores = elems[1].split(",");
+        QueryMetrics qm = new QueryMetrics(qid,scores);
+        return new QueryMetricsTime(qm, time);
+    }
+    
     public static void outputAvg(File file, List<QueryMetricsTime> avgQmts) throws IOException {
         BufferedWriter writer = Utility.getWriter(file);
         for (QueryMetricsTime qmt : avgQmts) {
