@@ -35,7 +35,7 @@ public class CmpAnnotatorOracleFeedback extends AppFunction {
 
     @Override
     public void run(Parameters p, PrintStream output) throws Exception {
-        File oracleFile = new File("../exp/feedback/annotator/annotator.oracle.sts-0_005.fdbk");
+        File oracleFile = new File("../exp/feedback/annotator/annotator.oracle.sts-0_01.fdbk");
         File annotatorFile = new File("../exp/feedback/annotator/annotator.annotator.fdbk");
         File annotatorStatFile = new File("../exp/data/feedback.annotator.stats");
         File oracleStatFile = new File("../exp/data/feedback.oracle.stats");
