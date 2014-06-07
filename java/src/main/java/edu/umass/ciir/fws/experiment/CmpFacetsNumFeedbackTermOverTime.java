@@ -35,7 +35,7 @@ public class CmpFacetsNumFeedbackTermOverTime extends AppFunction {
 
     @Override
     public String getHelpString() {
-        return "fws cmp-feedbacks\n";
+        return "fws cmp-feedbacks-selected-term-num\n";
     }
 
     @Override
@@ -81,6 +81,9 @@ public class CmpFacetsNumFeedbackTermOverTime extends AppFunction {
             FacetFeedback feedback = feedbacks.get(qidSid);
             ArrayList<QueryMetricsTime> qmtList = new ArrayList<>();
 
+            QueryMetricsTime first = new QueryMetricsTime(qidSid, new double[]{0}, 0);
+            qmtList.add(first);
+            
             ArrayList<FeedbackTerm> curTerms = new ArrayList<>();
             double termSelected = 0;
             for (FeedbackTerm t : feedback.terms) {
