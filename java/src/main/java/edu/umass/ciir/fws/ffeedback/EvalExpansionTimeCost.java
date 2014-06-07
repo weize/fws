@@ -45,7 +45,7 @@ public class EvalExpansionTimeCost extends AppFunction {
 
         // to average
         String avgQidSid = "all-all";
-        List<QueryMetricsTime> agvQmt = avgQmts(expQmtMap, avgQidSid);
+        List<QueryMetricsTime> agvQmt = QueryMetricsTime.avgQmts(expQmtMap, avgQidSid);
         expQmtMap.put(avgQidSid, agvQmt);
 
         File expansionEvalFile = new File(p.getString("expansionEvalFile"));
@@ -108,57 +108,5 @@ public class EvalExpansionTimeCost extends AppFunction {
 
         return expQmts;
     }
-
-    private List<QueryMetricsTime> avgQmts(TreeMap<String, List<QueryMetricsTime>> expQmtMap, String qidSid) {
-        ArrayList<QueryMetricsTime> avgQmt = new ArrayList<>();
-        // map to lists
-        List<QueryMetricsTime>[] expQmtLists = (List<QueryMetricsTime>[]) expQmtMap.values().toArray(new List<?>[0]);
-
-        int metricSize = expQmtLists[0].get(0).values.length;
-        // set point to each list
-        int[] ii = new int[expQmtLists.length];
-        for (int i = 0; i < ii.length; i++) {
-            ii[i] = -1;
-        }
-
-        while (true) {
-            int time = findNextMinTimeCost(expQmtLists, ii);
-            if (time < 0) {
-                break;
-            }
-
-            // add values for that time
-            double[] values = new double[metricSize];
-            for (int i = 0; i < expQmtLists.length; i++) {
-                List<QueryMetricsTime> qmts = expQmtLists[i];
-                int indexNext = ii[i] + 1;
-                if (indexNext < qmts.size() && qmts.get(indexNext).time == time) {
-                    ii[i]++; // move to next qmt
-                }
-
-                Utility.add(values, qmts.get(ii[i]).values);
-            }
-            Utility.avg(values, expQmtLists.length);
-            avgQmt.add(new QueryMetricsTime(qidSid, values, time));
-        }
-        return avgQmt;
-    }
-
-    private int findNextMinTimeCost(List<QueryMetricsTime>[] expQmtLists, int[] ii) {
-        int minTime = Integer.MAX_VALUE;
-        boolean hasResult = false;
-
-        for (int i = 0; i < expQmtLists.length; i++) {
-            int index = ii[i] + 1;
-            List<QueryMetricsTime> qmts = expQmtLists[i];
-            if (index < qmts.size()) {
-                int time = qmts.get(index).time;
-                if (time < minTime) {
-                    minTime = time;
-                    hasResult = true;
-                }
-            }
-        }
-        return hasResult ? minTime : -1;
-    }
+    
 }

@@ -18,14 +18,13 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  *
  * @author wkong
  */
 public class QueryMetricsTime extends QueryMetrics {
-
-    
 
     public int time;
 
@@ -55,13 +54,13 @@ public class QueryMetricsTime extends QueryMetrics {
     }
 
     public static QueryMetricsTime parse(String qid, String qmtStr) {
-        String [] elems = qmtStr.split(":");
+        String[] elems = qmtStr.split(":");
         int time = Integer.parseInt(elems[0]);
-        String [] scores = elems[1].split(",");
-        QueryMetrics qm = new QueryMetrics(qid,scores);
+        String[] scores = elems[1].split(",");
+        QueryMetrics qm = new QueryMetrics(qid, scores);
         return new QueryMetricsTime(qm, time);
     }
-    
+
     public static void outputAvg(File file, List<QueryMetricsTime> avgQmts) throws IOException {
         BufferedWriter writer = Utility.getWriter(file);
         for (QueryMetricsTime qmt : avgQmts) {
@@ -69,7 +68,7 @@ public class QueryMetricsTime extends QueryMetrics {
         }
         writer.close();
     }
-    
+
     public static void output(Map<String, List<QueryMetricsTime>> qmtMap, File outfile) throws IOException {
         BufferedWriter writer = Utility.getWriter(outfile);
         for (String qidSid : qmtMap.keySet()) {
@@ -97,34 +96,112 @@ public class QueryMetricsTime extends QueryMetrics {
         writer.close();
     }
 
-    /**
-     * not tested
-     * @param file
-     * @return
-     * @throws IOException 
-     */
-    public static Map<String, List<QueryMetricsTime>> loadAsMap(File file) throws IOException {
-        HashMap<String, List<QueryMetricsTime>> map = new HashMap<>();
+    public static TreeMap<String, List<QueryMetricsTime>> loadTimeCostEvalFile(File file) throws IOException {
+        TreeMap<String, List<QueryMetricsTime>> qmts = new TreeMap<>();
         BufferedReader reader = Utility.getReader(file);
         String line;
         while ((line = reader.readLine()) != null) {
             String[] elems = line.split("\t");
             String qidSid = elems[0];
-            String qmtList = elems[1];
-
+            String[] qmtStrs = elems[1].split("\\|");
             ArrayList<QueryMetricsTime> list = new ArrayList<>();
-            for (String qmtStr : qmtList.split("\\|")) {
-                String[] elems2 = qmtStr.split(":");
-                int time = Integer.parseInt(elems2[0]);
-                String[] valueStrs = elems2[1].split(",");
-                list.add(new QueryMetricsTime(qidSid, valueStrs, time));
+
+            for (String qmtStr: qmtStrs) {
+                QueryMetricsTime cur = QueryMetricsTime.parse(qidSid, qmtStr);
+                list.add(cur);
             }
-            map.put(qidSid, list);
+            qmts.put(qidSid, list);
         }
         reader.close();
-        return map;
+        return qmts;
     }
-
     
+    /**
+     * average across queries
+     * @param expQmtMap
+     * @param qidSid
+     * @return 
+     */
+    public static List<QueryMetricsTime> avgQmts(TreeMap<String, List<QueryMetricsTime>> expQmtMap, String qidSid) {
+        ArrayList<QueryMetricsTime> avgQmt = new ArrayList<>();
+        // map to lists
+        List<QueryMetricsTime>[] expQmtLists = (List<QueryMetricsTime>[]) expQmtMap.values().toArray(new List<?>[0]);
+
+        int metricSize = expQmtLists[0].get(0).values.length;
+        // set point to each list
+        int[] ii = new int[expQmtLists.length];
+        for (int i = 0; i < ii.length; i++) {
+            ii[i] = -1;
+        }
+
+        while (true) {
+            int time = findNextMinTimeCost(expQmtLists, ii);
+            if (time < 0) {
+                break;
+            }
+
+            // add values for that time
+            double[] values = new double[metricSize];
+            for (int i = 0; i < expQmtLists.length; i++) {
+                List<QueryMetricsTime> qmts = expQmtLists[i];
+                int indexNext = ii[i] + 1;
+                if (indexNext < qmts.size() && qmts.get(indexNext).time == time) {
+                    ii[i]++; // move to next qmt
+                }
+
+                Utility.add(values, qmts.get(ii[i]).values);
+            }
+            Utility.avg(values, expQmtLists.length);
+            avgQmt.add(new QueryMetricsTime(qidSid, values, time));
+        }
+        return avgQmt;
+    }
+    
+    public static List<QueryMetricsTime> avgQmtsByQuery(TreeMap<String, List<QueryMetricsTime>> qmts, String avgName) throws IOException {
+        // qid-> sid-> [QueryMetrics]
+        HashMap<String, TreeMap<String, List<QueryMetricsTime>>> expQmtMapByQid = new HashMap<>();
+        
+        for (String qidSid : qmts.keySet()) {
+            String [] elems= qidSid.split("-");
+            String qid = elems[0];
+            String sid = elems[1];
+            
+            if (!expQmtMapByQid.containsKey(qid)) {
+                expQmtMapByQid.put(qid, new TreeMap<String,List<QueryMetricsTime>>());
+            }
+            
+            expQmtMapByQid.get(qid).put(sid, qmts.get(qidSid));
+        }
+        
+        TreeMap<String, List<QueryMetricsTime>> expAvgBySubtopicQmtMap = new TreeMap<>();
+        for(String qid : expQmtMapByQid.keySet()) {
+            // avg within a query
+            List<QueryMetricsTime> avgQmt = avgQmts(expQmtMapByQid.get(qid), qid);
+            expAvgBySubtopicQmtMap.put(qid, avgQmt);
+        }
+        
+        //avg between queries
+        List<QueryMetricsTime> avgByQueryQmt = avgQmts(expAvgBySubtopicQmtMap, avgName);
+        
+        return avgByQueryQmt;
+    }
+    
+    public static int findNextMinTimeCost(List<QueryMetricsTime>[] expQmtLists, int[] ii) {
+        int minTime = Integer.MAX_VALUE;
+        boolean hasResult = false;
+
+        for (int i = 0; i < expQmtLists.length; i++) {
+            int index = ii[i] + 1;
+            List<QueryMetricsTime> qmts = expQmtLists[i];
+            if (index < qmts.size()) {
+                int time = qmts.get(index).time;
+                if (time < minTime) {
+                    minTime = time;
+                    hasResult = true;
+                }
+            }
+        }
+        return hasResult ? minTime : -1;
+    }
 
 }

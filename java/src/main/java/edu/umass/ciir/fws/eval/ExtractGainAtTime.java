@@ -35,7 +35,7 @@ public class ExtractGainAtTime extends AppFunction {
 
     @Override
     public String getHelpString() {
-        return "fws extract gain-at-time --tcevalFile=<tcevalFile> --output=<outfile> --time=<timeMeasure>";
+        return "fws extract-gain-at-time --tcevalFile=<tcevalFile> --outfile=<outfile> --time=<timeMeasure>";
     }
 
     @Override
@@ -43,18 +43,19 @@ public class ExtractGainAtTime extends AppFunction {
         File tcevalFile = new File(p.getString("tcevalFile"));
         File outfile = new File(p.getString("outfile"));
         int time = new Long(p.getLong("time")).intValue();
+        TreeMap<String, List<QueryMetricsTime>> qmts = QueryMetricsTime.loadTimeCostEvalFile(tcevalFile);
+        TreeMap<String, QueryMetricsTime> qmtsAvgByQuery = extract(qmts, time);
+        output(qmtsAvgByQuery, outfile);
+    }
+
+    public static TreeMap<String, QueryMetricsTime> extract(TreeMap<String, List<QueryMetricsTime>> oriQmts, int time) {
 
         TreeMap<String, TreeMap<String, QueryMetricsTime>> qmts = new TreeMap<>();
-        BufferedReader reader = Utility.getReader(tcevalFile);
-        String line;
-        while ((line = reader.readLine()) != null) {
-            String[] elems = line.split("\t");
-            String qidSid = elems[0];
-            String[] qmtStrs = elems[1].split("\\|");
+        for (String qidSid : oriQmts.keySet()) {
             if (qidSid.equals("all-all") || qidSid.equals("all")) {
                 continue;
             }
-            QueryMetricsTime qmt = getQmtAtTime(qidSid, qmtStrs, time);
+            QueryMetricsTime qmt = getQmtAtTime(oriQmts.get(qidSid), time);
 
             String qid = qidSid.split("-")[0];
             String sid = qidSid.split("-")[1];
@@ -63,26 +64,25 @@ public class ExtractGainAtTime extends AppFunction {
             }
             qmts.get(qid).put(sid, qmt);
         }
-        reader.close();
-        
+
         TreeMap<String, QueryMetricsTime> qmtsAvgByQuery = new TreeMap<>();
-        for(String qid : qmts.keySet()) {
+        for (String qid : qmts.keySet()) {
             TreeMap<String, QueryMetricsTime> cur = qmts.get(qid);
-            double [] avg = new double[cur.get(cur.firstKey()).values.length];
-            for(String sid: cur.keySet()) {
+            double[] avg = new double[cur.get(cur.firstKey()).values.length];
+            for (String sid : cur.keySet()) {
                 Utility.add(avg, cur.get(sid).values);
             }
             Utility.avg(avg, cur.size());
             qmtsAvgByQuery.put(qid, new QueryMetricsTime(qid, avg, time));
         }
-        output(qmtsAvgByQuery, outfile);
+        return qmtsAvgByQuery;
+
     }
 
-    private QueryMetricsTime getQmtAtTime(String qidSid, String[] qmtStrs, long time) {
-        QueryMetricsTime qmt = QueryMetricsTime.parse(qidSid, qmtStrs[0]);
+    private static QueryMetricsTime getQmtAtTime(List<QueryMetricsTime> list, long time) {
+        QueryMetricsTime qmt = list.get(0);
 
-        for (String qmtStr : qmtStrs) {
-            QueryMetricsTime cur = QueryMetricsTime.parse(qidSid, qmtStr);
+        for (QueryMetricsTime cur : list) {
             if (cur.time <= time) {
                 qmt = cur;
             } else {
@@ -93,9 +93,9 @@ public class ExtractGainAtTime extends AppFunction {
         return qmt;
     }
 
-    private void output( TreeMap<String, QueryMetricsTime> qmts, File outfile) throws IOException {
+    public static void output(TreeMap<String, QueryMetricsTime> qmts, File outfile) throws IOException {
         BufferedWriter writer = Utility.getWriter(outfile);
-        for(QueryMetricsTime qmt : qmts.values()) {
+        for (QueryMetricsTime qmt : qmts.values()) {
             writer.write(String.format("%s\t%d\t%s\n", qmt.qid, qmt.time, TextProcessing.join(qmt.valueStrs, "\t")));
         }
         writer.close();

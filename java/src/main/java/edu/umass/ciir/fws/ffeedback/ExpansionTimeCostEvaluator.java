@@ -43,13 +43,15 @@ public class ExpansionTimeCostEvaluator {
     }
 
     public void run(TfFacetFeedbackParams ffParam) throws IOException {
+        // extract time cost evals
         expQmtMap = calcQueryMetricTimes(ffParam);
-
         // to average
         // each line all-all time metrics
-        List<QueryMetricsTime> agvQmt = avgQmts(expQmtMap, avgQidSid);
+        List<QueryMetricsTime> agvQmt = QueryMetricsTime.avgQmts(expQmtMap, avgQidSid);
         expQmtMap.put(avgQidSid, agvQmt);
 
+        // to average between queries
+        List<QueryMetricsTime> avgByQueryQmt = QueryMetricsTime.avgQmtsByQuery(expQmtMap, "all");
         
         // output
         File expansionTimeEvalFile = expansionDir.getExpansionTimeCostEvalFile(ffParam, expansionModel);
@@ -65,7 +67,9 @@ public class ExpansionTimeCostEvaluator {
         QueryMetricsTime.outputAvg(expansionTimeEvalAvgFile, agvQmt);
         Utility.infoWritten(expansionTimeEvalAvgFile);
         
-        averageByQuery(expansionTimeEvalQueryAvgFile);
+        Utility.infoOpen(expansionTimeEvalQueryAvgFile);
+        QueryMetricsTime.outputAvg(expansionTimeEvalQueryAvgFile, avgByQueryQmt);
+        Utility.infoWritten(expansionTimeEvalQueryAvgFile);
 
     }
 
@@ -120,89 +124,5 @@ public class ExpansionTimeCostEvaluator {
 
         return expQmts;
     }
-
-    private List<QueryMetricsTime> avgQmts(TreeMap<String, List<QueryMetricsTime>> expQmtMap, String qidSid) {
-        ArrayList<QueryMetricsTime> avgQmt = new ArrayList<>();
-        // map to lists
-        List<QueryMetricsTime>[] expQmtLists = (List<QueryMetricsTime>[]) expQmtMap.values().toArray(new List<?>[0]);
-
-        int metricSize = expQmtLists[0].get(0).values.length;
-        // set point to each list
-        int[] ii = new int[expQmtLists.length];
-        for (int i = 0; i < ii.length; i++) {
-            ii[i] = -1;
-        }
-
-        while (true) {
-            int time = findNextMinTimeCost(expQmtLists, ii);
-            if (time < 0) {
-                break;
-            }
-
-            // add values for that time
-            double[] values = new double[metricSize];
-            for (int i = 0; i < expQmtLists.length; i++) {
-                List<QueryMetricsTime> qmts = expQmtLists[i];
-                int indexNext = ii[i] + 1;
-                if (indexNext < qmts.size() && qmts.get(indexNext).time == time) {
-                    ii[i]++; // move to next qmt
-                }
-
-                Utility.add(values, qmts.get(ii[i]).values);
-            }
-            Utility.avg(values, expQmtLists.length);
-            avgQmt.add(new QueryMetricsTime(qidSid, values, time));
-        }
-        return avgQmt;
-    }
-
-    private int findNextMinTimeCost(List<QueryMetricsTime>[] expQmtLists, int[] ii) {
-        int minTime = Integer.MAX_VALUE;
-        boolean hasResult = false;
-
-        for (int i = 0; i < expQmtLists.length; i++) {
-            int index = ii[i] + 1;
-            List<QueryMetricsTime> qmts = expQmtLists[i];
-            if (index < qmts.size()) {
-                int time = qmts.get(index).time;
-                if (time < minTime) {
-                    minTime = time;
-                    hasResult = true;
-                }
-            }
-        }
-        return hasResult ? minTime : -1;
-    }
-
-    private void averageByQuery(File file) throws IOException {
-        // qid-> sid-> [QueryMetrics]
-        HashMap<String, TreeMap<String, List<QueryMetricsTime>>> expQmtMapByQid = new HashMap<>();
-        
-        for (String qidSid : expQmtMap.keySet()) {
-            String [] elems= qidSid.split("-");
-            String qid = elems[0];
-            String sid = elems[1];
-            
-            if (!expQmtMapByQid.containsKey(qid)) {
-                expQmtMapByQid.put(qid, new TreeMap<String,List<QueryMetricsTime>>());
-            }
-            
-            expQmtMapByQid.get(qid).put(sid, expQmtMap.get(qidSid));
-        }
-        
-        TreeMap<String, List<QueryMetricsTime>> expAvgBySubtopicQmtMap = new TreeMap<>();
-        for(String qid : expQmtMapByQid.keySet()) {
-            // avg within a query
-            List<QueryMetricsTime> avgQmt = avgQmts(expQmtMapByQid.get(qid), qid);
-            expAvgBySubtopicQmtMap.put(qid, avgQmt);
-        }
-        
-        //avg between queries
-        List<QueryMetricsTime> avgByQueryQmt = avgQmts(expAvgBySubtopicQmtMap, "all");
-        
-        Utility.infoOpen(file);
-        QueryMetricsTime.outputAvg(file, avgByQueryQmt);
-        Utility.infoWritten(file);
-        
-    }
+    
 }

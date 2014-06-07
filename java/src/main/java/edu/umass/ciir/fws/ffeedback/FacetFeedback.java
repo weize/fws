@@ -154,6 +154,16 @@ public class FacetFeedback {
         return map;
     }
 
+    public static HashMap<String, FacetFeedback> loadGroupByQidSid(File file) throws IOException {
+        List<FacetFeedback> all = load(file);
+        HashMap<String, FacetFeedback> map = new HashMap<>();
+        for (FacetFeedback ff : all) {
+            String qidSid = ff.qid + "-" + ff.sid;
+            map.put(qidSid, ff);
+        }
+        return map;
+    }
+
     public static HashSet<String> loadFeedbackQidSidSet(File file) throws IOException {
         HashSet<String> set = new HashSet<>();
         BufferedReader reader = Utility.getReader(file);
