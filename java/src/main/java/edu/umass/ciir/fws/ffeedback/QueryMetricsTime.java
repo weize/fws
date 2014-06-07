@@ -122,7 +122,7 @@ public class QueryMetricsTime extends QueryMetrics {
      * @param qidSid
      * @return 
      */
-    public static List<QueryMetricsTime> avgQmts(TreeMap<String, List<QueryMetricsTime>> expQmtMap, String qidSid) {
+    public static List<QueryMetricsTime> avgQmts(Map<String, List<QueryMetricsTime>> expQmtMap, String qidSid) {
         ArrayList<QueryMetricsTime> avgQmt = new ArrayList<>();
         // map to lists
         List<QueryMetricsTime>[] expQmtLists = (List<QueryMetricsTime>[]) expQmtMap.values().toArray(new List<?>[0]);
@@ -157,7 +157,7 @@ public class QueryMetricsTime extends QueryMetrics {
         return avgQmt;
     }
     
-    public static List<QueryMetricsTime> avgQmtsByQuery(TreeMap<String, List<QueryMetricsTime>> qmts, String avgName) throws IOException {
+    public static List<QueryMetricsTime> avgQmtsByQuery(Map<String, List<QueryMetricsTime>> qmts, String avgName) throws IOException {
         // qid-> sid-> [QueryMetrics]
         HashMap<String, TreeMap<String, List<QueryMetricsTime>>> expQmtMapByQid = new HashMap<>();
         

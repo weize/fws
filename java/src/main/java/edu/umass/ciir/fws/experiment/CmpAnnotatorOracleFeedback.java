@@ -37,9 +37,9 @@ public class CmpAnnotatorOracleFeedback extends AppFunction {
     public void run(Parameters p, PrintStream output) throws Exception {
         File oracleFile = new File("../exp/feedback/annotator/annotator.oracle.sts-0_01.fdbk");
         File annotatorFile = new File("../exp/feedback/annotator/annotator.annotator.fdbk");
-        File annotatorStatFile = new File("../exp/data/feedback.annotator.stats");
-        File oracleStatFile = new File("../exp/data/feedback.oracle.stats");
-        File evalFile = new File("../exp/data/feedback.cmp.eval");
+        File annotatorStatFile = new File("../exp/data/cmp-feedback/feedback.annotator.stats");
+        File oracleStatFile = new File("../exp/data/cmp-feedback/feedback.oracle.stats");
+        File evalFile = new File("../exp/data/cmp-feedback/feedback.cmp.eval");
 
         HashMap<String, FacetFeedback> oracle = FacetFeedback.loadGroupByQidSid(oracleFile);
         HashMap<String, FacetFeedback> annotator = FacetFeedback.loadGroupByQidSid(annotatorFile);
