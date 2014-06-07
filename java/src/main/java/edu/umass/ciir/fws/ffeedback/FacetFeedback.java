@@ -47,6 +47,8 @@ public class FacetFeedback {
         this.sid = qidSid.split("-")[1];
         Collections.sort(terms);
         this.terms = terms;
+        facets = new ArrayList<>();
+        groupTermsToFacet();
     }
 
     public FacetFeedback(String qid, String sid, ArrayList<FeedbackTerm> terms) {
@@ -195,6 +197,28 @@ public class FacetFeedback {
         }
 
         return new FacetFeedback(feedbackSource.qid, feedbackSource.sid, fterms);
+    }
+
+    private void groupTermsToFacet() {
+         // group terms
+        int fidx = -1;
+        ArrayList<FeedbackTerm> list = null;
+        for (FeedbackTerm ft : terms) {
+            if (list == null) {
+                list = new ArrayList<>();
+                fidx = ft.fidx;
+            } else if (fidx != ft.fidx) {
+                facets.add(list);
+                list = new ArrayList<>();
+                fidx = ft.fidx;
+            }
+
+            list.add(ft);
+        }
+
+        if (list != null) {
+            facets.add(list);
+        }
     }
 
 }

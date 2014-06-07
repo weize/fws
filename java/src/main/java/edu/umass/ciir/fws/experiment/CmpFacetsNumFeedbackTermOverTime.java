@@ -30,7 +30,7 @@ public class CmpFacetsNumFeedbackTermOverTime extends AppFunction {
 
     @Override
     public String getName() {
-        return "cmp-feedbacks";
+        return "cmp-feedbacks-selected-term-num";
     }
 
     @Override
