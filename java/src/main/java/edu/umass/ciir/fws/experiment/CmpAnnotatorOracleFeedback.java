@@ -79,7 +79,7 @@ public class CmpAnnotatorOracleFeedback extends AppFunction {
             }
 
             int anSize = anSet.size();
-            int orSize = anSet.size();
+            int orSize = orSet.size();
             double p, r;
 
             if (orSize == 0) {
