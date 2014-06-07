@@ -29,24 +29,24 @@ import org.lemurproject.galago.tupleflow.Parameters;
  * @author wkong
  */
 public class CmpFacetsAccNumTermOverFacets extends AppFunction {
-
+    
     @Override
     public String getName() {
         return "cmp-feedbacks-selected-term-num";
     }
-
+    
     @Override
     public String getHelpString() {
         return "fws cmp-feedbacks-selected-term-num\n";
     }
-
+    
     @Override
     public void run(Parameters p, PrintStream output) throws Exception {
         List<String> facetSrcs = p.getAsList("facetSources");
         String facetDir = p.getString("facetDir");
         FacetModelParamGenerator facetParamGen = new FacetModelParamGenerator(p);
         List<TfQuery> queries = QueryFileParser.loadQueries(new File(p.getString("queryFile")));
-
+        
         for (String facetSrc : facetSrcs) {
             List<String> facetParams = facetParamGen.getParams(facetSrc);
             for (String facetParam : facetParams) {
@@ -54,9 +54,9 @@ public class CmpFacetsAccNumTermOverFacets extends AppFunction {
                 process(facetSrc, facetParam, queries, facetDir, outfile);
             }
         }
-
+        
     }
-
+    
     public static String geOutFileName(String dir, String facetSource, String facetParams) {
         facetParams = Utility.parametersToFileNameString(facetParams);
         String facetName = facetParams.isEmpty() ? String.format("%s", facetSource)
@@ -64,19 +64,19 @@ public class CmpFacetsAccNumTermOverFacets extends AppFunction {
         String name = String.format("%s.accuTermOverFacet", facetName);
         return Utility.getFileName(dir, name);
     }
-
+    
     private void process(String facetSrc, String facetParam, List<TfQuery> queries, String facetDir, File outfile) throws IOException {
         TreeMap<String, List<QueryMetricsTime>> qmts = new TreeMap<>();
-        for(TfQuery q : queries) {
-            File facetFile = new File(Utility.getFacetFileName(facetDir, q.id, facetSrc, facetParam));
+        for (TfQuery q : queries) {
+            File facetFile = new File(Utility.getFacetFileName(Utility.getFileName(facetDir, facetSrc, "facet"), q.id, facetSrc, facetParam));
             List<ScoredFacet> facets = ScoredFacet.loadFacets(facetFile);
             int termCount = 0;
             int facetCount = 0;
             ArrayList<QueryMetricsTime> qmtList = new ArrayList<>();
             QueryMetricsTime first = new QueryMetricsTime(q.id, new double[]{termCount}, facetCount);
             qmtList.add(first);
-            for(ScoredFacet f : facets) {
-                facetCount ++;
+            for (ScoredFacet f : facets) {
+                facetCount++;
                 termCount += f.size();
                 QueryMetricsTime qmt = new QueryMetricsTime(q.id, new double[]{termCount}, facetCount);
                 qmtList.add(qmt);
@@ -88,5 +88,5 @@ public class CmpFacetsAccNumTermOverFacets extends AppFunction {
         QueryMetricsTime.outputAvg(outfile, avgByQuery);
         Utility.infoWritten(outfile);
     }
-
+    
 }
