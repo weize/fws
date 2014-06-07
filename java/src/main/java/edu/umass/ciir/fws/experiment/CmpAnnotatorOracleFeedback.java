@@ -62,7 +62,7 @@ public class CmpAnnotatorOracleFeedback extends AppFunction {
         int size = feedbacks.keySet().size();
         termAvg /= size;
         facetAvg /= size;
-        writer.write(String.format("%s\t%d\t%d\n", "all", termAvg, facetAvg));
+        writer.write(String.format("%s\t%.4f\t%.4f\n", "all", termAvg, facetAvg));
         writer.close();
         Utility.infoWritten(out);
     }
