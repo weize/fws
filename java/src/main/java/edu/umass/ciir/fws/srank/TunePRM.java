@@ -74,11 +74,13 @@ public class TunePRM extends AppFunction {
 
         String headDir;
         String tuneDir;
+        String rankDir;
         private File bestParamFile;
 
         public PrmDirectory(Parameters p) {
             headDir = Utility.getFileName(p.getString("srankDir"), "prm");
             tuneDir = Utility.getFileName(headDir, "tune");
+            rankDir = Utility.getFileName(headDir, "rankDir");
             bestParamFile = new File(Utility.getFileName(tuneDir, "params"));
         }
 
@@ -131,6 +133,7 @@ public class TunePRM extends AppFunction {
         // prepare for each folder in train dir
         String tuneDir = prmDir.tuneDir;
         Utility.createDirectory(tuneDir);
+        Utility.createDirectory(prmDir.rankDir);
         for (int i = 0; i < folderNum; i++) {
             String folderDir = Utility.getFileName(tuneDir, String.valueOf(i + 1));
             Utility.createDirectory(folderDir);

@@ -125,8 +125,8 @@ public class ExtractFeedbackTimeFromSubtopicActions extends AppFunction {
         ArrayList<SubtopicAction> part = new ArrayList<>();
         for (SubtopicAction action : session) {
             part.add(action);
-            emitSessionPart(part);
         }
+        emitSessionPart(part);
     }
     
     
