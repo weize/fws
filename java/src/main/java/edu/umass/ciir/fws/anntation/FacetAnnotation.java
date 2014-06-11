@@ -34,6 +34,14 @@ public class FacetAnnotation {
         this.qid = queryID;
         facets = new ArrayList<>();
     }
+    
+    public int getTermSize() {
+        int count = 0;
+        for(AnnotatedFacet f : facets) {
+            count += f.size();
+        }
+        return count;
+    }
 
     public void addFacet(AnnotatedFacet facet) {
         this.facets.add(facet);

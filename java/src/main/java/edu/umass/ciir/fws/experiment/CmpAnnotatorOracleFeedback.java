@@ -53,16 +53,21 @@ public class CmpAnnotatorOracleFeedback extends AppFunction {
     private void outputStats(HashMap<String, FacetFeedback> feedbacks, File out) throws IOException {
         BufferedWriter writer = Utility.getWriter(out);
         double termAvg =0, facetAvg =0;
+        double hasFeedback = 0;
         for (String qidSid : feedbacks.keySet()) {
             FacetFeedback feedback = feedbacks.get(qidSid);
             writer.write(String.format("%s\t%d\t%d\n", qidSid, feedback.terms.size(), feedback.facets.size()));
             termAvg +=feedback.terms.size();
             facetAvg += feedback.facets.size();
+            if (feedback.terms.size()>0) {
+                hasFeedback += 1;
+            }
         }
         int size = feedbacks.keySet().size();
         termAvg /= size;
         facetAvg /= size;
-        writer.write(String.format("%s\t%.4f\t%.4f\n", "all", termAvg, facetAvg));
+        hasFeedback /= size;
+        writer.write(String.format("%s\t%.4f\t%.4f\t%.4f\n", "all", termAvg, facetAvg, hasFeedback));
         writer.close();
         Utility.infoWritten(out);
     }
