@@ -8,7 +8,7 @@ for my $file (@files) {
 	if ($flag == 1) {
 		print "\nerror in $file\n";
 	} elsif ($flag == 2){
-		print "\nnot 14 lines in $file\n";
+		print "\nnot 16 lines in $file\n";
 	}
 }
 
@@ -25,7 +25,7 @@ sub check {
 		}
 	}
 	close $in;
-	if ($ln != 14) {
+	if ($ln != 16) {
 		return 2;
 	}
 	return 0;

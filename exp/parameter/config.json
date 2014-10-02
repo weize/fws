@@ -72,7 +72,7 @@
 	"sdmSevalTrec" : "../exp/srank/sdm/sdm.srank.teval",
 	"prmFbDocs" : [5, 10, 15, 20],
 	"prmFbTerms" : [5, 10, 15, 20],
-	"prmfbOrigWts" : [0.8],
+	"prmfbOrigWts" : [0.6, 0.8, 0.9],
 	"trecEval" : "../bin/trec_eval",
 	"facetTuneRank" : 10,
 	"facetModelsToEval" : ["plsa", "lda", "gmi", "gmj", "qd"],
