@@ -5,6 +5,8 @@
  */
 package edu.umass.ciir.fws.query;
 
+import org.lemurproject.galago.tupleflow.Parameters;
+
 /**
  *
  * @author wkong
@@ -24,6 +26,14 @@ public class QuerySubtopic {
     @Override
     public String toString() {
         return String.format("%s\t%s\t%s", sid, description.replaceAll("\\s+", " "), type);
+    }
+    
+    public Parameters toParameters() {
+        Parameters subtopic = new Parameters();
+        subtopic.put("number", sid);
+        subtopic.put("type", type);
+        subtopic.put("description", description);
+        return subtopic;
     }
 
 }

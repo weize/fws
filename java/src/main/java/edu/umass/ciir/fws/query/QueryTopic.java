@@ -94,5 +94,19 @@ public class QueryTopic {
         }
         return lists.toString();
     }
+    
+    public Parameters toParameters() {
+        Parameters topic = new Parameters();
+        topic.put("number", qid);
+        topic.put("query", query);
+        topic.put("type", type);
+        topic.put("description", description);
+        List<Parameters> subs = new ArrayList<>();
+        for(QuerySubtopic s : subtopics) {
+            subs.add(s.toParameters());
+        }
+        topic.put("subtopics", subs);
+        return topic;
+    }
 
 }
