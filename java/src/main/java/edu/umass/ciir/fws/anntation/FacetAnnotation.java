@@ -34,10 +34,40 @@ public class FacetAnnotation {
         this.qid = queryID;
         facets = new ArrayList<>();
     }
+
+    public void orderFacets() {
+        ArrayList<AnnotatedFacet> oredered = new ArrayList<>();
+        for(AnnotatedFacet af : facets) {
+            if (af.rating == 2) {
+                oredered.add(af);
+            }
+        }
+        
+        for(AnnotatedFacet af : facets) {
+            if (af.rating == 1) {
+                oredered.add(af);
+            }
+        }
+        facets = oredered;
+    }
     
+    public Parameters toParameters() {
+        this.orderFacets();
+        Parameters fa = new Parameters();
+        fa.put("number", qid);
+      
+        List<Parameters> facetsParams = new ArrayList<>();
+        for(AnnotatedFacet f : facets) {
+            facetsParams.add(f.toParameters());
+        }
+        
+        fa.put("facets", facetsParams);
+        return fa;
+    }
+
     public int getTermSize() {
         int count = 0;
-        for(AnnotatedFacet f : facets) {
+        for (AnnotatedFacet f : facets) {
             count += f.size();
         }
         return count;

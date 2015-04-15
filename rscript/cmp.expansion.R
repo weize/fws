@@ -3,6 +3,8 @@ source('functions.R')
 args <- commandArgs(T)
 facetSrc <- args[1]
 metricName <- args[2]
+facetSrc <- 'annotator'
+metricName <- 'MAP'
 
 
 #metricName <- "MAP"
@@ -22,9 +24,9 @@ ftand<- loadTcEval(facetSrc, facetParam, feedbackSrc, feedbackParam, "ftand")
 
 all <- list(ffs, fts, ftor, ftandor, ftand)
 dataNum <- length(all) 
-names <- c("SF", "ST", "OR", "A+R", "AND")
-colors <- rainbow(dataNum)
-plotchar <- seq(18,18+dataNum,1)
+names <- c("SF", "ST", "OR", "A+O", "AND")
+colors <- c('red', 'blue', 'green', 'orange', 'purple', 'saddlebrown')   
+plotchar <- c(0, 1,2,4,5,6) 
 linetype <- rep(1, dataNum)
 metricIdx <- which(colnames(all[[1]])==metricName) 
 
@@ -55,6 +57,11 @@ for (i in 1:dataNum) {
 	lines(data$time, data[,metricIdx], col=colors[i], lty=linetype[i],  type='s', lwd=1.5)
 }
 
-legend(33, yMin + (yMax - yMin) * 0.4, names, col=colors, lty=linetype)
+pointTime <- c(44,40,44,44,44,11);
+for (i in 1:dataNum) {
+	data <- all[[i]]
+	points(data$time[pointTime[i]], data[pointTime[i],metricIdx], col=colors[i], pch=plotchar[i])
+}
+legend(33, yMin + (yMax - yMin) * 0.4, names, col=colors, lty=linetype, pch=plotchar, lwd=1.5)
 dev.off()
 print(outfile)

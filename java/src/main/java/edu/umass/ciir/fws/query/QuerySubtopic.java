@@ -5,6 +5,12 @@
  */
 package edu.umass.ciir.fws.query;
 
+import edu.umass.ciir.fws.anntation.FeedbackAnnotation;
+import edu.umass.ciir.fws.anntation.FeedbackList;
+import edu.umass.ciir.fws.anntation.FeedbackTerm;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import org.lemurproject.galago.tupleflow.Parameters;
 
 /**
@@ -34,6 +40,22 @@ public class QuerySubtopic {
         subtopic.put("type", type);
         subtopic.put("description", description);
         return subtopic;
+    }
+
+    Parameters toParameters(HashMap<String, FeedbackAnnotation> feedbackMap, String qid) {
+        Parameters subtopic = new Parameters();
+        subtopic.put("number", sid);
+        subtopic.put("type", type);
+        subtopic.put("description", description);
+        List<String> terms = new ArrayList<>();
+        for(FeedbackList fl : feedbackMap.get(qid + "-"+ sid)) {
+            for(FeedbackTerm t : fl.terms) {
+                terms.add(t.term);
+            }
+        }
+        subtopic.put("feedback-terms", terms);        
+        return subtopic;
+
     }
 
 }

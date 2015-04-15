@@ -71,10 +71,11 @@ public class GenerateQueryTopicFile extends AppFunction{
         
         
         Parameters data = new Parameters();
-        data.put("topics", selected);
+        data.put("query-topics", selected);
         
         BufferedWriter writer = Utility.getWriter(outfile);
         writer.write(data.toPrettyString());
+        writer.newLine();
         writer.close();
         Utility.infoWritten(outfile);
     }

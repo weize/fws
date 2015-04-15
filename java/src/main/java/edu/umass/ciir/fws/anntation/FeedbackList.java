@@ -19,7 +19,7 @@ public class FeedbackList implements Comparable<FeedbackList>, Iterable<Feedback
 
     String fid;
     int index; // index of the facet in the shown facet list
-    ArrayList<FeedbackTerm> terms;
+    public ArrayList<FeedbackTerm> terms;
 
     public FeedbackList(String facetId, int index) {
         this.fid = facetId;

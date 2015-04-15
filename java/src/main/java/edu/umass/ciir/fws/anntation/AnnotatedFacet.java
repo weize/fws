@@ -10,6 +10,7 @@ import edu.umass.ciir.fws.clustering.ScoredItem;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import java.util.ArrayList;
 import java.util.List;
+import org.lemurproject.galago.tupleflow.Parameters;
 
 /**
  *
@@ -65,6 +66,14 @@ public class AnnotatedFacet implements Comparable<AnnotatedFacet> {
         }
         
         return new ScoredFacet(items, rating);
+    }
+    
+    public Parameters toParameters( ) {
+        Parameters facet = new Parameters();
+        facet.put("rating", (long)(rating));
+        facet.put("description", description);
+        facet.put("terms", terms);
+        return facet;
     }
 
 }

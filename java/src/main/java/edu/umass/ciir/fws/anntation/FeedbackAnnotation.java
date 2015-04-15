@@ -6,7 +6,6 @@
 package edu.umass.ciir.fws.anntation;
 
 import edu.emory.mathcs.backport.java.util.Collections;
-import static edu.umass.ciir.fws.anntation.FacetAnnotation.load;
 import edu.umass.ciir.fws.query.QueryTopicSubtopicMap;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
@@ -36,6 +35,19 @@ public class FeedbackAnnotation implements Iterable<FeedbackList> {
         this.qid = qid;
         this.sid = sid;
         this.feedbacks = new ArrayList<>();
+    }
+    
+    public Parameters toParameters() {
+        Parameters data = new Parameters();
+        data.put("number", sid);
+        List<String> terms = new ArrayList<>();
+        for(FeedbackList fl : feedbacks) {
+            for(FeedbackTerm t : fl.terms) {
+                terms.add(t.term);
+            }
+        }
+        data.put("feedback-terms", terms);
+        return data;
     }
 
     public void add(FeedbackList list) {
@@ -101,7 +113,8 @@ public class FeedbackAnnotation implements Iterable<FeedbackList> {
         HashMap<String, FeedbackAnnotation> map = new HashMap<>();
         List<FeedbackAnnotation> annotation = load(jsonFile);
         for (FeedbackAnnotation a : annotation) {
-            map.put(a.qid, a);
+            map.put(a.qid+"-"+a.sid, a);
+            
         }
         return map;
     }

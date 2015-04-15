@@ -5,6 +5,7 @@
  */
 package edu.umass.ciir.fws.query;
 
+import edu.umass.ciir.fws.anntation.FeedbackAnnotation;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
 import java.io.File;
@@ -62,7 +63,7 @@ public class QueryTopic {
 
         return qt;
     }
-    
+
     public static List<QueryTopic> loadQueryFullTopics(File jsonFile) throws IOException {
         ArrayList<QueryTopic> topics = new ArrayList<>();
         BufferedReader reader = Utility.getReader(jsonFile);
@@ -74,17 +75,15 @@ public class QueryTopic {
         reader.close();
         return topics;
     }
-    
+
     public static HashMap<String, QueryTopic> loadQueryFullTopicsAsMap(File jsonFile) throws IOException {
         List<QueryTopic> topics = loadQueryFullTopics(jsonFile);
         HashMap<String, QueryTopic> map = new HashMap<>();
-        for(QueryTopic t : topics) {
+        for (QueryTopic t : topics) {
             map.put(t.qid, t);
         }
         return map;
     }
-    
-    
 
     public String listAsString() {
         StringBuilder lists = new StringBuilder();
@@ -94,7 +93,7 @@ public class QueryTopic {
         }
         return lists.toString();
     }
-    
+
     public Parameters toParameters() {
         Parameters topic = new Parameters();
         topic.put("number", qid);
@@ -102,8 +101,22 @@ public class QueryTopic {
         topic.put("type", type);
         topic.put("description", description);
         List<Parameters> subs = new ArrayList<>();
-        for(QuerySubtopic s : subtopics) {
+        for (QuerySubtopic s : subtopics) {
             subs.add(s.toParameters());
+        }
+        topic.put("subtopics", subs);
+        return topic;
+    }
+
+    public Parameters toParameters(HashMap<String, FeedbackAnnotation> feedbackMap) {
+        Parameters topic = new Parameters();
+        topic.put("number", qid);
+        topic.put("query", query);
+        topic.put("type", type);
+        topic.put("description", description);
+        List<Parameters> subs = new ArrayList<>();
+        for (QuerySubtopic s : subtopics) {
+            subs.add(s.toParameters(feedbackMap, qid));
         }
         topic.put("subtopics", subs);
         return topic;
