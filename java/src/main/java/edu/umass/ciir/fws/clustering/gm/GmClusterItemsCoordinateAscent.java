@@ -50,6 +50,7 @@ public class GmClusterItemsCoordinateAscent extends ProcessQueryParametersMultiS
         ArrayList<Class> classes = new ArrayList<>();
         classes.add(GmcClusterItems.class);
         classes.add(GmcClusterToFacetConverter.class);
+        classes.add(AppendFacetRankerParameter.class);
         classes.add(DoNonething.class);
         return classes;
     }
