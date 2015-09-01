@@ -75,6 +75,19 @@ public class TextProcessing {
         return sb.toString();
     }
 
+     public static String join(double[] list, String delimiter) {
+        if (list.length == 0) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder(Double.toString(list[0]));
+        for (int i = 1; i < list.length; i++) {
+            sb.append(delimiter).append(Double.toString(list[i]));
+        }
+        return sb.toString();
+    }
+
+     
     public static int countPhraseFreq(String phrase, String textContent) {
         Pattern pattern = Pattern.compile("\\b" + phrase + "\\b");
         Matcher matcher = pattern.matcher(textContent);

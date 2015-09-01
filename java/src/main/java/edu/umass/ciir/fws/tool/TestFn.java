@@ -6,6 +6,9 @@ package edu.umass.ciir.fws.tool;
 
 import edu.umass.ciir.fws.clist.CandidateList;
 import edu.umass.ciir.fws.clist.CandidateListTextExtractor;
+import edu.umass.ciir.fws.clustering.ScoredFacet;
+import edu.umass.ciir.fws.clustering.gm.GmCoordinateAscentClusterer;
+import edu.umass.ciir.fws.clustering.gm.GmJointClusterer;
 import edu.umass.ciir.fws.clustering.gm.lr.LinearRegressionModel;
 import edu.umass.ciir.fws.nlp.HtmlContentExtractor;
 import edu.umass.ciir.fws.nlp.StanfordCoreNLPParser;
@@ -70,7 +73,8 @@ public class TestFn extends AppFunction {
         //testLinearLib(p, output);
         //testGmCluster(p, output);
         //testTrecFullTopicXmlParser(p,output);
-        testQueryTopic(p, output);
+        //testQueryTopic(p, output);
+        testGMCACluster(p, output);
 
     }
 
@@ -367,6 +371,16 @@ public class TestFn extends AppFunction {
             output.print(q.listAsString());
         }
         reader.close();
+    }
+
+    private void testGMCACluster(Parameters p, PrintStream output) throws IOException {
+        File termPredictFile = new File(p.getAsString("term"));
+        File termPairPredictFile = new File(p.getAsString("pair"));
+        File clusterFile = new File(p.getAsString("out"));
+        GmCoordinateAscentClusterer clusterer = new GmCoordinateAscentClusterer();
+        List<ScoredFacet> clusters = clusterer.cluster(termPredictFile, termPairPredictFile);
+        ScoredFacet.output(clusters, clusterFile);
+        
     }
 
 }

@@ -208,10 +208,21 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         return getFileName(clusterDir, qid, name);
     }
 
+    public static String getGmcaClusterFileName(String clusterDir, String qid) {
+        String name = String.format("%s.gmca.cluster", qid);
+        return getFileName(clusterDir, qid, name);
+    }
+
     public static String getGmjFacetFileName(String facetDir, String qid) {
         String name = String.format("%s.gmj.facet", qid);
         return getFileName(facetDir, qid, name);
     }
+    
+     public static String getGmcaFacetFileName(String facetDir, String qid) {
+        String name = String.format("%s.gmca.facet", qid);
+        return getFileName(facetDir, qid, name);
+    }
+
 
     public static String getFacetFileName(List<Object> run, String qid) {
         //run: dir model param...
@@ -321,7 +332,7 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         String name = String.format("%s-%s-%s-%d", qes.qid, qes.sid, qes.model, qes.expId);
         return getFileNameWithSuffix(evalDir, qes.qid, name, "teval");
     }
-    
+
     public static String getQExpSubtopicTevalFileName(String evalDir, QuerySubtopicExpansion qes) {
         String name = String.format("%s-%s-%s-%d", qes.qid, qes.sid, qes.model, qes.expId);
         return getFileNameWithSuffix(evalDir, qes.qid, name, "teval");
@@ -389,5 +400,4 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         return getFeedbackFileName(allFeedbackDir, param.facetSource, param.facetParams, param.feedbackSource, param.feedbackParams);
     }
 
-    
 }
