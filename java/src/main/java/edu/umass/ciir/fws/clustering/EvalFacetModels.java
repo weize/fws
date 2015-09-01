@@ -127,7 +127,7 @@ public class EvalFacetModels extends AppFunction {
                 String optMetricIdx = params[1];
                 facetParam = optMetricIdx;
 
-            } else if (model.equals("gmj")) {
+            } else if (model.equals("gmj") || model.equals("gmc")) {
                 String ranker = params[1];
                 facetParam = ranker;
             } else if (model.equals("gmi")) {
@@ -180,7 +180,7 @@ public class EvalFacetModels extends AppFunction {
                             String params = Utility.parametersToString(model, idx, topFacets);
                             processor.process(new TfQueryParameters("0", "", params));
                         }
-                    } else if (model.equals("gmj")) {
+                    } else if (model.equals("gmj") || model.equals("gmc")) {
                         for (String ranker : gmRankers) {
                             String params = Utility.parametersToString(model, ranker, topFacets);
                             processor.process(new TfQueryParameters("0", "", params));
