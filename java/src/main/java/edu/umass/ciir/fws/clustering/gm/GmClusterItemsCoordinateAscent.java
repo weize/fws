@@ -49,8 +49,8 @@ public class GmClusterItemsCoordinateAscent extends ProcessQueryParametersMultiS
     protected List<Class> getProcessClasses() {
         ArrayList<Class> classes = new ArrayList<>();
         classes.add(GmcClusterItems.class);
-        classes.add(GmcClusterToFacetConverter.class);
         classes.add(AppendFacetRankerParameter.class);
+        classes.add(GmcClusterToFacetConverter.class);
         classes.add(DoNonething.class);
         return classes;
     }
