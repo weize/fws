@@ -208,8 +208,8 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         return getFileName(clusterDir, qid, name);
     }
 
-    public static String getGmcaClusterFileName(String clusterDir, String qid) {
-        String name = String.format("%s.gmca.cluster", qid);
+    public static String getGmcClusterFileName(String clusterDir, String qid) {
+        String name = String.format("%s.gmc.cluster", qid);
         return getFileName(clusterDir, qid, name);
     }
 
@@ -218,8 +218,8 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         return getFileName(facetDir, qid, name);
     }
     
-     public static String getGmcaFacetFileName(String facetDir, String qid) {
-        String name = String.format("%s.gmca.facet", qid);
+     public static String getGmcFacetFileName(String facetDir, String qid) {
+        String name = String.format("%s.gmc.facet", qid);
         return getFileName(facetDir, qid, name);
     }
 
