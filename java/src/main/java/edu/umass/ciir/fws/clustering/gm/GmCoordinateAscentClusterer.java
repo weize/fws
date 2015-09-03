@@ -7,6 +7,7 @@ package edu.umass.ciir.fws.clustering.gm;
 
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.clustering.ScoredItem;
+import edu.umass.ciir.fws.utility.TextProcessing;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,7 +36,8 @@ public class GmCoordinateAscentClusterer extends GraphicalModelClusterer {
     double threshold = 0;
     final static boolean debug = false;
 
-    int YPosInitalSize = 0;
+    int YPosInitalSize = 200;
+    int maxSStep = 10;
 
     HashMap<Integer, Boolean> Y; // y_i = 1: term i is a facet term
     HashMap<String, Boolean> Z; // Z_i,j = 1: term pair i, j is a facet term pair
@@ -114,7 +116,7 @@ public class GmCoordinateAscentClusterer extends GraphicalModelClusterer {
                         ll += logNProb(i, j);
                     }
                 } else {
-                    ll += logNProb(i, j);
+                    //ll += logNProb(i, j);
                 }
 
             }
@@ -144,7 +146,7 @@ public class GmCoordinateAscentClusterer extends GraphicalModelClusterer {
                 }
                 if (!couldBeLarger) {
                     clusters.add(c);
-                    System.out.println("create cluster size = " + c.size());
+                    //System.out.println("create cluster size = " + c.size());
                 }
             }
         }
@@ -158,6 +160,17 @@ public class GmCoordinateAscentClusterer extends GraphicalModelClusterer {
         }
         return true;
 
+    }
+
+    private void llReport(int step, int sstep) {
+        double ll = loglikelihood();
+        int count = 0;
+        for (int i = 0; i < items.size(); i++) {
+            if (Y.get(i)) {
+                count++;
+            }
+        }
+        //System.out.println(String.format("step %d/%d\tll = %.4f count = %d/%d", step, sstep, ll, count, items.size()));
     }
 
     private static class ItemComparator implements Comparator<Integer> {
@@ -176,7 +189,7 @@ public class GmCoordinateAscentClusterer extends GraphicalModelClusterer {
 
     private void clusterStep(int step) {
         // fix Y, and optimaize over Z
-        Z.clear();
+        //Z.clear();
         for (int i = 0; i < items.size(); i++) {
             for (int j = i + 1; j < items.size(); j++) {
                 // Z_{i,j}
@@ -198,38 +211,84 @@ public class GmCoordinateAscentClusterer extends GraphicalModelClusterer {
         }
 
         // fix Z, and optimaize over Y
-        Y.clear();
+        // Y.clear();
+        HashSet<Integer> YMustPos = new HashSet<>();
         for (int i = 0; i < items.size(); i++) {
             for (int j = i + 1; j < items.size(); j++) {
                 if (Z.get(getItemPairId(i, j))) {
                     // Z_j,j == 1 -> // y_i ==1 && Y_j==1
                     Y.put(i, true);
                     Y.put(j, true);
+                    YMustPos.add(i);
+                    YMustPos.add(j);
                 }
             }
-
         }
 
+        double[] Delta = new double[items.size()];
+        ArrayList<Integer> Yleft = new ArrayList<>();
+        //System.out.println("YMustPos size = " + YMustPos.size());
+
+        // delta_i < 0 -> y_i = 0
         for (int i = 0; i < items.size(); i++) {
-            if (!Y.containsKey(i)) {
-                if (logProb(i) > logNProb(i)) {
+            if (!YMustPos.contains(i)) {
+                // delta = lgP(Y_i = 1) - lgP(Y_i = 0) + sum_j \in {y_j| j_j == 1} {logP(Z_i,j =0)}
+                double delta = logProb(i) - logNProb(i);
+                for (Integer j : YMustPos) {
+                    delta += logNProb(i, j);
+                }
+
+                if (delta <= 0) {
+                    Y.put(i, false);
+                } else {
+                    Yleft.add(i);
+                }
+                Delta[i] = delta;
+            }
+        }
+
+        //System.out.println(TextProcessing.join(Delta, "\n"));
+        //System.out.println("Yleft size = " + Yleft.size());
+
+//        for (int i = 0; i < items.size(); i++) {
+//            if (!Y.containsKey(i)) {
+//                Y.put(i, true);
+//            }
+//        }
+        double llLast = 0;
+        for (int sstep = 0; sstep < maxSStep; sstep++) {
+            Collections.shuffle(Yleft);
+            for (int i : Yleft) {
+                double delta = logProb(i) - logNProb(i);
+                for (int j = 0; j < items.size(); j++) {
+                    if (j != i) {
+                        if (Y.get(j)) {
+                            delta += logNProb(i, j);
+                        }
+                    }
+                }
+                //optimize over one Y_i
+                if (delta > 0) {
                     Y.put(i, true);
                 } else {
                     Y.put(i, false);
-                    //System.out.println(String.format("X prob = %.4f [%s]", items.get(i).prob.prob, items.get(i).item));
                 }
+
+//                int count = 0;
+//                for (int k = 0; k < items.size(); k++) {
+//                    if (Y.get(k)) {
+//                        count++;
+//                    }
+//                }
+//                double ll = loglikelihood();
+//                double llDiff = ll - llLast;
+//                llLast = ll;
+                //System.out.println(String.format("step = %d/%d\tll = %.4f\tdelta = %.4f\tll_diff = %.4f\tcount = %d/%d", step, sstep, ll, delta, llDiff, count, items.size()));
+
             }
+            llReport(step, sstep);
         }
 
-        double ll = loglikelihood();
-
-        int count = 0;
-        for (int i = 0; i < items.size(); i++) {
-            if (Y.get(i)) {
-                count++;
-            }
-        }
-        System.out.println(String.format("step %d\tll = %.4f count = %d/%d", step, ll, count, items.size()));
 //        for (int i = 0; i < items.size(); i++) {
 //            for (int j = i + 1; j < items.size(); j++) {
 //                if (Z.get(getItemPairId(i, j))) {
@@ -237,24 +296,7 @@ public class GmCoordinateAscentClusterer extends GraphicalModelClusterer {
 //                }
 //            }
 //        }
-
     }
 
-    private double findBestCluster(int itemId) {
-        double bestScore = Double.NEGATIVE_INFINITY;
-        this.bestCluster = -1;
-        for (int i = 0; i < clusters.size(); i++) {
-            double score = 0;
-            for (int itemId2 : clusters.get(i)) {
-                score += logProb(itemId, itemId2) - logNProb(itemId, itemId2);
-            }
-
-            if (score > bestScore) {
-                bestScore = score;
-                this.bestCluster = i;
-            }
-        }
-        return bestScore;
-    }
 
 }
