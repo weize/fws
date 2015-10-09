@@ -93,6 +93,13 @@ public class FacetAnnotation {
         return parseFromJson(jsonDataString, true);
     }
 
+    /**
+     * Need to use a clean json format for facet annotation
+     * @param jsonDataString
+     * @param filter
+     * @return
+     * @throws IOException 
+     */
     public static FacetAnnotation parseFromJson(String jsonDataString, boolean filter) throws IOException {
         Parameters data = Parameters.parseString(jsonDataString);
         String annotatorID = data.getString("annotatorID");
