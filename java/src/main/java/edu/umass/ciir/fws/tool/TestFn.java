@@ -4,12 +4,14 @@
  */
 package edu.umass.ciir.fws.tool;
 
+import edu.umass.ciir.fws.anntation.FacetAnnotation;
 import edu.umass.ciir.fws.clist.CandidateList;
 import edu.umass.ciir.fws.clist.CandidateListTextExtractor;
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.clustering.gm.GmCoordinateAscentClusterer;
-import edu.umass.ciir.fws.clustering.gm.GmJointClusterer;
 import edu.umass.ciir.fws.clustering.gm.lr.LinearRegressionModel;
+import edu.umass.ciir.fws.eval.ClusteringEvaluator;
+import edu.umass.ciir.fws.eval.RpndcgEvaluator;
 import edu.umass.ciir.fws.nlp.HtmlContentExtractor;
 import edu.umass.ciir.fws.nlp.StanfordCoreNLPParser;
 import edu.umass.ciir.fws.query.QueryTopic;
@@ -26,6 +28,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
@@ -74,7 +77,9 @@ public class TestFn extends AppFunction {
         //testGmCluster(p, output);
         //testTrecFullTopicXmlParser(p,output);
         //testQueryTopic(p, output);
-        testGMCACluster(p, output);
+        //testGMCACluster(p, output);
+        //testEal(p, output);
+        testRpndcgEvaluator(p, output);
 
     }
 
@@ -380,7 +385,31 @@ public class TestFn extends AppFunction {
         GmCoordinateAscentClusterer clusterer = new GmCoordinateAscentClusterer();
         List<ScoredFacet> clusters = clusterer.cluster(termPredictFile, termPairPredictFile);
         ScoredFacet.output(clusters, clusterFile);
-        
+
+    }
+
+    private void testEal(Parameters p, PrintStream output) throws IOException {
+        ClusteringEvaluator clusteringEvaluator = new ClusteringEvaluator(10);
+        File annotatedFacetJsonFile = new File(p.getString("facetAnnotationJson"));
+        String facetFilename = p.getString("facetFilename");
+        HashMap<String, FacetAnnotation> facetMap = FacetAnnotation.loadAsMap(annotatedFacetJsonFile);
+        String qid = "9";
+        FacetAnnotation annotator = facetMap.get(qid);
+        File systemFile = new File(facetFilename);
+        List<ScoredFacet> system = ScoredFacet.loadFacets(systemFile);
+        double[] result = clusteringEvaluator.eval(annotator.facets, system, 10);
+    }
+
+    private void testRpndcgEvaluator(Parameters p, PrintStream output) throws IOException {
+        RpndcgEvaluator RpndcgEvaluator = new RpndcgEvaluator(10);
+        File annotatedFacetJsonFile = new File(p.getString("facetAnnotationJson"));
+        String facetFilename = p.getString("facetFilename");
+        HashMap<String, FacetAnnotation> facetMap = FacetAnnotation.loadAsMap(annotatedFacetJsonFile);
+        String qid = "60";
+        FacetAnnotation annotator = facetMap.get(qid);
+        File systemFile = new File(facetFilename);
+        List<ScoredFacet> system = ScoredFacet.loadFacets(systemFile);
+        double[] result = RpndcgEvaluator.eval(annotator.facets, system, 10);
     }
 
 }
