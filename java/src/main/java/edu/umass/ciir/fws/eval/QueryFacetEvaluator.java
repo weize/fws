@@ -30,18 +30,18 @@ public class QueryFacetEvaluator {
 
     HashMap<String, FacetAnnotation> facetMap;
 
-    public QueryFacetEvaluator(int numTopFacets, File annotatedFacetJsonFile) throws IOException {
+    public QueryFacetEvaluator(int numTopFacets, File annotatedFacetTextFile) throws IOException {
         prfEvaluator = new PrfEvaluator(numTopFacets);
         rpndcgEvaluator = new RpndcgEvaluator(numTopFacets);
         clusteringEvaluator = new ClusteringEvaluator(numTopFacets);
-        facetMap = FacetAnnotation.loadAsMap(annotatedFacetJsonFile);
+        facetMap = FacetAnnotation.loadAsMapFromTextFile(annotatedFacetTextFile);
     }
     
-    public QueryFacetEvaluator(File annotatedFacetJsonFile) throws IOException {
+    public QueryFacetEvaluator(File annotatedFacetTextFile) throws IOException {
         prfEvaluator = new PrfEvaluator(10);
         rpndcgEvaluator = new RpndcgEvaluator(10);
         clusteringEvaluator = new ClusteringEvaluator(10);
-        facetMap = FacetAnnotation.loadAsMap(annotatedFacetJsonFile);
+        facetMap = FacetAnnotation.loadAsMapFromTextFile(annotatedFacetTextFile);
     }
 
     public void eval(File queryFile, String facetDir, String model, String paramFileNameStr, File outfile, int numTopFacets) throws IOException {

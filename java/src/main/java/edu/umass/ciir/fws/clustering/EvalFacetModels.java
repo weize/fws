@@ -5,6 +5,7 @@
  */
 package edu.umass.ciir.fws.clustering;
 
+import edu.emory.mathcs.backport.java.util.Arrays;
 import edu.umass.ciir.fws.clustering.gm.GmLearn;
 import edu.umass.ciir.fws.eval.QueryFacetEvaluator;
 import edu.umass.ciir.fws.types.TfQueryParameters;
@@ -107,8 +108,8 @@ public class EvalFacetModels extends AppFunction {
         public EvalFacetModel(TupleFlowParameters parameters) throws IOException {
             Parameters p = parameters.getJSON();
             allFacetDir = p.getString("facetDir");
-            File facetJsonFile = new File(p.getString("facetAnnotationJson"));
-            evaluator = new QueryFacetEvaluator(10, facetJsonFile);
+            File facetTextFile = new File(p.getString("facetAnnotationText"));
+            evaluator = new QueryFacetEvaluator(10, facetTextFile);
             queryFile = new File(p.getString("queryFile"));
         }
 
@@ -168,8 +169,13 @@ public class EvalFacetModels extends AppFunction {
         public void close() throws IOException {
             List<String> models = p.getAsList("facetModelsToEval");
             List<Long> facetTuneMetricIndices = p.getAsList("facetTuneMetricIndices");
-            String[] gmRankers = new String[]{"sum", "avg"};
             String allFacetDir = p.getString("facetDir");
+            List<String> gmRankers;
+            if (p.containsKey("gmRanker")) {
+                gmRankers = p.getAsList("gmRanker");
+            } else {
+                gmRankers = Arrays.asList(new String[]{"sum", "avg"});
+            }
 
             for (String model : models) {
                 String evalDir = Utility.getFileName(allFacetDir, model, "eval");
