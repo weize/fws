@@ -37,30 +37,30 @@ public class FacetAnnotation {
 
     public void orderFacets() {
         ArrayList<AnnotatedFacet> oredered = new ArrayList<>();
-        for(AnnotatedFacet af : facets) {
+        for (AnnotatedFacet af : facets) {
             if (af.rating == 2) {
                 oredered.add(af);
             }
         }
-        
-        for(AnnotatedFacet af : facets) {
+
+        for (AnnotatedFacet af : facets) {
             if (af.rating == 1) {
                 oredered.add(af);
             }
         }
         facets = oredered;
     }
-    
+
     public Parameters toParameters() {
         this.orderFacets();
         Parameters fa = new Parameters();
         fa.put("number", qid);
-      
+
         List<Parameters> facetsParams = new ArrayList<>();
-        for(AnnotatedFacet f : facets) {
+        for (AnnotatedFacet f : facets) {
             facetsParams.add(f.toParameters());
         }
-        
+
         fa.put("facets", facetsParams);
         return fa;
     }
@@ -95,10 +95,11 @@ public class FacetAnnotation {
 
     /**
      * Need to use a clean json format for facet annotation
+     *
      * @param jsonDataString
      * @param filter
      * @return
-     * @throws IOException 
+     * @throws IOException
      */
     public static FacetAnnotation parseFromJson(String jsonDataString, boolean filter) throws IOException {
         Parameters data = Parameters.parseString(jsonDataString);
@@ -188,9 +189,64 @@ public class FacetAnnotation {
         return annotations;
     }
 
-    public static HashMap<String, FacetAnnotation> loadAsMap(File jsonFile) throws IOException {
+    public static List<FacetAnnotation> loadFromTextFile(File file) throws IOException {
+        HashMap<String, List<AnnotatedFacet>> aqidFacets = new HashMap<>();
+        BufferedReader reader = Utility.getReader(file);
+        String line;
+        while ((line = reader.readLine()) != null) {
+            if (line.startsWith("#")) {
+                continue;
+            }
+            String[] elems = line.split("\t");
+            String aid = elems[0];
+            String qid = elems[1];
+            String fid = elems[2];
+            int rating = Integer.parseInt(elems[3]);
+            String des = elems[4];
+            String termsStr = elems[5];
+
+            AnnotatedFacet f = new AnnotatedFacet(rating, fid, des);
+            for (String term : termsStr.split("\\|")) {
+                f.addTerm(term);
+            }
+
+            String aqid = aid + "\t" + qid;
+            if (!aqidFacets.containsKey(aqid)) {
+                aqidFacets.put(aqid, new ArrayList<AnnotatedFacet>());
+            }
+            aqidFacets.get(aqid).add(f);
+        }
+        reader.close();
+
+        ArrayList<FacetAnnotation> annotations = new ArrayList<>();
+        for (String aqid : aqidFacets.keySet()) {
+            String[] elems = aqid.split("\t");
+            String aid = elems[0];
+            String qid = elems[1];
+            FacetAnnotation fa = new FacetAnnotation(aid, qid);
+            for (AnnotatedFacet f : aqidFacets.get(aqid)) {
+                if (f.size() > 0) {
+                    fa.addFacet(f);
+                }
+            }
+            // fa should have at least one facet
+            annotations.add(fa);
+        }
+        return annotations;
+    }
+
+    public static HashMap<String, FacetAnnotation> loadAsMapFromTextFile(File file) throws IOException {
         HashMap<String, FacetAnnotation> map = new HashMap<>();
-        List<FacetAnnotation> annotation = load(jsonFile);
+        List<FacetAnnotation> annotations = loadFromTextFile(file);
+        for (FacetAnnotation f : annotations) {
+            map.put(f.qid, f);
+        }
+        return map;
+    }
+
+    public static HashMap<String, FacetAnnotation> loadAsMap(File file) throws IOException {
+        HashMap<String, FacetAnnotation> map = new HashMap<>();
+        List<FacetAnnotation> annotation = load(file);
         for (FacetAnnotation f : annotation) {
             map.put(f.qid, f);
         }
