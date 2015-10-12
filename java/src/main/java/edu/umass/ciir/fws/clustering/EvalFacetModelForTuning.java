@@ -39,9 +39,10 @@ public class EvalFacetModelForTuning extends StandardStep<TfFolder, TfFolder> {
         tuneDir = Utility.getFileName(modelDir, "tune");
         runFacetDir = Utility.getFileName(modelDir, "run", "facet");
         facetTuneRank = new Long(p.getLong("facetTuneRank")).intValue();
-        File facetJsonFile = new File(p.getString("facetAnnotationJson"));
+        //File facetJsonFile = new File(p.getString("facetAnnotationJson"));
+        File facetTextFile = new File(p.getString("facetAnnotationText"));
 
-        evaluator = new QueryFacetEvaluator(10, facetJsonFile);
+        evaluator = new QueryFacetEvaluator(10, facetTextFile);
     }
 
     @Override
