@@ -47,6 +47,20 @@ public class TrainDataSampler {
 
     }
 
+    public static void combine(List<File> dataFiles, File outfile) throws IOException {
+        BufferedWriter writer = Utility.getWriter(outfile);
+        for (File file : dataFiles) {
+            BufferedReader reader = Utility.getReader(file);
+            String line;
+            while ((line = reader.readLine()) != null) {
+                writer.write(line);
+                writer.newLine();
+            }
+            reader.close();
+        }
+        writer.close();
+    }
+
     private void output(File outfile) throws IOException {
         BufferedWriter writer = Utility.getWriter(outfile);
         List<String> selected = new ArrayList<String>();
