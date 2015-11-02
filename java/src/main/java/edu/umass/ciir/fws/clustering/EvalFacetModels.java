@@ -136,7 +136,9 @@ public class EvalFacetModels extends AppFunction {
                 String ranker = params[1];
                 String optMetricIdx = params[2];
                 facetParam = Utility.parametersToFileNameString(ranker, optMetricIdx);
-            } else {
+            } else if (model.equals("rerank")) {                
+                facetParam = "";
+            }else {
                 throw new IOException("cannot recognize " + model);
             }
 
@@ -159,6 +161,7 @@ public class EvalFacetModels extends AppFunction {
 
         public SplitEvalRuns(TupleFlowParameters parameters) throws IOException {
             p = parameters.getJSON();
+            
         }
 
         @Override
@@ -176,11 +179,12 @@ public class EvalFacetModels extends AppFunction {
             } else {
                 gmRankers = Arrays.asList(new String[]{"sum", "avg"});
             }
+            int topFacetNum = (int) p.getLong("topFacetNum");
 
             for (String model : models) {
                 String evalDir = Utility.getFileName(allFacetDir, model, "eval");
                 Utility.createDirectory(evalDir);
-                for (int topFacets = 1; topFacets <= 10; topFacets++) {
+                for (int topFacets = 1; topFacets <= topFacetNum; topFacets++) {
                     if (model.equals("plsa") || model.equals("lda") || model.equals("qd")) {
                         for (long idx : facetTuneMetricIndices) {
                             String params = Utility.parametersToString(model, idx, topFacets);
@@ -199,6 +203,9 @@ public class EvalFacetModels extends AppFunction {
                             }
                         }
 
+                    } else if (model.equals("rerank")) {
+                        String params = Utility.parametersToString(model, topFacets);
+                        processor.process(new TfQueryParameters("0", "", params));
                     } else {
                         throw new IOException("cannot recognize " + model);
                     }
