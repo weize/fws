@@ -13,7 +13,7 @@ import edu.umass.ciir.fws.utility.TextProcessing;
  */
 public class Features {
 
-    Object[] features;
+    protected Object[] features;
 
     public void setFeature(Object value, int idx) {
         this.features[idx] = value;

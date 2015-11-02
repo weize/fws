@@ -19,8 +19,6 @@ public class QueryFeatures extends Features {
     String query;
     String qid;
 
-    Object[] features;
-
     public static final int _tSize = 0;
     public static final int _tProbSum = 1;
     public static final int _tProbAvg = 2;
