@@ -358,7 +358,7 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
     }
 
     public static String getFacetEvalFileName(String evalDir, String model, String paramStr, int numTopFacets) {
-        String name = paramStr.isEmpty() ? String.format("%s.%d.facet", model, numTopFacets)
+        String name = paramStr.isEmpty() ? String.format("%s.%d.facet.eval", model, numTopFacets)
                 : String.format("%s.%s.%d.eval", model, paramStr, numTopFacets);
         return Utility.getFileName(evalDir, name);
     }
