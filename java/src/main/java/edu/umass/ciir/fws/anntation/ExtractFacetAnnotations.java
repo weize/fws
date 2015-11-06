@@ -36,7 +36,7 @@ public class ExtractFacetAnnotations extends AppFunction {
         File outfile = new File(p.getString("facetAnnotationText"));
         List<FacetAnnotation> anootations = FacetAnnotation.load(jsonFile);
         BufferedWriter writer = Utility.getWriter(outfile);
-        writer.write("#anntatorID\tqid\tfid\tdescription\trating\tterms\n");
+        writer.write("#anntatorID\tqid\tfid\trating\tdescription\tterms\n");
         for (FacetAnnotation facetAnnotation : anootations) {
             writer.write(facetAnnotation.listAsString());
         }
