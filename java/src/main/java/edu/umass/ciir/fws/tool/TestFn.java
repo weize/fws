@@ -121,7 +121,7 @@ public class TestFn extends AppFunction {
 //        for (ScoredDocument sd : results) { // print results
 //            output.println(sd.documentName);
 //
-//            Document document = retrieval.getDocument(sd.documentName, new Document.DocumentComponents(true, true, true));
+//            RankedDocument document = retrieval.getDocument(sd.documentName, new RankedDocument.DocumentComponents(true, true, true));
 //            for (String term : document.terms) {
 //                output.println(term);
 //            }
@@ -251,7 +251,7 @@ public class TestFn extends AppFunction {
         String htmlFileName = "test.html";
 //        Retrieval retrieval = RetrievalFactory.instance(p);
 //        String docName = "clueweb09-en0000-03-33030";
-//        Document document = retrieval.getDocument(docName, new Document.DocumentComponents(true, true, true));
+//        RankedDocument document = retrieval.getDocument(docName, new RankedDocument.DocumentComponents(true, true, true));
 //        BufferedWriter writer = Utility.getWriter("test.html");
 //        writer.write(document.text);
 //        writer.close();
@@ -276,7 +276,7 @@ public class TestFn extends AppFunction {
 
         CandidateListTextExtractor extractor = new CandidateListTextExtractor();
         String content = Utility.readFileToString(new File("test.parse"));
-        List<CandidateList> clists = extractor.extract(content, new edu.umass.ciir.fws.crawl.Document(), new TfQuery("a", "b"));
+        List<CandidateList> clists = extractor.extract(content, new edu.umass.ciir.fws.crawl.RankedDocument(), new TfQuery("a", "b"));
         for (CandidateList clist : clists) {
             output.println(clist);
         }

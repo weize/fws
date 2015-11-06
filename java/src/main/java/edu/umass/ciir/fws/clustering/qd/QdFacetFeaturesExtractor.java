@@ -5,7 +5,7 @@
 package edu.umass.ciir.fws.clustering.qd;
 
 import edu.umass.ciir.fws.clist.CandidateList;
-import edu.umass.ciir.fws.crawl.Document;
+import edu.umass.ciir.fws.crawl.RankedDocument;
 import edu.umass.ciir.fws.crawl.QuerySetResults;
 import edu.umass.ciir.fws.feature.CluewebDocFreqMap;
 import edu.umass.ciir.fws.feature.TermFeaturesExtractor;
@@ -53,7 +53,7 @@ public class QdFacetFeaturesExtractor implements Processor<TfQuery> {
     HashMap<String, TermFeatures> termFeatures;
     CluewebDocFreqMap clueDfs;
     QuerySetResults querySetResults;
-    List<Document> docs;
+    List<RankedDocument> docs;
     List<FacetFeatures> facetFeatures;
     TfQuery query;
     long topNum;
@@ -124,8 +124,8 @@ public class QdFacetFeaturesExtractor implements Processor<TfQuery> {
     }
 
     private void loadDocuments() throws IOException {
-        docs = Document.loadDocumentsFromFiles(querySetResults.get(query.id), docDir, query.id);
-        for (Document doc : docs) {
+        docs = RankedDocument.loadDocumentsFromFiles(querySetResults.get(query.id), docDir, query.id);
+        for (RankedDocument doc : docs) {
             doc.ngramMap = new HashMap<>();
             TermFeaturesExtractor.buildNgramMapFomText(doc.ngramMap, doc.terms, termFeatures);
         }
@@ -141,7 +141,7 @@ public class QdFacetFeaturesExtractor implements Processor<TfQuery> {
             double clueDf = clueDfs.getDf(term);
             double wdf = 0;
             sites.clear();
-            for (Document doc : docs) {
+            for (RankedDocument doc : docs) {
                 if (doc.ngramMap.containsKey(term)) {
                     wdf += TermFeaturesExtractor.getDocWeight(doc.rank);
                     sites.add(doc.site);
@@ -163,8 +163,8 @@ public class QdFacetFeaturesExtractor implements Processor<TfQuery> {
         ArrayList<String> joinSites = new ArrayList<>();
         HashSet<String> curSites = new HashSet<>();
 
-        HashMap<Long, Document> docMap = new HashMap<>();
-        for (Document doc : docs) {
+        HashMap<Long, RankedDocument> docMap = new HashMap<>();
+        for (RankedDocument doc : docs) {
             docMap.put(doc.rank, doc);
         }
 

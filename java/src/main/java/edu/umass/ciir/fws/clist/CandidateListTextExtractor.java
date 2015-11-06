@@ -5,7 +5,7 @@
  */
 package edu.umass.ciir.fws.clist;
 
-import edu.umass.ciir.fws.crawl.Document;
+import edu.umass.ciir.fws.crawl.RankedDocument;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.TextTokenizer;
@@ -25,7 +25,7 @@ public class CandidateListTextExtractor {
 
     ArrayList<CandidateList> clists; // store the extracted lists
     TfQuery query;
-    Document document;
+    RankedDocument document;
     ParseTree tree;
 
     public CandidateListTextExtractor() {
@@ -33,14 +33,14 @@ public class CandidateListTextExtractor {
     }
 
     public List<CandidateList> extract(String parseFileContent, long docRank, String docName, String queryID) {
-        Document doc = new Document();
+        RankedDocument doc = new RankedDocument();
         doc.rank = docRank;
         doc.name = docName;
         TfQuery q = new TfQuery(queryID, "");
         return extract(parseFileContent, doc, q);
     }
 
-    public List<CandidateList> extract(String parseFileContent, Document document, TfQuery query) {
+    public List<CandidateList> extract(String parseFileContent, RankedDocument document, TfQuery query) {
         this.clists.clear();
         this.query = query;
         this.document = document;

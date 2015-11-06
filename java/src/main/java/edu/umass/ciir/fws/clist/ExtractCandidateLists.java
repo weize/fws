@@ -1,6 +1,6 @@
 package edu.umass.ciir.fws.clist;
 
-import edu.umass.ciir.fws.crawl.Document;
+import edu.umass.ciir.fws.crawl.RankedDocument;
 import edu.umass.ciir.fws.crawl.QuerySetResults;
 import edu.umass.ciir.fws.tool.app.ProcessQueryApp;
 import edu.umass.ciir.fws.types.TfQuery;
@@ -64,9 +64,9 @@ public class ExtractCandidateLists extends ProcessQueryApp {
 
         @Override
         public void process(TfQuery query) throws IOException {
-            List<Document> documents = Document.loadDocumentsFromFiles(querySetResults.get(query.id), docDir, query.id);
+            List<RankedDocument> documents = RankedDocument.loadDocumentsFromFiles(querySetResults.get(query.id), docDir, query.id);
             ArrayList<CandidateList> clists = new ArrayList<>();
-            for (Document doc : documents) {
+            for (RankedDocument doc : documents) {
                 // extract by html patterns
                 String docFileName = Utility.getDocHtmlFileName(docDir, query.id, doc.name);
                 System.err.println("Processing " + docFileName);

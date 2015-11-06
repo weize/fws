@@ -4,7 +4,7 @@
  */
 package edu.umass.ciir.fws.feature;
 
-import edu.umass.ciir.fws.crawl.Document;
+import edu.umass.ciir.fws.crawl.RankedDocument;
 import edu.umass.ciir.fws.clist.CandidateList;
 import edu.umass.ciir.fws.crawl.*;
 import edu.umass.ciir.fws.types.TfQuery;
@@ -45,7 +45,7 @@ public class TermFeaturesExtractor implements Processor<TfQuery> {
 
     QuerySetResults querySetResults;
     List<CandidateList> clists;
-    List<Document> docs;
+    List<RankedDocument> docs;
     BufferedWriter writer;
     Logger logger;
     long topNum; // top number of documents used.
@@ -139,7 +139,7 @@ public class TermFeaturesExtractor implements Processor<TfQuery> {
     }
 
     private void extractDocFeaturesInContentField() {
-        for (Document doc : docs) {
+        for (RankedDocument doc : docs) {
             doc.ngramMap = new HashMap<>();
             buildNgramMapFomText(doc.ngramMap, doc.terms, termFeatures);
         }
@@ -149,7 +149,7 @@ public class TermFeaturesExtractor implements Processor<TfQuery> {
     }
 
     private void extractDocFeaturesInTitleField() {
-        for (Document doc : docs) {
+        for (RankedDocument doc : docs) {
             doc.ngramMap = new HashMap<>();
             List<String> terms = Arrays.asList(doc.title.split("\\s+"));
             buildNgramMapFomText(doc.ngramMap, terms, termFeatures);
@@ -203,7 +203,7 @@ public class TermFeaturesExtractor implements Processor<TfQuery> {
             int df = 0;
             double wdf = 0;
             sites.clear();
-            for (Document doc : docs) {
+            for (RankedDocument doc : docs) {
                 if (doc.ngramMap.containsKey(t)) {
                     int count = doc.ngramMap.get(t);
                     tf += count;
@@ -246,7 +246,7 @@ public class TermFeaturesExtractor implements Processor<TfQuery> {
     }
 
     private void loadDocuments() throws IOException {
-        docs = Document.loadDocumentsFromFiles(querySetResults.get(query.id), docDir, query.id);
+        docs = RankedDocument.loadDocumentsFromFiles(querySetResults.get(query.id), docDir, query.id);
     }
 
     /**
@@ -272,7 +272,7 @@ public class TermFeaturesExtractor implements Processor<TfQuery> {
         }
 
         // build a term-> count map for each doc
-        for (Document doc : docs) {
+        for (RankedDocument doc : docs) {
             HashMap<String, Integer> ngramMap = doc.ngramMap; // renaming for convience
             ngramMap.clear();
             if (docidListsMap.containsKey(doc.rank)) {

@@ -9,7 +9,7 @@ import edu.umass.ciir.fws.anntation.AnnotatedFacet;
 import edu.umass.ciir.fws.anntation.FacetAnnotation;
 import edu.umass.ciir.fws.clist.CandidateList;
 import edu.umass.ciir.fws.clustering.ScoredItem;
-import edu.umass.ciir.fws.crawl.Document;
+import edu.umass.ciir.fws.crawl.RankedDocument;
 import edu.umass.ciir.fws.crawl.QuerySetResults;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
@@ -40,7 +40,7 @@ public class TermPairFeatureExtractor {
 
     QuerySetResults querySetResults;
     List<CandidateList> clists;
-    List<Document> docs;
+    List<RankedDocument> docs;
     List<ScoredItem> items;
 
     HashMap<String, Integer> itemIdMap; // item -> id
@@ -144,7 +144,7 @@ public class TermPairFeatureExtractor {
             itemContexts[i] = new HashMap<>();
         }
 
-        for (Document doc : docs) {
+        for (RankedDocument doc : docs) {
             List<String> words = doc.terms;
             for (int i = 0; i < words.size(); i++) { // start of the idx
                 StringBuilder itemBuilder = new StringBuilder();
@@ -178,7 +178,7 @@ public class TermPairFeatureExtractor {
     }
 
     private void loadDocuments() throws IOException {
-        docs = Document.loadDocumentsFromFiles(querySetResults.get(qid), docDir, qid);
+        docs = RankedDocument.loadDocumentsFromFiles(querySetResults.get(qid), docDir, qid);
     }
 
     private List<ScoredItem> loadItemsFromPredictFile(File termPredictFile) throws IOException {

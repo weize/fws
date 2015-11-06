@@ -7,7 +7,7 @@ package edu.umass.ciir.fws.clustering.gm;
 
 import edu.umass.ciir.fws.clist.CandidateList;
 import edu.umass.ciir.fws.clustering.ScoredItem;
-import edu.umass.ciir.fws.crawl.Document;
+import edu.umass.ciir.fws.crawl.RankedDocument;
 import edu.umass.ciir.fws.crawl.QuerySetResults;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.types.TfQueryParameters;
@@ -48,7 +48,7 @@ public class TermPairDataExtractor extends StandardStep<TfQueryParameters, TfQue
 
     QuerySetResults querySetResults;
     List<CandidateList> clists;
-    List<Document> docs;
+    List<RankedDocument> docs;
     TfQuery query;
     List<ScoredItem> items;
 
@@ -159,7 +159,7 @@ public class TermPairDataExtractor extends StandardStep<TfQueryParameters, TfQue
             itemContexts[i] = new HashMap<>();
         }
 
-        for (Document doc : docs) {
+        for (RankedDocument doc : docs) {
             List<String> words = doc.terms;
             for (int i = 0; i < words.size(); i++) { // start of the idx
                 StringBuilder itemBuilder = new StringBuilder();
@@ -193,7 +193,7 @@ public class TermPairDataExtractor extends StandardStep<TfQueryParameters, TfQue
     }
 
     private void loadDocuments() throws IOException {
-        docs = Document.loadDocumentsFromFiles(querySetResults.get(query.id), docDir, query.id);
+        docs = RankedDocument.loadDocumentsFromFiles(querySetResults.get(query.id), docDir, query.id);
     }
 
     private void loadItemsFromPredictFile() throws IOException {

@@ -22,7 +22,7 @@ import org.lemurproject.galago.tupleflow.Parameters;
  *
  * @author wkong
  */
-public class Document {
+public class RankedDocument {
 
     public long rank;
     public String name;
@@ -33,7 +33,7 @@ public class Document {
     public List<String> terms;
     public HashMap<String, Integer> ngramMap; // ngram -> frequency
 
-    public Document(ScoredDocument sd, org.lemurproject.galago.core.parse.Document document) {
+    public RankedDocument(ScoredDocument sd, org.lemurproject.galago.core.parse.Document document) {
         name = sd.documentName;
         rank = sd.rank;
         html = document.text;
@@ -43,7 +43,7 @@ public class Document {
         title = TextProcessing.clean(HtmlContentExtractor.extractTitle(html));
     }
 
-    public Document() {
+    public RankedDocument() {
 
     }
 
@@ -55,14 +55,14 @@ public class Document {
         return url;
     }
 
-    public static List<Document> loadDocumentsFromFiles(QueryResults queryResults, String docDir, String qid) throws IOException {
-        ArrayList<Document> docs = new ArrayList<>();
+    public static List<RankedDocument> loadDocumentsFromFiles(QueryResults queryResults, String docDir, String qid) throws IOException {
+        ArrayList<RankedDocument> docs = new ArrayList<>();
         for (ScoredDocument sd : queryResults.getIterator()) {
             DataInputStream data = new DataInputStream(new FileInputStream(Utility.getDocDataFileName(docDir, qid, sd.documentName)));
             org.lemurproject.galago.core.parse.Document doc
                     = org.lemurproject.galago.core.parse.Document.deserialize(data, new Parameters(),
                             new org.lemurproject.galago.core.parse.Document.DocumentComponents(true, true, false));
-            docs.add(new Document(sd, doc));
+            docs.add(new RankedDocument(sd, doc));
         }
         return docs;
     }
