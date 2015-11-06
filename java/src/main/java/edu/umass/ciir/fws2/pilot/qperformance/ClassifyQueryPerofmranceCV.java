@@ -163,7 +163,7 @@ public class ClassifyQueryPerofmranceCV extends AppFunction {
     private void prepareTrainFile(Parameters p) throws IOException {
         // load performance
         String evalFilename = p.getString("qfFacetEvalFile");
-        long measureIdx = p.getLong("qfMeasureIdx");
+        int measureIdx = (int) p.getLong("qfMeasureIdx");
         HashMap<String, Double> qidScore = new HashMap<>(); // qid -> measure score
         BufferedReader reader = Utility.getReader(evalFilename);
         String line;
@@ -172,7 +172,7 @@ public class ClassifyQueryPerofmranceCV extends AppFunction {
             // qid score1 score2
             String[] elems = line.split("\t");
             String qid = elems[0];
-            double score = Double.parseDouble(elems[(int) measureIdx]);
+            double score = Double.parseDouble(elems[measureIdx]);
             qidScore.put(qid, score);
         }
         reader.close();
