@@ -4,9 +4,9 @@
  */
 package edu.umass.ciir.fws.feature;
 
-import edu.umass.ciir.fws.crawl.RankedDocument;
+import edu.umass.ciir.fws.retrieval.QuerySetResults;
+import edu.umass.ciir.fws.retrieval.RankedDocument;
 import edu.umass.ciir.fws.clist.CandidateList;
-import edu.umass.ciir.fws.crawl.*;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;

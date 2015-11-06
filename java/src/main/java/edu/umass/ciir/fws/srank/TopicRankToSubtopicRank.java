@@ -5,7 +5,7 @@
  */
 package edu.umass.ciir.fws.srank;
 
-import edu.umass.ciir.fws.crawl.QuerySetResults;
+import edu.umass.ciir.fws.retrieval.QuerySetResults;
 import edu.umass.ciir.fws.query.QuerySubtopic;
 import edu.umass.ciir.fws.query.QueryTopic;
 import edu.umass.ciir.fws.utility.Utility;

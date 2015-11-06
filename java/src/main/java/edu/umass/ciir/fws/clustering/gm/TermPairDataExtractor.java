@@ -7,8 +7,8 @@ package edu.umass.ciir.fws.clustering.gm;
 
 import edu.umass.ciir.fws.clist.CandidateList;
 import edu.umass.ciir.fws.clustering.ScoredItem;
-import edu.umass.ciir.fws.crawl.RankedDocument;
-import edu.umass.ciir.fws.crawl.QuerySetResults;
+import edu.umass.ciir.fws.retrieval.RankedDocument;
+import edu.umass.ciir.fws.retrieval.QuerySetResults;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.types.TfQueryParameters;
 import edu.umass.ciir.fws.utility.TextProcessing;

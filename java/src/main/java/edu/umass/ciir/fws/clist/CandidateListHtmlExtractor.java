@@ -4,7 +4,7 @@
  */
 package edu.umass.ciir.fws.clist;
 
-import edu.umass.ciir.fws.crawl.RankedDocument;
+import edu.umass.ciir.fws.retrieval.RankedDocument;
 import edu.umass.ciir.fws.nlp.HtmlContentExtractor;
 import edu.umass.ciir.fws.types.TfQuery;
 import java.util.ArrayList;

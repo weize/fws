@@ -1,7 +1,7 @@
 package edu.umass.ciir.fws.clist;
 
-import edu.umass.ciir.fws.crawl.RankedDocument;
-import edu.umass.ciir.fws.crawl.QuerySetResults;
+import edu.umass.ciir.fws.retrieval.RankedDocument;
+import edu.umass.ciir.fws.retrieval.QuerySetResults;
 import edu.umass.ciir.fws.tool.app.ProcessQueryApp;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.utility.Utility;

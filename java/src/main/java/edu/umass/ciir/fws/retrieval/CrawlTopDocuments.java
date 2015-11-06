@@ -1,4 +1,4 @@
-package edu.umass.ciir.fws.crawl;
+package edu.umass.ciir.fws.retrieval;
 
 import edu.umass.ciir.fws.clist.*;
 import edu.umass.ciir.fws.query.QueryFileParser;

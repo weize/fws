@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.umass.ciir.fws.crawl;
+package edu.umass.ciir.fws.retrieval;
 
 import edu.umass.ciir.fws.nlp.HtmlContentExtractor;
 import edu.umass.ciir.fws.utility.TextProcessing;

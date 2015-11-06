@@ -276,7 +276,7 @@ public class TestFn extends AppFunction {
 
         CandidateListTextExtractor extractor = new CandidateListTextExtractor();
         String content = Utility.readFileToString(new File("test.parse"));
-        List<CandidateList> clists = extractor.extract(content, new edu.umass.ciir.fws.crawl.RankedDocument(), new TfQuery("a", "b"));
+        List<CandidateList> clists = extractor.extract(content, new edu.umass.ciir.fws.retrieval.RankedDocument(), new TfQuery("a", "b"));
         for (CandidateList clist : clists) {
             output.println(clist);
         }

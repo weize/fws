@@ -4,7 +4,7 @@
  */
 package edu.umass.ciir.fws.nlp;
 
-import edu.umass.ciir.fws.crawl.QuerySetResults;
+import edu.umass.ciir.fws.retrieval.QuerySetResults;
 import edu.umass.ciir.fws.query.QueryFileParser;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.types.TfQueryDocumentName;
