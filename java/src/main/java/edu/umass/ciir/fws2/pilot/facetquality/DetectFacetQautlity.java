@@ -220,7 +220,7 @@ public class DetectFacetQautlity extends AppFunction {
             Parameters p = parameters.getJSON();
             fqDir = p.getString("fqDir");
             predictDir = Utility.getFileName(fqDir, "predict");
-            fqMeasureIdx = (int) p.getLong("fqMeasureIdx");
+            fqMeasureIdx = (int) p.getLong("fqMeasureIdx"); // index according to qid.f.quality.feature (from FacetFeatures)
             threshold = p.getDouble("fqThreshold");
         }
 
@@ -289,7 +289,7 @@ public class DetectFacetQautlity extends AppFunction {
             trainDir = Utility.getFileName(fqDir, "train");
             allPredictFile = new File(Utility.getFileName(fqDir, "predict", "all.predict"));
             allPredictEvalFile = new File(Utility.getFileName(fqDir, "predict", "all.predict.eval"));
-            folderNum = p.getLong("qpCVFolderNum");
+            folderNum = p.getLong("fqCVFolderNum");
 
         }
 
@@ -519,6 +519,7 @@ public class DetectFacetQautlity extends AppFunction {
                     String itemList = elems[2];
 
                     ScoredFacet facet = new ScoredFacet(score);
+                    //ScoredFacet facet = new ScoredFacet(quality); // oracle: rank by quality
                     for (String t : itemList.split("\\|")) {
                         facet.addItem(new ScoredItem(t, 0));
                     }
