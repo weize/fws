@@ -16,6 +16,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import org.lemurproject.galago.tupleflow.Type;
@@ -283,6 +285,10 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
 
     public static void infoProcessing(Type object) {
         System.err.println(String.format("Processing %s", object.toString()));
+    }
+    
+    public static void info(String message) {
+        Logger.getLogger("runtime").log(Level.INFO, message);
     }
 
     public static int compare(double one, double two) {
