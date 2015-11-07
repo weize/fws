@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import org.lemurproject.galago.core.eval.QueryResults;
+import org.lemurproject.galago.core.parse.Document;
 import org.lemurproject.galago.core.retrieval.ScoredDocument;
 import org.lemurproject.galago.tupleflow.Parameters;
 
@@ -33,7 +34,7 @@ public class RankedDocument {
     public List<String> terms;
     public HashMap<String, Integer> ngramMap; // ngram -> frequency
 
-    public RankedDocument(ScoredDocument sd, org.lemurproject.galago.core.parse.Document document) {
+    public RankedDocument(ScoredDocument sd, Document document) {
         name = sd.documentName;
         rank = sd.rank;
         html = document.text;
@@ -48,6 +49,9 @@ public class RankedDocument {
     }
 
     public static String getSiteUrl(String url) {
+        if (url == null) {
+            return null;
+        }
         url = url.replaceAll("^https?://", "");
         url = url.replaceAll("/.*?$", "");
         url = url.replaceAll("\\|", "");
