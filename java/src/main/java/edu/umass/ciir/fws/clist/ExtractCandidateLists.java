@@ -26,7 +26,7 @@ public class ExtractCandidateLists extends ProcessQueryApp {
 
     @Override
     protected Class getProcessClass() {
-        return CandidateListExtractor.class;
+        return ExtractHtmlAndTextCandidateList.class;
     }
 
     @Override
@@ -40,7 +40,7 @@ public class ExtractCandidateLists extends ProcessQueryApp {
      */
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.TfQuery")
-    public static class CandidateListExtractor implements Processor<TfQuery> {
+    public static class ExtractHtmlAndTextCandidateList implements Processor<TfQuery> {
 
         QuerySetResults querySetResults;
         CandidateListHtmlExtractor cListHtmlExtractor;
@@ -49,7 +49,7 @@ public class ExtractCandidateLists extends ProcessQueryApp {
         String docDir;
         String clistDir;
 
-        public CandidateListExtractor(TupleFlowParameters parameters) throws Exception {
+        public ExtractHtmlAndTextCandidateList(TupleFlowParameters parameters) throws Exception {
             Parameters p = parameters.getJSON();
             docDir = p.getString("docDir");
             long topNum = p.getLong("topNum");
