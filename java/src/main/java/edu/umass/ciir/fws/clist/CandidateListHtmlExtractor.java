@@ -4,12 +4,15 @@
  */
 package edu.umass.ciir.fws.clist;
 
-import edu.umass.ciir.fws.retrieval.RankedDocument;
 import edu.umass.ciir.fws.nlp.HtmlContentExtractor;
+import edu.umass.ciir.fws.retrieval.RankedDocument;
 import edu.umass.ciir.fws.types.TfQuery;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
@@ -19,7 +22,7 @@ import org.jsoup.select.Elements;
  *
  * @author wkong
  */
-public class CandidateListHtmlExtractor {
+public class CandidateListHtmlExtractor implements CandidateListExtractor {
 
     public static class HtmlTag {
 
@@ -41,12 +44,17 @@ public class CandidateListHtmlExtractor {
     }
 
     ArrayList<CandidateList> clists;
-    org.jsoup.nodes.Document htmlDoc;
+    Document htmlDoc;
     TfQuery query;
     RankedDocument document;
 
-    public CandidateListHtmlExtractor() {
+    @Override
+    public List<CandidateList> extract(List<RankedDocument> documents, TfQuery query) {
         clists = new ArrayList<>();
+        for (RankedDocument doc : documents) {
+            collect(doc, query);
+        }
+        return clists;
     }
 
     public List<CandidateList> extract(String docHtml, long docRank, String docName, String queryID) {
@@ -59,15 +67,20 @@ public class CandidateListHtmlExtractor {
     }
 
     public List<CandidateList> extract(RankedDocument document, TfQuery query) {
-        this.clists.clear();
+        clists = new ArrayList<>();
+        collect(document, query);
+        return clists;
+    }
+
+    public void collect(RankedDocument document, TfQuery query) {
         this.query = query;
         this.document = document;
 
         try {
             htmlDoc = Jsoup.parse(document.html, "UTF-8");
-        } catch (Exception exception) {
-            System.err.println("ERROR: cannot process document - " + document.name);
-            return clists;
+        } catch (Exception ex) {
+            Logger.getLogger(CandidateListHtmlExtractor.class.getName()).
+                    log(Level.SEVERE, null, new Exception("cannot process document - " + document.name));
         }
 
         // extract from ul, ol, select tags
@@ -88,7 +101,6 @@ public class CandidateListHtmlExtractor {
                 extractFromTABLE(e);
             }
         }
-        return clists;
     }
 
     /**
