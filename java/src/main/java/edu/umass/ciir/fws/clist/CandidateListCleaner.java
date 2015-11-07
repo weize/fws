@@ -8,6 +8,7 @@ package edu.umass.ciir.fws.clist;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -23,11 +24,15 @@ public class CandidateListCleaner {
 
     Set<String> stopwords = new HashSet<>();
 
-    public CandidateListCleaner(Parameters parameters) throws Exception {
+    public CandidateListCleaner(Parameters parameters) {
         // load stopwords
         if (parameters.containsKey("stopwordsFile")) {
             String stopwordsFile = parameters.getString("stopwordsFile");
-            stopwords = Utility.readFileToStringSet(new File(stopwordsFile));
+            try {
+                stopwords = Utility.readFileToStringSet(new File(stopwordsFile));
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
             System.err.println("using stopword file " + stopwordsFile);
         } else {
             stopwords = new HashSet<>();
@@ -59,6 +64,17 @@ public class CandidateListCleaner {
         } else {
             return null;
         }
+    }
+
+    public List<CandidateList> clean(List<CandidateList> clists) {
+        List<CandidateList> cleanedClists = new ArrayList<>();
+        for (CandidateList clist : clists) {
+            CandidateList clistClean = clean(clist);
+            if (clistClean != null) {
+                cleanedClists.add(clistClean);
+            }
+        }
+        return cleanedClists;
     }
 
     private boolean isValidItem(String item) {
