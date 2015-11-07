@@ -5,6 +5,11 @@
  */
 package edu.umass.ciir.fws.clist;
 
+import edu.stanford.nlp.ling.CoreAnnotations;
+import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.trees.Tree;
+import edu.stanford.nlp.trees.TreeCoreAnnotations;
+import edu.stanford.nlp.util.CoreMap;
 import edu.umass.ciir.fws.retrieval.RankedDocument;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.utility.TextProcessing;
@@ -12,6 +17,8 @@ import edu.umass.ciir.fws.utility.TextTokenizer;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Candidate list extract based on textual pattern. Takes in a document and
@@ -64,6 +71,22 @@ public class CandidateListTextExtractor {
                 }
             }
         }
+        return this.clists;
+    }
+
+    public List<CandidateList> extract(CoreMap sentence, RankedDocument document, TfQuery query) {
+        this.clists.clear();
+        this.query = query;
+        this.document = document;
+
+        try {
+            tree = new ParseTree(sentence);
+            extractCandidateListsFromParseTree();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.err.println(String.format("qid %s, docname %s: %s", query.id, document.name, ex.toString()));
+        }
+
         return this.clists;
     }
 
@@ -254,6 +277,20 @@ public class CandidateListTextExtractor {
             this.treeText = treeText;
             this.begins = readIntArray(beginText);
             this.ends = readIntArray(endText);
+            build();
+        }
+
+        private ParseTree(CoreMap sentence) throws Exception {
+            this.senText = sentence.get(CoreAnnotations.TextAnnotation.class).replace('\n', ' ');
+            this.treeText = sentence.get(TreeCoreAnnotations.TreeAnnotation.class).toString();
+            List<CoreLabel> tokens = sentence.get(CoreAnnotations.TokensAnnotation.class);
+            this.begins = new int[tokens.size()];
+            this.ends = new int[tokens.size()];
+            for (int i = 0; i < tokens.size(); i++) {
+                CoreLabel token = tokens.get(i);
+                begins[i] = token.beginPosition();
+                ends[i] = token.endPosition();
+            }
             build();
         }
 
