@@ -13,7 +13,7 @@ import edu.umass.ciir.fws.clustering.gm.lr.LinearRegressionModel;
 import edu.umass.ciir.fws.eval.ClusteringEvaluator;
 import edu.umass.ciir.fws.eval.RpndcgEvaluator;
 import edu.umass.ciir.fws.nlp.HtmlContentExtractor;
-import edu.umass.ciir.fws.nlp.StanfordCoreNLPParser;
+import edu.umass.ciir.fws.nlp.PeerPatternNLPParser;
 import edu.umass.ciir.fws.query.QueryTopic;
 import edu.umass.ciir.fws.query.TrecFullTopicXmlParser;
 import edu.umass.ciir.fws.types.TfQuery;
@@ -161,7 +161,7 @@ public class TestFn extends AppFunction {
 
     private void testNlp(PrintStream output) throws IOException {
         output.println("In test nlp!");
-        StanfordCoreNLPParser stanfordParser = new StanfordCoreNLPParser();
+        PeerPatternNLPParser stanfordParser = new PeerPatternNLPParser();
         String text = "U.S.A and U.S. are the abbrevation for United States of American.\n"
                 + "edu.umass.ciir.fws and edu.umass.cirr.galago are package pathes.\n"
                 + "Mom's and dad's computers are updated.\n"
