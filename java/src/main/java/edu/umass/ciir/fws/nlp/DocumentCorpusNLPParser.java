@@ -20,8 +20,8 @@ import org.lemurproject.galago.tupleflow.TupleFlowParameters;
 import org.lemurproject.galago.tupleflow.execution.Verified;
 
 /**
- * Parse document using StanfordCoreNLPParser (used for parsing document in the
- * corpus).
+ * Parse document using PeerPatternNLPParser (used for parsing document in the
+ corpus).
  *
  * @author wkong
  */
@@ -30,13 +30,13 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 public class DocumentCorpusNLPParser implements Processor<TfDocumentName> {
 
     Parameters parameters;
-    StanfordCoreNLPParser stanfordParser;
+    PeerPatternNLPParser stanfordParser;
     String parseCorpusDir;
     Retrieval retrieval;
 
     public DocumentCorpusNLPParser(TupleFlowParameters parameters) throws Exception {
         this.parameters = parameters.getJSON();
-        stanfordParser = new StanfordCoreNLPParser();
+        stanfordParser = new PeerPatternNLPParser();
         parseCorpusDir = this.parameters.getString("parseCorpusDir");
         retrieval = RetrievalFactory.instance(this.parameters);
     }

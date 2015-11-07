@@ -26,13 +26,13 @@ import java.util.*;
  *
  * @author wkong
  */
-public class StanfordCoreNLPParser {
+public class PeerPatternNLPParser {
 
     StanfordCoreNLP pipeline;
     StanfordCoreNLP pipelineSsplit;
     BufferedWriter writer;
 
-    public StanfordCoreNLPParser() {
+    public PeerPatternNLPParser() {
         Properties props = new Properties();
         props.put("annotators", "tokenize, ssplit, pos, parse");
         props.put("pos.maxlen", 50);
@@ -74,18 +74,18 @@ public class StanfordCoreNLPParser {
      * @throws IOException
      */
     private void prasePerSentence(String text) throws IOException {
+        writeOutAnnotation(praseSentence(text));
+    }
+
+    public Annotation praseSentence(String text) {
         Annotation annotationSplit = new Annotation(text);
-        try {
-            pipeline.annotate(annotationSplit);
-        } catch (Exception e) {
-            System.err.println("failed to parse, skip: " + text);
-        }
-        writeOutAnnotation(annotationSplit);
+        pipeline.annotate(annotationSplit);
+        return annotationSplit;
     }
 
     private void writeOutAnnotation(Annotation annotationSplit) throws IOException {
         List<CoreMap> sentences = annotationSplit.get(CoreAnnotations.SentencesAnnotation.class);
-
+       
         for (CoreMap sentence : sentences) {
             // original sentence
             String text = sentence.get(CoreAnnotations.TextAnnotation.class).replace('\n', ' ');
@@ -116,6 +116,7 @@ public class StanfordCoreNLPParser {
             for (int i = 0; i < tokens.size() - 1; i++) {
                 writer.write(tokens.get(i).beginPosition() + "\t");
             }
+            
             writer.write(tokens.get(tokens.size() - 1).beginPosition() + "\n");
 
             // end positions in the original sentence of each tokens

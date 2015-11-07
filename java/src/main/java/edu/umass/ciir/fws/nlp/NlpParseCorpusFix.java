@@ -122,7 +122,7 @@ public class NlpParseCorpusFix extends AppFunction {
     @OutputClass(className = "edu.umass.ciir.fws.types.TfDocumentName")
     public static class DocumentNameFilter extends StandardStep<TfDocumentName, TfDocumentName> {
 
-        StanfordCoreNLPParser stanfordParser;
+        PeerPatternNLPParser stanfordParser;
         String parseDir;
         String docDir;
 
@@ -132,7 +132,7 @@ public class NlpParseCorpusFix extends AppFunction {
 
         public DocumentNameFilter(TupleFlowParameters parameters) throws Exception {
             this.parameters = parameters.getJSON();
-            stanfordParser = new StanfordCoreNLPParser();
+            stanfordParser = new PeerPatternNLPParser();
             parseCorpusDir = this.parameters.getString("parseCorpusDir");
             retrieval = RetrievalFactory.instance(this.parameters);
         }

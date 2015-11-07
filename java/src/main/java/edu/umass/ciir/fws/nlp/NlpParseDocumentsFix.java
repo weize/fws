@@ -119,13 +119,13 @@ public class NlpParseDocumentsFix extends AppFunction {
     @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryDocumentName")
     public static class QueryDocumentNameFilter extends StandardStep<TfQueryDocumentName, TfQueryDocumentName> {
 
-        StanfordCoreNLPParser stanfordParser;
+        PeerPatternNLPParser stanfordParser;
         String parseDir;
         String docDir;
 
         public QueryDocumentNameFilter(TupleFlowParameters parameters) throws IOException {
             Parameters p = parameters.getJSON();
-            stanfordParser = new StanfordCoreNLPParser();
+            stanfordParser = new PeerPatternNLPParser();
             parseDir = p.getString("parseDir");
             docDir = p.getString("docDir");
         }

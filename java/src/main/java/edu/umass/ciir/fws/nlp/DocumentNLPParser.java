@@ -16,7 +16,7 @@ import org.lemurproject.galago.tupleflow.TupleFlowParameters;
 import org.lemurproject.galago.tupleflow.execution.Verified;
 
 /**
- * Parse document using StanfordCoreNLPParser.
+ * Parse document using PeerPatternNLPParser.
  *
  * @author wkong
  */
@@ -26,14 +26,14 @@ public class DocumentNLPParser implements Processor<TfQueryDocumentName> {
 
     Logger logger;
     Parameters parameters;
-    StanfordCoreNLPParser stanfordParser;
+    PeerPatternNLPParser stanfordParser;
     String parseDir;
     String docDir;
 
     public DocumentNLPParser(TupleFlowParameters parameters) throws IOException {
         this.parameters = parameters.getJSON();
         logger = Logger.getLogger(DocumentNLPParser.class.toString());
-        stanfordParser = new StanfordCoreNLPParser();
+        stanfordParser = new PeerPatternNLPParser();
         parseDir = this.parameters.getString("parseDir");
         docDir = this.parameters.getString("docDir");
     }
