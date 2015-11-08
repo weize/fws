@@ -26,4 +26,8 @@ public class Features {
     public String featuresToString() {
         return TextProcessing.join(features, "\t");
     }
+    
+    public int getSize() {
+        return features.length;
+    }
 }

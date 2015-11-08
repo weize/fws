@@ -8,6 +8,7 @@ package edu.umass.ciir.fws.feature;
 import edu.umass.ciir.fws.clist.CandidateList;
 import edu.umass.ciir.fws.demo.search.GalagoSearchEngine;
 import edu.umass.ciir.fws.retrieval.RankedDocument;
+import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -32,11 +33,13 @@ public class TermFeaturesOnlineExtractor extends TermFeaturesExtractor {
 
     }
 
-    public List<TermFeatures> extract(List<CandidateList> clists, List<RankedDocument> docs) {
+    public TreeMap<String, TermFeatures> extract(List<CandidateList> clists, List<RankedDocument> docs) {
+        Utility.info("extracting facet term features ...");
         this.clists = clists;
         this.docs = docs;
 
         initializeTermFeatures();
+        Utility.info("#terms = " + termFeatures.size());
         try {
             clistDfs = new CandidateListDocFreqMap(new File(clistDfFile), new File(clistDfMetaFile), termFeatures);
 
@@ -54,18 +57,15 @@ public class TermFeaturesOnlineExtractor extends TermFeaturesExtractor {
             extractListFeatures(type);
         }
 
+        Utility.info("extracting document frequency ...");
         extractClueWebIDF();
         extractCandidateListIDF();
-        for (TermFeatures f : termFeatures.values()) {
-            System.out.println(f.toString());
-        }
-        return null;
+        return termFeatures;
     }
 
     @Override
     protected double getClueDocFreq(String term) {
         long df = galago.getDocFreq(term);
-        System.err.println(term + ":" + df);
         return df == -1 ? 0 : df;
     }
 

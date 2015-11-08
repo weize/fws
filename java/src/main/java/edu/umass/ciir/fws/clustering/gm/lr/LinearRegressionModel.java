@@ -12,6 +12,7 @@ import de.bwaldvogel.liblinear.Model;
 import de.bwaldvogel.liblinear.Parameter;
 import de.bwaldvogel.liblinear.Problem;
 import de.bwaldvogel.liblinear.SolverType;
+import edu.umass.ciir.fws.feature.Features;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -21,6 +22,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.TreeMap;
 
 /**
  *
@@ -40,6 +42,9 @@ public class LinearRegressionModel {
     StandardScaler scaler;
     String[] comments; // comments for each data point
     final static double bias = 1.0;
+
+    // demo add
+    Model model;
 
     public LinearRegressionModel() {
         selectedFeatureIndices = null;
@@ -90,6 +95,22 @@ public class LinearRegressionModel {
         model.save(modelFile);
     }
 
+    public void load(File modelFile, File scalerFile, int[] featureIndices) throws IOException {
+        scaler = new StandardScaler(scalerFile); // load from file
+        selectedFeatureIndices = featureIndices;
+        model = Linear.loadModel(modelFile);
+    }
+
+    public double predict(Features features) {
+        // features
+        Feature[] x = convertFeatures(features);
+        scaler.transform(x);
+        Feature[] fs = x;
+        double[] prob_estimates = new double[2];
+        Linear.predictProbability(model, x, prob_estimates);
+        return prob_estimates[0];
+    }
+
     public void predict(File featureFile, File modelFile, File scalerFile, File preditFile) throws IOException {
         readProblem(featureFile);
         scaler = new StandardScaler(scalerFile); // load from file
@@ -107,8 +128,6 @@ public class LinearRegressionModel {
         writer.close();
     }
 
-    
-    
     public void readProblem(File file) throws IOException {
         prob = new Problem();
         prob.bias = bias;
@@ -152,7 +171,7 @@ public class LinearRegressionModel {
             Feature[] x = new Feature[prob.n]; // includes bias
             for (int i = 0; i < selectedFeatureIndices.length; i++) {
                 Double value = Double.parseDouble(fields[selectedFeatureIndices[i]]);
-                x[i] = new FeatureNode(i + 1, value);
+                x[i] = new FeatureNode(i + 1, value); // ?? feature index start from 1?
             }
             x[prob.n - 1] = new FeatureNode(prob.n, bias);
             vx.add(x);
@@ -166,6 +185,20 @@ public class LinearRegressionModel {
         prob.y = new double[prob.l];
         for (int i = 0; i < prob.l; i++) {
             prob.y[i] = vy.get(i);
+        }
+
+    }
+
+    public void readProblem(TreeMap<String, Features> features) {
+        prob = new Problem();
+        prob.bias = bias;
+
+        // selected all features if not specified
+        if (selectedFeatureIndices == null) {
+            selectedFeatureIndices = new int[1 - 1];
+            for (int i = 0; i < selectedFeatureIndices.length; i++) {
+                selectedFeatureIndices[i] = i + 1;
+            }
         }
 
     }
@@ -190,4 +223,25 @@ public class LinearRegressionModel {
         scaler.fitTransform(prob);
         scaler.save(scalerFile);
     }
+
+    private Feature[] convertFeatures(Features features) {
+        int size = selectedFeatureIndices.length;
+        Feature[] x = new Feature[size + 1]; // includes bias
+        for (int i = 0; i < selectedFeatureIndices.length; i++) {
+            // feature index in Class features start from 0, but in LableFeature file start from 1
+            Object val = features.getFeature(selectedFeatureIndices[i] - 1);
+            double doubleVal;            
+            if (val instanceof Integer) {
+                doubleVal = ((Integer) val).doubleValue();
+            } else if (val instanceof Double) {
+                doubleVal = (Double) val;
+            } else {
+                throw new RuntimeException(val.getClass()+ " : " + val + ",  is not supported as a feature");
+            }
+            x[i] = new FeatureNode(i + 1, doubleVal);
+        }
+        x[size] = new FeatureNode(size + 1, bias);
+        return x;
+    }
+
 }

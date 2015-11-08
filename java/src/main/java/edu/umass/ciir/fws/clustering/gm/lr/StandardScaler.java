@@ -21,7 +21,7 @@ import java.util.ArrayList;
 public class StandardScaler {
 
     /**
-     * Do not standardize the feature is the std is very small.
+     * Do not standardize the feature if the std is very small.
      *
      */
     static final double minStd = 0.000001;
@@ -94,6 +94,17 @@ public class StandardScaler {
             }
         }
     }
+    
+    public void transform(Feature[] fs) {
+        for (Feature f : fs) {
+                int idx = f.getIndex() - 1;
+                if (idx != fs.length - 1) { // not the bias
+                    if (stds[idx] > minStd) {
+                        f.setValue((f.getValue() - means[idx]) / stds[idx]);
+                    }
+                }
+            }
+    }
 
     public void fitTransform(Problem prob) {
         fit(prob);
@@ -134,4 +145,6 @@ public class StandardScaler {
 
         reader.close();
     }
+
+    
 }

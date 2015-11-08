@@ -13,10 +13,9 @@ import edu.umass.ciir.fws.utility.TextProcessing;
  *
  * @author wkong
  */
-public class TermFeatures {
+public class TermFeatures extends Features{
     static final String version = "8";
     String term;
-    Object[] features;
     // index of features
     public static final int _len = 0; // number of tokens
     public static final int _listTf = 1; // tf
@@ -86,14 +85,6 @@ public class TermFeatures {
     public TermFeatures(String term) {
         this.features = new Object[size];
         this.term = term;
-    }
-
-    public void setFeature(Object value, int idx) {
-        this.features[idx] = value;
-    }
-
-    public Object getFeature(int idx) {
-        return this.features[idx];
     }
 
     @Override
