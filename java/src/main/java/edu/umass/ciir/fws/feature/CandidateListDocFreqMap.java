@@ -45,7 +45,7 @@ public class CandidateListDocFreqMap {
         loadCandidateListDocFreqs(clistDfFile);
     }
 
-    CandidateListDocFreqMap(File clistDfFile, File clistDfMetaFile, TreeMap<String, TermFeaturesExtractor.TermFeatures> terms) throws IOException {
+    CandidateListDocFreqMap(File clistDfFile, File clistDfMetaFile, TreeMap<String, TermFeatures> terms) throws IOException {
         clistCdfs = new long[size];
         clistDfs = new HashMap<>();
         loadMeta(clistDfMetaFile);
@@ -81,7 +81,7 @@ public class CandidateListDocFreqMap {
      * @param terms
      * @throws IOException 
      */
-    private void loadCandidateListDocFreqs(File file, TreeMap<String, TermFeaturesExtractor.TermFeatures> terms) throws IOException {
+    private void loadCandidateListDocFreqs(File file, TreeMap<String, TermFeatures> terms) throws IOException {
         clistDfs.clear();
 
         BufferedReader reader = Utility.getReader(file);
