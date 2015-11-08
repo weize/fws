@@ -5,11 +5,12 @@
  */
 package edu.umass.ciir.fws.demo;
 
-import edu.umass.ciir.fws.clist.CandidateListNLPExtractor;
 import edu.umass.ciir.fws.clist.CandidateList;
 import edu.umass.ciir.fws.clist.CandidateListCleaner;
 import edu.umass.ciir.fws.clist.CandidateListExtractor;
 import edu.umass.ciir.fws.clist.CandidateListExtractorFactory;
+import edu.umass.ciir.fws.clustering.FacetRefiner;
+import edu.umass.ciir.fws.clustering.FacetRefinerFactory;
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.clustering.ScoredItem;
 import edu.umass.ciir.fws.demo.search.SearchEngine;
@@ -30,6 +31,7 @@ public class LocalFacetGenerator implements FacetGenerator {
     SearchEngine searchEngine;
     CandidateListExtractor clistExtractor;
     CandidateListCleaner clistCleaner;
+    FacetRefiner facetRefiner;
 
     int topDocs;
 
@@ -37,6 +39,7 @@ public class LocalFacetGenerator implements FacetGenerator {
         searchEngine = SearchEngineFactory.instance(p);
         clistExtractor = CandidateListExtractorFactory.instance(p);
         clistCleaner = new CandidateListCleaner(p);
+        facetRefiner = FacetRefinerFactory.instance(p);
         topDocs = (int) p.getLong("topDocs");
     }
 
@@ -45,8 +48,8 @@ public class LocalFacetGenerator implements FacetGenerator {
         List<RankedDocument> docs = searchEngine.getRankedDocuments(query, topDocs);
         List<CandidateList> clist = clistExtractor.extract(docs, query);
         clist = clistCleaner.clean(clist);
-
-        return generateFacetsFake(clist);
+        List<ScoredFacet> facet = facetRefiner.refine(clist, docs);
+        return facet;
     }
 
     public List<ScoredFacet> generateFacetsFake(List<CandidateList> clists) {
