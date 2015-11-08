@@ -107,6 +107,8 @@ public class LinearRegressionModel {
         writer.close();
     }
 
+    
+    
     public void readProblem(File file) throws IOException {
         prob = new Problem();
         prob.bias = bias;

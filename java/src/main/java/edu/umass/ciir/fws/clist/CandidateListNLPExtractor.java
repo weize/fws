@@ -44,7 +44,6 @@ public class CandidateListNLPExtractor implements CandidateListExtractor {
         String content = HtmlContentExtractor.extractFromContent(doc.html);
         List<String> sentencesText = nlpParser.getAndOrSentences(content);
         for (String senText : sentencesText) {
-            System.err.println("oooo: " + senText);
             Annotation annotationSplit = nlpParser.praseSentence(senText);
             List<CoreMap> sentences = annotationSplit.get(CoreAnnotations.SentencesAnnotation.class);
             for (CoreMap sentence : sentences) {

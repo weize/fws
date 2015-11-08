@@ -11,8 +11,6 @@ import edu.umass.ciir.fws.utility.TextProcessing;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.lemurproject.galago.core.parse.Document;
 import org.lemurproject.galago.core.retrieval.Retrieval;
 import org.lemurproject.galago.core.retrieval.RetrievalFactory;
@@ -52,7 +50,6 @@ public class GalagoSearchEngine implements SearchEngine {
         Node transformed;
         List<ScoredDocument> scoredDocuments;
 
-        
         try {
             transformed = retrieval.transformQuery(root, p);
             scoredDocuments = retrieval.executeQuery(transformed, p).scoredDocuments;
@@ -97,6 +94,21 @@ public class GalagoSearchEngine implements SearchEngine {
 
     private RankedDocument toRankedDocument(ScoredDocument sd, Document doc) {
         return new RankedDocument(sd, doc);
+    }
+
+    public long getDocFreq(String term) {
+        String query = String.format("#od:1( %s )", term);
+        Node parsed = StructuredQuery.parse(query);
+        parsed.getNodeParameters().set("queryType", "count");
+        try {
+            Node transformed = retrieval.transformQuery(parsed, new Parameters());
+            long count = retrieval.getNodeStatistics(transformed).nodeDocumentCount;
+            return count;
+
+        } catch (Exception ex) {
+            System.err.println("warning: failed to get docFreq for " + term);
+        }
+        return -1;
     }
 
 }

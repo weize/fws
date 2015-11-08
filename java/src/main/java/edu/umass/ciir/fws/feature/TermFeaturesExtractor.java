@@ -79,6 +79,10 @@ public class TermFeaturesExtractor implements Processor<TfQuery> {
 
         logger = Logger.getLogger(TermFeaturesExtractor.class.toString());
     }
+    
+    public TermFeaturesExtractor() {
+        
+    }
 
     @Override
     public void process(TfQuery query) throws IOException {
@@ -123,7 +127,7 @@ public class TermFeaturesExtractor implements Processor<TfQuery> {
      * Term feature initialization. Load all facet terms in the candidate list
      * set.
      */
-    private void initializeTermFeatures() {
+    protected void initializeTermFeatures() {
         termFeatures.clear();
         for (CandidateList clist : clists) {
             for (String term : clist.items) {
@@ -138,7 +142,7 @@ public class TermFeaturesExtractor implements Processor<TfQuery> {
         querySetResults = new QuerySetResults(rankedListFile, topNum);
     }
 
-    private void extractDocFeaturesInContentField() {
+    protected void extractDocFeaturesInContentField() {
         for (RankedDocument doc : docs) {
             doc.ngramMap = new HashMap<>();
             buildNgramMapFomText(doc.ngramMap, doc.terms, termFeatures);
@@ -148,7 +152,7 @@ public class TermFeaturesExtractor implements Processor<TfQuery> {
                 TermFeatures._contentSf, TermFeatures._contentWDf);
     }
 
-    private void extractDocFeaturesInTitleField() {
+    protected void extractDocFeaturesInTitleField() {
         for (RankedDocument doc : docs) {
             doc.ngramMap = new HashMap<>();
             List<String> terms = Arrays.asList(doc.title.split("\\s+"));
@@ -195,7 +199,7 @@ public class TermFeaturesExtractor implements Processor<TfQuery> {
      * @param wdfIndex if wdfIndex == -1, wdf will not be set in the feature
      * set.
      */
-    private void extractTfDfSfFromNgramMap(int tfIndex, int dfIndex, int sfIndex, int wdfIndex) {
+    protected void extractTfDfSfFromNgramMap(int tfIndex, int dfIndex, int sfIndex, int wdfIndex) {
         HashSet<String> sites = new HashSet<>();
 
         for (String t : termFeatures.keySet()) {
@@ -238,7 +242,7 @@ public class TermFeaturesExtractor implements Processor<TfQuery> {
         return 1.0 / Math.sqrt((double) rank);
     }
 
-    private void extractTermLength() {
+    protected void extractTermLength() {
         for (String term : termFeatures.keySet()) {
             int len = TextProcessing.countWords(term);
             termFeatures.get(term).setFeature(len, TermFeatures._len);
@@ -255,7 +259,7 @@ public class TermFeaturesExtractor implements Processor<TfQuery> {
      * @param clistListType the set of candidate lists used for extract
      * feature.（"all", "ul", "ol", "select", "tr", "td", "tx"）
      */
-    private void extractListFeatures(String clistListType) {
+    protected void extractListFeatures(String clistListType) {
         // collect lists for each doc
         HashMap<Long, ArrayList<CandidateList>> docidListsMap = new HashMap<>();
         for (CandidateList clist : this.clists) {
@@ -299,12 +303,12 @@ public class TermFeaturesExtractor implements Processor<TfQuery> {
 
     }
 
-    private void extractClueWebIDF() {
+    protected void extractClueWebIDF() {
         for (String term : termFeatures.keySet()) {
             TermFeatures termFeature = termFeatures.get(term);
-            double clueDf = clueDfs.getDf(term);
+            double clueDf = getClueDocFreq(term); 
             double contentTF = (Double) termFeature.getFeature(TermFeatures._contentTf);
-            double clueIdf = idf(clueDf, clueDfs.clueCdf);
+            double clueIdf = idf(clueDf, getCollectionDocFreq());
             double contentTFClueIDF = contentTF * clueIdf;
             termFeature.setFeature(clueIdf, TermFeatures._clueIDF);
             termFeature.setFeature(contentTFClueIDF, TermFeatures._contentTFClueIDF);
@@ -315,7 +319,7 @@ public class TermFeaturesExtractor implements Processor<TfQuery> {
         return Math.log((colSize - df + 0.5) / (df + 0.5)) / LOG2BASE;
     }
 
-    private void extractCandidateListIDF() {
+    protected void extractCandidateListIDF() {
         for (String term : termFeatures.keySet()) {
             TermFeatures termFeature = termFeatures.get(term);
 
@@ -341,6 +345,14 @@ public class TermFeaturesExtractor implements Processor<TfQuery> {
         }
         writer.close();
         System.err.println(String.format("Written in %s", fileName));
+    }
+
+    protected double getClueDocFreq(String term) {
+        return clueDfs.getDf(term);
+    }
+
+    protected double getCollectionDocFreq() {
+        return clueDfs.clueCdf;        
     }
 
 }

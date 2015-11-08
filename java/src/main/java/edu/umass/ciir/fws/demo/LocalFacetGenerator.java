@@ -39,17 +39,17 @@ public class LocalFacetGenerator implements FacetGenerator {
         searchEngine = SearchEngineFactory.instance(p);
         clistExtractor = CandidateListExtractorFactory.instance(p);
         clistCleaner = new CandidateListCleaner(p);
-        facetRefiner = FacetRefinerFactory.instance(p);
+        facetRefiner = FacetRefinerFactory.instance(p, searchEngine);
         topDocs = (int) p.getLong("topDocs");
     }
 
     @Override
     public List<ScoredFacet> generateFacets(TfQuery query) {
         List<RankedDocument> docs = searchEngine.getRankedDocuments(query, topDocs);
-        List<CandidateList> clist = clistExtractor.extract(docs, query);
-        clist = clistCleaner.clean(clist);
-        List<ScoredFacet> facet = facetRefiner.refine(clist, docs);
-        return facet;
+        List<CandidateList> clists = clistExtractor.extract(docs, query);
+        clists = clistCleaner.clean(clists);
+        List<ScoredFacet> facet = facetRefiner.refine(clists, docs);
+        return generateFacetsFake(clists);
     }
 
     public List<ScoredFacet> generateFacetsFake(List<CandidateList> clists) {
