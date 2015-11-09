@@ -43,8 +43,8 @@ public class TermPairFeatureExtractor {
     List<RankedDocument> docs;
     List<ScoredItem> items;
 
-    HashMap<String, Integer> itemIdMap; // item -> id
-    HashMap<String, ItemPairFeature> itemPairFeatures;
+    public HashMap<String, Integer> itemIdMap; // item -> id
+    HashMap<String, ItemPairFeatures> itemPairFeatures;
 
     public TermPairFeatureExtractor(Parameters p) throws Exception {
         clistDir = p.getString("clistDir");
@@ -53,6 +53,10 @@ public class TermPairFeatureExtractor {
         docDir = p.getString("docDir");
 
         loadQuerySetResults();
+    }
+    
+    public TermPairFeatureExtractor() {
+        
     }
 
     public void extract(List<ScoredItem> items, String qid) throws IOException {
@@ -72,7 +76,7 @@ public class TermPairFeatureExtractor {
         extract(loadItemsFromPredictFile(termPredictFile), qid);
     }
 
-    private void extractLengthDiff() {
+    protected void extractLengthDiff() {
         int[] lens = new int[items.size()];
         for (int i = 0; i < lens.length; i++) {
             lens[i] = TextProcessing.countWords(items.get(i).item);
@@ -82,15 +86,15 @@ public class TermPairFeatureExtractor {
             for (int j = i + 1; j < lens.length; j++) {
                 int diff = Math.abs(lens[i] - lens[j]);
                 String pairId = getItemPairId(i, j);
-                itemPairFeatures.get(pairId).setFeature(diff, ItemPairFeature._lenDiff);
+                itemPairFeatures.get(pairId).setFeature(diff, ItemPairFeatures._lenDiff);
             }
         }
     }
 
-    private void extractListFreq() {
+    protected void extractListFreq() {
         // intialized to 0
         for (String pid : itemPairFeatures.keySet()) {
-            itemPairFeatures.get(pid).setFeature(0, ItemPairFeature._listFreq);
+            itemPairFeatures.get(pid).setFeature(0, ItemPairFeatures._listFreq);
         }
 
         for (CandidateList clist : clists) {
@@ -101,7 +105,7 @@ public class TermPairFeatureExtractor {
                         String item2 = clist.items[j];
                         if (itemIdMap.containsKey(item2)) {
                             String pid = getItemPairId(item1, item2);
-                            itemPairFeatures.get(pid).incFeature(ItemPairFeature._listFreq);
+                            itemPairFeatures.get(pid).incFeature(ItemPairFeatures._listFreq);
 
                         }
                     }
@@ -110,7 +114,7 @@ public class TermPairFeatureExtractor {
         }
     }
 
-    private void extractContextListSim() {
+    protected void extractContextListSim() {
         // build Context
         HashMap<String, Double>[] itemContexts = (HashMap<String, Double>[]) new HashMap<?, ?>[items.size()];
 
@@ -133,7 +137,7 @@ public class TermPairFeatureExtractor {
             }
         }
 
-        setContextSim(itemContexts, ItemPairFeature._contextListSim);
+        setContextSim(itemContexts, ItemPairFeatures._contextListSim);
 
     }
 
@@ -165,7 +169,7 @@ public class TermPairFeatureExtractor {
             }
         }
 
-        setContextSim(itemContexts, ItemPairFeature._contextTextSim);
+        setContextSim(itemContexts, ItemPairFeatures._contextTextSim);
     }
 
     private void loadCandidateLists() throws IOException {
@@ -197,7 +201,7 @@ public class TermPairFeatureExtractor {
         return allItems.subList(0, Math.min(numTopScoredItems, allItems.size()));
     }
 
-    private void loadItemsAndSetIds(List<ScoredItem> items) {
+    protected void loadItemsAndSetIds(List<ScoredItem> items) {
         this.items = items;
         itemIdMap = new HashMap<>();
         // item -> id
@@ -206,14 +210,14 @@ public class TermPairFeatureExtractor {
         }
     }
 
-    private void generateItemPairs() {
+    protected void generateItemPairs() {
         itemPairFeatures = new HashMap<>();
 
         for (int i = 0; i < items.size(); i++) {
             ScoredItem item1 = items.get(i);
             for (int j = i + 1; j < items.size(); j++) {
                 ScoredItem item2 = items.get(j);
-                ItemPairFeature pairFeature = new ItemPairFeature(item1.item, item2.item);
+                ItemPairFeatures pairFeature = new ItemPairFeatures(item1.item, item2.item);
                 String pairId = getItemPairId(i, j);
                 itemPairFeatures.put(pairId, pairFeature);
             }
@@ -229,7 +233,7 @@ public class TermPairFeatureExtractor {
         return a < b ? a + "_" + b : b + "_" + a;
     }
 
-    private void incraseContextCount(HashMap<String, Double> context, String key) {
+    protected void incraseContextCount(HashMap<String, Double> context, String key) {
         double count = 1;
         if (context.containsKey(key)) {
             count += context.get(key);
@@ -237,7 +241,7 @@ public class TermPairFeatureExtractor {
         context.put(key, count);
     }
 
-    private void setContextSim(HashMap<String, Double>[] contexts, int index) {
+    protected void setContextSim(HashMap<String, Double>[] contexts, int index) {
         // normalize
         for (HashMap<String, Double> context : contexts) {
             double sum = 0;
@@ -278,7 +282,7 @@ public class TermPairFeatureExtractor {
 
     public void output(File dataFile) throws IOException {
         BufferedWriter writer = Utility.getWriter(dataFile);
-        for (ItemPairFeature pair : itemPairFeatures.values()) {
+        for (ItemPairFeatures pair : itemPairFeatures.values()) {
             int rating = -1;
             writer.write(String.format("%d\t%s\t#%d\t%s\t%s\n", rating,
                     pair.featuresToString(), rating, qid, pair.itemPairToString()));
@@ -309,7 +313,7 @@ public class TermPairFeatureExtractor {
 
         BufferedWriter writer = Utility.getWriter(dataFile);
         for (String pid : itemPairFeatures.keySet()) {
-            ItemPairFeature pair = itemPairFeatures.get(pid);
+            ItemPairFeatures pair = itemPairFeatures.get(pid);
             int rating = facetPairs.contains(pid) ? 1 : -1;
             writer.write(String.format("%d\t%s\t#%d\t%s\t%s\n", rating,
                     pair.featuresToString(), rating, qid, pair.itemPairToString()));
@@ -318,49 +322,4 @@ public class TermPairFeatureExtractor {
 
     }
 
-    static class ItemPairFeature {
-
-        public String item1;
-        public String item2;
-        public Object[] features;
-        public static final int _lenDiff = 0;
-        public static final int _listFreq = 1;
-        public static final int _contextListSim = 2;
-        public static final int _contextTextSim = 3;
-        public static final int size = 4;
-
-        public ItemPairFeature() {
-        }
-
-        public ItemPairFeature(String item1, String item2) {
-            this.item1 = item1;
-            this.item2 = item2;
-            this.features = new Object[size];
-        }
-
-        public void setFeature(Object value, int idx) {
-            this.features[idx] = value;
-        }
-
-        public Object getFeature(int idx) {
-            return this.features[idx];
-        }
-
-        public String itemPairToString() {
-            return item1 + "|" + item2;
-        }
-
-        public String featuresToString() {
-            return TextProcessing.join(features, "\t");
-        }
-
-        @Override
-        public String toString() {
-            return itemPairToString() + "\t" + featuresToString();
-        }
-
-        public void incFeature(int idx) {
-            features[idx] = (Integer) features[idx] + 1;
-        }
-    }
 }

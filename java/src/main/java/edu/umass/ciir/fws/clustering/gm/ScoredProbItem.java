@@ -13,11 +13,11 @@ import edu.umass.ciir.fws.clustering.ScoredItem;
  */
 public class ScoredProbItem extends ScoredItem {
 
-    Probablity prob;
+    Probability prob;
 
     public ScoredProbItem(String item, double probablity) {
         super(item, probablity);
-        prob = new Probablity(probablity);
+        prob = new Probability(probablity);
     }
 
     public double logProb() {

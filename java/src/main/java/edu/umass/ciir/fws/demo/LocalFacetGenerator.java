@@ -49,7 +49,7 @@ public class LocalFacetGenerator implements FacetGenerator {
         List<CandidateList> clists = clistExtractor.extract(docs, query);
         clists = clistCleaner.clean(clists);
         List<ScoredFacet> facet = facetRefiner.refine(clists, docs);
-        return generateFacetsFake(clists);
+        return facet;
     }
 
     public List<ScoredFacet> generateFacetsFake(List<CandidateList> clists) {

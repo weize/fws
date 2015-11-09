@@ -26,9 +26,11 @@ public abstract class GraphicalModelClusterer {
 
     List<ScoredProbItem> items;
     HashMap<String, Integer> itemIdMap;
-    HashMap<String, Probablity> pairProbs;
+    HashMap<String, Probability> pairProbs;
 
     public abstract List<ScoredFacet> cluster(File termPredictFile, File termPairPredictFile) throws IOException;
+
+    public abstract List<ScoredFacet> cluster(List<ScoredProbItem> items, HashMap<String, Integer> itemIdMap, HashMap<String, Probability> pairProbs);
 
     public void loadItems(File predictFile) throws IOException {
         BufferedReader reader = Utility.getReader(predictFile);
@@ -64,7 +66,7 @@ public abstract class GraphicalModelClusterer {
             String item1 = fields[0];
             String item2 = fields[1];
             if (itemIdMap.containsKey(item1) && itemIdMap.containsKey(item2)) {
-                pairProbs.put(getItemPairId(item1, item2), new Probablity(prob));
+                pairProbs.put(getItemPairId(item1, item2), new Probability(prob));
             }
 
         }

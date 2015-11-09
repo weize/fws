@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -43,7 +44,17 @@ public class GmJointClusterer extends GraphicalModelClusterer {
         loadItems(termPredictFile);
         loadItemPairs(termPairPredictFile);
         cluster();
-        rankCluster();
+        rankClusters();
+        return outClusters;
+    }
+    
+    @Override
+    public List<ScoredFacet> cluster(List<ScoredProbItem> items, HashMap<String, Integer> itemIdMap, HashMap<String, Probability> pairProbs) {
+        this.items = items;
+        this.itemIdMap = itemIdMap;
+        this.pairProbs = pairProbs;
+        cluster();
+        rankClusters();
         return outClusters;
     }
 
@@ -59,7 +70,7 @@ public class GmJointClusterer extends GraphicalModelClusterer {
         }
     }
 
-    private void rankCluster() {
+    private void rankClusters() {
         outClusters = new ArrayList<>();
         for (ArrayList<Integer> c : clusters) {
             ArrayList<ScoredItem> curItems = new ArrayList<>();
@@ -80,6 +91,10 @@ public class GmJointClusterer extends GraphicalModelClusterer {
 
         Collections.sort(outClusters);
     }
+
+ 
+
+    
 
     private static class ItemComparator implements Comparator<Integer> {
 

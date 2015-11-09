@@ -11,8 +11,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import org.lemurproject.galago.tupleflow.Parameters;
 
 /**
  *
@@ -36,6 +38,11 @@ public class GmIndependentClusterer extends GraphicalModelClusterer {
         this.pairProbTh = pairProbTh;
     }
 
+    public GmIndependentClusterer(Parameters p) {
+        this.termProbTh = p.getDouble("termProbTh");
+        this.pairProbTh = p.getDouble("pairProbTh");
+    }
+
     @Override
     public List<ScoredFacet> cluster(File termPredictFile, File termPairPredictFile) throws IOException {
         loadItems(termPredictFile);
@@ -44,11 +51,17 @@ public class GmIndependentClusterer extends GraphicalModelClusterer {
         rankClusters();
 
         // convert GmCluster to ScoredFacet
-        ArrayList<ScoredFacet> outClusters = new ArrayList<>();
-        for (GmCluster cluster : clusters) {
-            outClusters.add(cluster);
-        }
-        return outClusters;
+        return convertClustersToFacets(clusters);
+    }
+
+    @Override
+    public List<ScoredFacet> cluster(List<ScoredProbItem> items, HashMap<String, Integer> itemIdMap, HashMap<String, Probability> pairProbs) {
+        this.items = items;
+        this.itemIdMap = itemIdMap;
+        this.pairProbs = pairProbs;
+        cluster();
+        rankClusters();
+        return convertClustersToFacets(clusters);
     }
 
     private void rankClusters() {
@@ -148,4 +161,13 @@ public class GmIndependentClusterer extends GraphicalModelClusterer {
         }
         return min;
     }
+
+    private List<ScoredFacet> convertClustersToFacets(ArrayList<GmCluster> clusters) {
+        ArrayList<ScoredFacet> outClusters = new ArrayList<>();
+        for (GmCluster cluster : clusters) {
+            outClusters.add(cluster);
+        }
+        return outClusters;
+    }
+
 }

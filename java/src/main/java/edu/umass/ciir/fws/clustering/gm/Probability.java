@@ -11,7 +11,7 @@ import org.lemurproject.galago.tupleflow.Utility;
  *
  * @author wkong
  */
-public class Probablity {
+public class Probability {
 
     final static double eps = Utility.epsilon;
     //double prob;
@@ -20,7 +20,7 @@ public class Probablity {
     double logN; // log10(1-prob)
     double prob;
 
-    public Probablity(double prob) {
+    public Probability(double prob) {
         if (prob < eps) {
             prob = eps;
         }

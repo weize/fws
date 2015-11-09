@@ -7,11 +7,9 @@ package edu.umass.ciir.fws.clustering.gm;
 
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.clustering.ScoredItem;
-import edu.umass.ciir.fws.utility.TextProcessing;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -171,6 +169,11 @@ public class GmCoordinateAscentClusterer extends GraphicalModelClusterer {
             }
         }
         //System.out.println(String.format("step %d/%d\tll = %.4f count = %d/%d", step, sstep, ll, count, items.size()));
+    }
+
+    @Override
+    public List<ScoredFacet> cluster(List<ScoredProbItem> items, HashMap<String, Integer> itemIdMap, HashMap<String, Probability> pairProbs) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     private static class ItemComparator implements Comparator<Integer> {
