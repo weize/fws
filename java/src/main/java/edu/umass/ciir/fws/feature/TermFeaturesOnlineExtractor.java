@@ -23,6 +23,7 @@ public class TermFeaturesOnlineExtractor extends TermFeaturesExtractor {
 
     GalagoSearchEngine galago;
     double clueCdf;
+    boolean extractDf;
 
     public TermFeaturesOnlineExtractor(GalagoSearchEngine galago, Parameters p) {
         this.galago = galago;
@@ -30,6 +31,7 @@ public class TermFeaturesOnlineExtractor extends TermFeaturesExtractor {
         clistDfFile = p.getString("clistDfFile");
         clistDfMetaFile = p.getString("clistDfMetaFile");
         clueCdf = p.getLong("clueCdf");
+        extractDf = p.getBoolean("clueDocFreq");
 
     }
 
@@ -65,6 +67,7 @@ public class TermFeaturesOnlineExtractor extends TermFeaturesExtractor {
 
     @Override
     protected double getClueDocFreq(String term) {
+        if (!extractDf) return clueCdf / 10000;
         long df = galago.getDocFreq(term);
         return df == -1 ? 0 : df;
     }
