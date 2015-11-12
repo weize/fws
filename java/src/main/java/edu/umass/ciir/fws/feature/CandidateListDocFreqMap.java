@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.TreeMap;
+import org.lemurproject.galago.tupleflow.Parameters;
 
 /**
  *
@@ -36,8 +37,12 @@ public class CandidateListDocFreqMap {
     public final static int size = 14;
 
     HashMap<String, long[]> clistDfs;
-    long[] clistCdfs;
-
+    long[] clistCdfs;    
+    
+    public CandidateListDocFreqMap() {
+        
+    }
+    
     public CandidateListDocFreqMap(File clistDfFile, File clistDfMetaFile) throws IOException {
         clistCdfs = new long[size];
         clistDfs = new HashMap<>();
@@ -52,7 +57,7 @@ public class CandidateListDocFreqMap {
         loadCandidateListDocFreqs(clistDfFile, terms);
     }
 
-    private void loadCandidateListDocFreqs(File file) throws IOException {
+    protected void loadCandidateListDocFreqs(File file) throws IOException {
 
         clistDfs.clear();
 
@@ -84,6 +89,8 @@ public class CandidateListDocFreqMap {
     private void loadCandidateListDocFreqs(File file, TreeMap<String, TermFeatures> terms) throws IOException {
         clistDfs.clear();
 
+        Utility.info("loading candidate list df map");
+        
         BufferedReader reader = Utility.getReader(file);
         String line = reader.readLine();
         String[] elems = line.split("\t");
@@ -113,7 +120,7 @@ public class CandidateListDocFreqMap {
         return clistCdfs[index];
     }
 
-    private void loadMeta(File file) throws IOException {
+    protected void loadMeta(File file) throws IOException {
         BufferedReader reader = Utility.getReader(file);
         String line;
         reader.readLine(); // read header

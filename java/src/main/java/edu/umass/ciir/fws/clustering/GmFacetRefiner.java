@@ -14,11 +14,13 @@ import edu.umass.ciir.fws.clustering.gm.Probability;
 import edu.umass.ciir.fws.clustering.gm.ScoredProbItem;
 import edu.umass.ciir.fws.clustering.gm.lr.LinearRegressionModel;
 import edu.umass.ciir.fws.demo.search.GalagoSearchEngine;
+import edu.umass.ciir.fws.feature.CandidateListDocFreqOnlineMap;
 import edu.umass.ciir.fws.feature.ItemPairFeatures;
 import edu.umass.ciir.fws.feature.TermFeatures;
 import edu.umass.ciir.fws.feature.TermFeaturesOnlineExtractor;
 import edu.umass.ciir.fws.feature.TermPairFeatureOnlineExtractor;
 import edu.umass.ciir.fws.retrieval.RankedDocument;
+import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,19 +43,23 @@ public class GmFacetRefiner implements FacetRefiner {
     GalagoSearchEngine galago; // to get document frequency for terms
     int numTopScoredItems;
     GraphicalModelClusterer clusterer;
+    CandidateListDocFreqOnlineMap clistDfMap;
 
     public GmFacetRefiner(Parameters p, GalagoSearchEngine galago) {
         this.p = p;
         this.galago = galago;
+        clistDfMap = new CandidateListDocFreqOnlineMap(p);
         numTopScoredItems = (int) p.getLong("numTopScoredItems");
         clusterer = p.getString("facetModel").equals("gmj") ? new GmJointClusterer() : new GmIndependentClusterer(p);
     }
 
     @Override
     public List<ScoredFacet> refine(List<CandidateList> clists, List<RankedDocument> docs) {
-        TermFeaturesOnlineExtractor termFeatureExtractor = new TermFeaturesOnlineExtractor(galago, p);
+        Utility.info("extracting facet term features ...");
+        TermFeaturesOnlineExtractor termFeatureExtractor = new TermFeaturesOnlineExtractor(galago, clistDfMap, p);
         TreeMap<String, TermFeatures> termFeatures = termFeatureExtractor.extract(clists, docs);
 
+        Utility.info("predicting facet term probability...");
         LinearRegressionModel termModel = new LinearRegressionModel();
         int[] termFeatureIndices = convertToIntArray(p.getAsList("termFeatureIndices", Long.class));
         File termModelFile = new File(p.getString("termModel"));
@@ -64,6 +70,7 @@ public class GmFacetRefiner implements FacetRefiner {
             throw new RuntimeException(ex);
         }
 
+        Utility.info("extracting facet pair features...");
         List<ScoredProbItem> items = new ArrayList<>();
         for (String term : termFeatures.keySet()) {
             TermFeatures features = termFeatures.get(term);
@@ -79,6 +86,7 @@ public class GmFacetRefiner implements FacetRefiner {
         HashMap<String, ItemPairFeatures> pairFeatures = pairFeatureExtractor.extract(clists, docs, items);
         HashMap<String, Integer> itemIdMap = pairFeatureExtractor.itemIdMap;
 
+        Utility.info("predicting facet term pair probability...");
         LinearRegressionModel pairModel = new LinearRegressionModel();
         int[] pairFeatureIndices = convertToIntArray(p.getAsList("pairFeatureIndices", Long.class));
         File pairModelFile = new File(p.getString("pairModel"));
@@ -95,7 +103,8 @@ public class GmFacetRefiner implements FacetRefiner {
             double prob = pairModel.predict(features);
             pairProbs.put(pid, new Probability(prob));
         }
-
+        
+        Utility.info("refining facets...");
         List<ScoredFacet> facets = clusterer.cluster(items, itemIdMap, pairProbs);
 
         return facets;

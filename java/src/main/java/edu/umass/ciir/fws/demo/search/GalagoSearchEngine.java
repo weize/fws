@@ -8,6 +8,7 @@ package edu.umass.ciir.fws.demo.search;
 import edu.umass.ciir.fws.retrieval.RankedDocument;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.utility.TextProcessing;
+import edu.umass.ciir.fws.utility.Utility;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +40,10 @@ public class GalagoSearchEngine implements SearchEngine {
 
     @Override
     public List<RankedDocument> getRankedDocuments(TfQuery query, int top) {
+        Utility.info("search via Galago");
         List<ScoredDocument> scoredDocuments = retreive(query, top);
+        Utility.info("#top webpages: " + scoredDocuments.size());
+        Utility.info("crawl top results");
         List<RankedDocument> rankedDocuments = crawl(scoredDocuments);
         return rankedDocuments;
     }

@@ -7,6 +7,7 @@
 package edu.umass.ciir.fws.demo;
 
 import edu.umass.ciir.fws.clustering.ScoredFacet;
+import edu.umass.ciir.fws.retrieval.RankedDocument;
 import edu.umass.ciir.fws.types.TfQuery;
 import java.util.List;
 import org.lemurproject.galago.tupleflow.Parameters;
@@ -25,6 +26,10 @@ public class Demo {
 
     public List<ScoredFacet> runExtraction(TfQuery query, Parameters p) {
         return facetGenerator.generateFacets(query);
+    }
+    
+    public List<RankedDocument> runSearch(TfQuery query, Parameters p) {
+        return facetGenerator.search(query);
     }
     
 }

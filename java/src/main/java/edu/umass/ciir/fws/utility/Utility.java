@@ -8,12 +8,18 @@ import edu.umass.ciir.fws.types.TfQueryExpansion;
 import edu.umass.ciir.fws.types.TfQueryExpansionSubtopic;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.util.List;
 import java.util.logging.Level;
@@ -219,12 +225,11 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         String name = String.format("%s.gmj.facet", qid);
         return getFileName(facetDir, qid, name);
     }
-    
-     public static String getGmcFacetFileName(String facetDir, String qid) {
+
+    public static String getGmcFacetFileName(String facetDir, String qid) {
         String name = String.format("%s.gmc.facet", qid);
         return getFileName(facetDir, qid, name);
     }
-
 
     public static String getFacetFileName(List<Object> run, String qid) {
         //run: dir model param...
@@ -286,7 +291,7 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
     public static void infoProcessing(Type object) {
         System.err.println(String.format("Processing %s", object.toString()));
     }
-    
+
     public static void info(String message) {
         Logger.getLogger("runtime").log(Level.INFO, message);
     }
@@ -404,6 +409,27 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
 
     public static String getFeedbackFileName(String allFeedbackDir, TfFacetFeedbackParams param) {
         return getFeedbackFileName(allFeedbackDir, param.facetSource, param.facetParams, param.feedbackSource, param.feedbackParams);
+    }
+
+    public static byte[] convertToBytes(Object object) throws IOException {
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                ObjectOutput out = new ObjectOutputStream(bos)) {
+            out.writeObject(object);
+            return bos.toByteArray();
+        }
+    }
+
+    public static Object convertFromBytes(byte[] bytes) {
+
+        try {
+            ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+            ObjectInput in = new ObjectInputStream(bis);
+            return in.readObject();
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        } catch (ClassNotFoundException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
 }

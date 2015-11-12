@@ -25,36 +25,32 @@ public class TermFeaturesOnlineExtractor extends TermFeaturesExtractor {
     double clueCdf;
     boolean extractDf;
 
-    public TermFeaturesOnlineExtractor(GalagoSearchEngine galago, Parameters p) {
+    public TermFeaturesOnlineExtractor(GalagoSearchEngine galago, CandidateListDocFreqMap clistDfMap, Parameters p) {
         this.galago = galago;
         this.termFeatures = new TreeMap();
-        clistDfFile = p.getString("clistDfFile");
-        clistDfMetaFile = p.getString("clistDfMetaFile");
         clueCdf = p.getLong("clueCdf");
         extractDf = p.getBoolean("clueDocFreq");
+        this.clistDfs = clistDfMap;
 
     }
 
     public TreeMap<String, TermFeatures> extract(List<CandidateList> clists, List<RankedDocument> docs) {
-        Utility.info("extracting facet term features ...");
         this.clists = clists;
         this.docs = docs;
 
         initializeTermFeatures();
-        Utility.info("#terms = " + termFeatures.size());
-        try {
-            clistDfs = new CandidateListDocFreqMap(new File(clistDfFile), new File(clistDfMetaFile), termFeatures);
+        Utility.info("#candidate items = " + termFeatures.size());
 
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-
+        Utility.info("extracting term length");
         extractTermLength();
         // features based on documents
+        Utility.info("extracting doc features in content");
         extractDocFeaturesInContentField();
+        Utility.info("extracting doc features in title");
         extractDocFeaturesInTitleField();
 
         // extrac list features based on different set of candidates lists
+        Utility.info("extracting list features");
         for (String type : CandidateList.clistTypes) {
             extractListFeatures(type);
         }

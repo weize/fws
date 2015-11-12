@@ -7,6 +7,7 @@ package edu.umass.ciir.fws.demo;
 
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.clustering.ScoredItem;
+import edu.umass.ciir.fws.retrieval.RankedDocument;
 import edu.umass.ciir.fws.types.TfQuery;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,9 +37,14 @@ public class FWSEngineFactory {
                     return facets;
                 }
 
+                @Override
+                public List<RankedDocument> search(TfQuery query) {
+                    return new ArrayList<>();
+                }
+
             };
         } else {
-            return new LocalFacetGenerator(p);
+            return new LocalFWSEngine(p);
         }
     }
 

@@ -29,6 +29,7 @@ public class RankedDocument {
     public String name;
     public String html;
     public String title;
+    public String titleRaw;
     public String url;
     public String site;
     public List<String> terms;
@@ -41,7 +42,8 @@ public class RankedDocument {
         url = document.metadata.get("url");
         site = getSiteUrl(url);
         terms = TextProcessing.tokenize(HtmlContentExtractor.extractFromContent(html));
-        title = TextProcessing.clean(HtmlContentExtractor.extractTitle(html));
+        titleRaw = HtmlContentExtractor.extractTitle(html);
+        title = TextProcessing.clean(titleRaw);
     }
     
     public RankedDocument(String name, int rank, String url, String html) {
@@ -51,7 +53,8 @@ public class RankedDocument {
         this.url = url;
         site = getSiteUrl(url);
         terms = TextProcessing.tokenize(HtmlContentExtractor.extractFromContent(html));
-        title = TextProcessing.clean(HtmlContentExtractor.extractTitle(html));
+        titleRaw = HtmlContentExtractor.extractTitle(html);
+        title = TextProcessing.clean(titleRaw);
     }
 
     public RankedDocument() {

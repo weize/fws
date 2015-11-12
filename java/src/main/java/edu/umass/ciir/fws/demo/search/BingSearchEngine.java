@@ -29,6 +29,8 @@ public class BingSearchEngine implements SearchEngine {
 
     String accountKeyEnc;
     final static int bingTop = 50; // max request
+    final static int connectTimeout = 1000 * 20;
+    final static int readTimeout = 1000 * 20;
     final static String BingURLBase = "https://api.datamarket.azure.com/Bing/Search/Web?";
 
     public BingSearchEngine(Parameters p) {
@@ -86,14 +88,20 @@ public class BingSearchEngine implements SearchEngine {
         List<RankedDocument> docs = new ArrayList<>();
         for (RankResult res : ranks) {
             try {
+
                 URL url = new URL(res.url);
-                String html = Utility.copyStreamToString(url.openStream());
-                Utility.info("get " + res.url);
+                URLConnection con = url.openConnection();
+                con.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11");
+                con.connect();
+
+                con.setConnectTimeout(connectTimeout);
+                con.setReadTimeout(readTimeout);
+                Utility.info("downloading " + res.url);
+                String html = Utility.copyStreamToString(con.getInputStream());
                 if (!filterOutHtml(html)) {
                     docs.add(new RankedDocument(res.getName(), res.rank, res.url, html));
                 } else {
-                    Utility.info("filter out " + res);
-                    Utility.info("Content:\n" + html);
+                    Utility.info("filter out " +  res.url + "\nContent:\n" + html);
                 }
             } catch (MalformedURLException ex) {
                 Logger.getLogger(BingSearchEngine.class.getName()).log(Level.SEVERE, null, ex);
