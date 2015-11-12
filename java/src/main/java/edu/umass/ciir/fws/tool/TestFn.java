@@ -10,12 +10,15 @@ import edu.umass.ciir.fws.clist.CandidateListTextExtractor;
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.clustering.gm.GmCoordinateAscentClusterer;
 import edu.umass.ciir.fws.clustering.gm.lr.LinearRegressionModel;
+import edu.umass.ciir.fws.demo.search.BingSearchEngine;
+import edu.umass.ciir.fws.demo.search.BingSearchEngine.RankResult;
 import edu.umass.ciir.fws.eval.ClusteringEvaluator;
 import edu.umass.ciir.fws.eval.RpndcgEvaluator;
 import edu.umass.ciir.fws.nlp.HtmlContentExtractor;
 import edu.umass.ciir.fws.nlp.PeerPatternNLPParser;
 import edu.umass.ciir.fws.query.QueryTopic;
 import edu.umass.ciir.fws.query.TrecFullTopicXmlParser;
+import edu.umass.ciir.fws.retrieval.RankedDocument;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
@@ -27,9 +30,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
@@ -61,6 +68,8 @@ public class TestFn extends AppFunction {
     public void run(Parameters p, PrintStream output) throws Exception {
         output.println("in test");
         output.println();
+        //testBingSearch(p);
+        testCrawl(p);
 
         //testPrintHTML(p, output);
         //testNlp(output);
@@ -79,8 +88,7 @@ public class TestFn extends AppFunction {
         //testQueryTopic(p, output);
         //testGMCACluster(p, output);
         //testEal(p, output);
-        testRpndcgEvaluator(p, output);
-
+        //testRpndcgEvaluator(p, output);
     }
 
     private void testPrintTermsInDoc(Parameters p, PrintStream output) throws Exception {
@@ -410,6 +418,30 @@ public class TestFn extends AppFunction {
         File systemFile = new File(facetFilename);
         List<ScoredFacet> system = ScoredFacet.loadFacets(systemFile);
         double[] result = RpndcgEvaluator.eval(annotator.facets, system, 10);
+    }
+
+    private void testBingSearch(Parameters p) throws MalformedURLException, IOException {
+        BingSearchEngine bing = new BingSearchEngine(p);
+        List<RankResult> results = bing.search(new TfQuery("1", "baggage allowance"), 100);
+        for (RankResult res : results) {
+            System.out.println(res);
+        }
+
+    }
+
+    private void testCrawl(Parameters p) {
+        URL url;
+        try {
+            url = new URL(p.getString("url"));
+            String html = Utility.copyStreamToString(url.openStream());
+            System.out.println(html);
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(TestFn.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(TestFn.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+
     }
 
 }

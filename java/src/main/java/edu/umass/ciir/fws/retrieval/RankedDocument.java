@@ -43,6 +43,16 @@ public class RankedDocument {
         terms = TextProcessing.tokenize(HtmlContentExtractor.extractFromContent(html));
         title = TextProcessing.clean(HtmlContentExtractor.extractTitle(html));
     }
+    
+    public RankedDocument(String name, int rank, String url, String html) {
+        this.name = name;
+        this.rank = rank;
+        this.html = html;
+        this.url = url;
+        site = getSiteUrl(url);
+        terms = TextProcessing.tokenize(HtmlContentExtractor.extractFromContent(html));
+        title = TextProcessing.clean(HtmlContentExtractor.extractTitle(html));
+    }
 
     public RankedDocument() {
 

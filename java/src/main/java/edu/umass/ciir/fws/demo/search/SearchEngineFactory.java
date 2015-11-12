@@ -19,8 +19,7 @@ public class SearchEngineFactory {
         if (searchEngine.equalsIgnoreCase("galago")) {
             return new GalagoSearchEngine(p);
         } else if(searchEngine.equalsIgnoreCase("bing")) {
-            //return new BingSearchEngine(p);
-            return null;
+            return new BingSearchEngine(p);            
         } else {
             throw new RuntimeException("Do not recongize search engine: " + searchEngine);
         }

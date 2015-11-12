@@ -1,9 +1,10 @@
 // BSD License (http://lemurproject.org/galago-license)
 package edu.umass.ciir.fws.demo;
 
-import edu.umass.ciir.fws.clist.CandidateListHtmlExtractor;
 import edu.umass.ciir.fws.clustering.ScoredFacet;
+import edu.umass.ciir.fws.clustering.ScoredItem;
 import edu.umass.ciir.fws.types.TfQuery;
+import edu.umass.ciir.fws.utility.TextProcessing;
 import java.io.*;
 import java.net.URLEncoder;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.lemurproject.galago.core.tools.Search;
 import org.lemurproject.galago.tupleflow.Parameters;
 import org.lemurproject.galago.tupleflow.web.WebHandler;
 
@@ -39,6 +41,8 @@ public class DemoWebHandler implements WebHandler {
         writer.write("#header { background: rgb(210, 233, 217); border: 1px solid #ccc; }\n");
         writer.write("#result { padding: 10px 5px; max-width: 550px; }\n");
         writer.write("#meta { font-size: small; color: rgb(60, 100, 60); }\n");
+        writer.write(".flist { }\n");
+        writer.write(".fterm {  }\n");
         writer.write("#summary { font-size: small; }\n");
         writer.write("#debug { display: none; }\n");
         writer.write("</style>");
@@ -51,7 +55,7 @@ public class DemoWebHandler implements WebHandler {
         writer.append("<html>\n");
         writer.append("<head>\n");
         writeStyle(writer);
-        writer.append("<title>Galago Search</title></head>");
+        writer.append("<title>Faceted Web Search</title></head>");
         writer.append("<body>");
         writer.append("<center><br/><br/><div>");
         writer.append("<form action=\"search\"><input name=\"q\" size=\"40\">"
@@ -83,35 +87,60 @@ public class DemoWebHandler implements WebHandler {
 
     public void handleSearch(HttpServletRequest request, HttpServletResponse response) throws Exception {
         List<ScoredFacet> facetResult = performExtraction(request);
-        
+
         response.setContentType("text/html");
         String displayQuery = scrub(request.getParameter("q"));
         String encodedQuery = URLEncoder.encode(request.getParameter("q"), "UTF-8");
 
         PrintWriter writer = response.getWriter();
+
         writer.append("<html>\n");
         writer.append("<head>\n");
-        writer.append(String.format("<title>%s - Galago Search</title>\n", displayQuery));
         writeStyle(writer);
-        writer.append("<script type=\"text/javascript\">\n");
-        writer.append("function toggleDebug() {\n");
-        writer.append("   var object = document.getElementById('debug');\n");
-        writer.append("   if (object.style.display != 'block') {\n");
-        writer.append("     object.style.display = 'block';\n");
-        writer.append("  } else {\n");
-        writer.append("     object.style.display = 'none';\n");
-        writer.append("  }\n");
-        writer.append("}\n");
-        writer.append("</script>\n");
-        writer.append("</head>\n<body>\n");
-        writer.append(displayQuery);
-        writer.append("<br/>");
-        for(ScoredFacet facet : facetResult) {
-            writer.append(facet.toFacetString());
-            writer.append("<br/>");
+        writer.append("<title>Faceted Web Search</title></head>");
+        writer.append("<body>");
+        writer.append("<center><br/><br/><div>");
+        writer.append("<form action=\"search\">");
+        // query
+        writer.append(String.format("<input name=\"q\" size=\"40\" value=\"%s\">", displayQuery));
+        writer.append("<input value=\"Search\" type=\"submit\" /></form><br/><br/>");
+        writer.append("</div></center>");
+
+        // facets
+        
+        writer.append("<center>");
+        writer.append("<div class=\"flist\"><ul>");
+        for (ScoredFacet facet : facetResult) {
+
+            writer.append("<li>");
+            for (ScoredItem item : facet.items) {
+                writer.append("<div class=\"fterm\">");
+                writer.append(item.item);
+                writer.append("</div>");
+            }
+
+            writer.append("</li>");
         }
-        writer.append("</body>");
-        writer.append("</html>");
+        writer.append("<ul></div>");
+        writer.append("</center>");
+
+        // web results
+        
+//        for (Search.SearchResultItem item : result.items) {
+//            writer.append("<div id=\"result\">\n");
+//            writer.append(String.format("<a href=\"document?identifier=%s\">%s</a><br/>"
+//                    + "<div id=\"summary\">%s</div>\n"
+//                    + "<div id=\"meta\">%s - %s - %.2f</div>\n",
+//                    item.identifier,
+//                    item.displayTitle,
+//                    item.summary,
+//                    scrub(item.identifier),
+//                    scrub(item.url),
+//                    item.score));
+//            writer.append("</div>\n");
+//        }
+//        writer.append("</body></html>\n");
+
         writer.close();
     }
 
@@ -119,7 +148,7 @@ public class DemoWebHandler implements WebHandler {
         String queryText = request.getParameter("q");
         String qid = getQueryId();
         TfQuery query = new TfQuery(qid, queryText);
-        Logger.getLogger("runtime").log(Level.INFO, "q:"+query);
+        Logger.getLogger("runtime").log(Level.INFO, "q:" + query);
         Parameters p = new Parameters();
         List<ScoredFacet> result = demo.runExtraction(query, p);
         return result;

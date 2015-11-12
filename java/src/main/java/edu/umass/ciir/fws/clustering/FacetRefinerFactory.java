@@ -19,7 +19,7 @@ public class FacetRefinerFactory {
         String facetModel = p.getString("facetModel");
         if (facetModel.equals("gmj") || facetModel.equals("gmi")) {
             GalagoSearchEngine galago;
-            if (!searchEngine.getClass().isInstance(GalagoSearchEngine.class)) {
+            if (searchEngine instanceof GalagoSearchEngine) {
                 galago = (GalagoSearchEngine) searchEngine;
             } else {
                 galago = new GalagoSearchEngine(p);
