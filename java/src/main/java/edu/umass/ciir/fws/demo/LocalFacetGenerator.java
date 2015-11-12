@@ -25,7 +25,7 @@ import org.lemurproject.galago.tupleflow.Parameters;
  *
  * @author wkong
  */
-public class LocalFacetGenerator implements FacetGenerator {
+public class LocalFacetGenerator implements FWSEngine {
 
     String workingDir;
     SearchEngine searchEngine;

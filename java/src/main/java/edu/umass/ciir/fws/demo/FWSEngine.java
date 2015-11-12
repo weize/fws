@@ -13,7 +13,7 @@ import java.util.List;
  *
  * @author wkong
  */
-public interface FacetGenerator {
+public interface FWSEngine {
 
     public List<ScoredFacet> generateFacets(TfQuery query);
 }

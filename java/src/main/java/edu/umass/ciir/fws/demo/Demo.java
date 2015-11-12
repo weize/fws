@@ -17,10 +17,10 @@ import org.lemurproject.galago.tupleflow.Parameters;
  */
 public class Demo {
     
-    FacetGenerator facetGenerator;
+    FWSEngine facetGenerator;
 
     public Demo(Parameters p) {
-        facetGenerator = FacetGeneratorFactory.instance(p);
+        facetGenerator = FWSEngineFactory.instance(p);
     }
 
     public List<ScoredFacet> runExtraction(TfQuery query, Parameters p) {

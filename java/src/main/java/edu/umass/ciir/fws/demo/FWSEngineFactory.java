@@ -16,11 +16,11 @@ import org.lemurproject.galago.tupleflow.Parameters;
  *
  * @author wkong
  */
-public class FacetGeneratorFactory {
+public class FWSEngineFactory {
 
-    public static FacetGenerator instance(Parameters p) {
+    public static FWSEngine instance(Parameters p) {
         if (p.getBoolean("fake")) {
-            return new FacetGenerator() {
+            return new FWSEngine() {
 
                 @Override
                 public List<ScoredFacet> generateFacets(TfQuery query) {
