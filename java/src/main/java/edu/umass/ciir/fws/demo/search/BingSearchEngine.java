@@ -52,7 +52,8 @@ public class BingSearchEngine implements SearchEngine {
         List<RankResult> docs = new ArrayList<>();
         String queryEscaped = URLEncoder.encode(String.format("'%s'", query.text));
         HashSet<String> urlSet = new HashSet<>();
-        int round = (int) (Math.ceil(top / bingTop)) + 1;
+        int extra = 0; // request some extra results, since there some results could not be crawlable.
+        int round = (int) (Math.ceil(top / bingTop)) + extra;
         for (int i = 0; i < round; i++) {
             try {
                 int skip = bingTop * i;
