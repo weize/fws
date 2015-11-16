@@ -17,14 +17,17 @@ public class FacetRefinerFactory {
 
     public static FacetRefiner instance(Parameters p, SearchEngine searchEngine) {
         String facetModel = p.getString("facetModel");
+        GalagoSearchEngine galago;
+        if (searchEngine instanceof GalagoSearchEngine) {
+            galago = (GalagoSearchEngine) searchEngine;
+        } else {
+            galago = new GalagoSearchEngine(p);
+        }
+        
         if (facetModel.equals("gmj") || facetModel.equals("gmi")) {
-            GalagoSearchEngine galago;
-            if (searchEngine instanceof GalagoSearchEngine) {
-                galago = (GalagoSearchEngine) searchEngine;
-            } else {
-                galago = new GalagoSearchEngine(p);
-            }
             return new GmFacetRefiner(p, galago);
+        } else if (facetModel.equals("qd")){
+            return new QDFacetRefiner(p, galago);
         } else {
             return null;
         }
