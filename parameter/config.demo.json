@@ -1,11 +1,12 @@
 {
-	"search-engine" : "galago",
+	"search-engine" : "bing",
 	"index" : "http://128.119.246.130:44257",
-	"topDocs" : 30,
+	"topDocs" : 50,
 	"facetModel" : "gmj",
 	"stopwordsFile" : "/usr/dan/users7/wkong/work1/fws/data/stopword/stopword", 
 	"listPattern" : "html",
 	"clistDfFile" : "/usr/dan/users7/wkong/work1/fws/data/df/clistDf.gz",
+	"clistDfIndex" : "/usr/dan/users7/wkong/work1/fws/data/df/clistDf.index",
 	"clistDfMetaFile" : "/usr/dan/users7/wkong/work1/fws/data/df/clistDf-meta",
 	"clueCdf" : 33836981,
 	"termFeatureIndices" : [1, 2, 3, 4, 23, 24, 25, 26, 27, 28, 29, 31, 33],
@@ -14,10 +15,11 @@
 	"termScaler" : "model/1/train.t.scaler",
 	"pairModel" : "model/1/train.p.model",
 	"pairScaler" : "model/1/train.p.scaler",
-	"numTopScoredItems" : 100,
+	"numTopScoredItems" : 1000,
 	"termProbTh" : 0.7,
 	"pairProbTh" : 0.2,
 	"clueDocFreq" : false,
 	"bingKey" : "ZQAFRl7kKmBbeO7hec5W+c26O9vFSkk24oEJqUC+xKc=",
+	"numCrawlThread" : 10,
 	"fake" : false
 }
