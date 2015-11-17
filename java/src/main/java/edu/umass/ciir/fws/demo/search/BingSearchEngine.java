@@ -5,6 +5,7 @@
  */
 package edu.umass.ciir.fws.demo.search;
 
+import edu.emory.mathcs.backport.java.util.Collections;
 import edu.umass.ciir.fws.retrieval.RankedDocument;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.utility.Utility;
@@ -15,7 +16,9 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.codec.binary.Base64;
@@ -28,6 +31,7 @@ import org.lemurproject.galago.tupleflow.Parameters;
 public class BingSearchEngine implements SearchEngine {
 
     String accountKeyEnc;
+    static int numThreads;
     final static int bingTop = 50; // max request
     final static int connectTimeout = 1000 * 20;
     final static int readTimeout = 1000 * 20;
@@ -35,6 +39,7 @@ public class BingSearchEngine implements SearchEngine {
 
     public BingSearchEngine(Parameters p) {
         setAccoutKey(p);
+        numThreads = (int) p.getLong("numCrawlThread");
     }
 
     @Override
@@ -85,34 +90,102 @@ public class BingSearchEngine implements SearchEngine {
         accountKeyEnc = new String(accountKeyBytes);
     }
 
-    private List<RankedDocument> crawl(List<RankResult> ranks, int top) {
-        List<RankedDocument> docs = new ArrayList<>();
-        for (RankResult res : ranks) {
-            try {
+    public static class WebpageDownloader implements Runnable {
 
-                URL url = new URL(res.url);
-                URLConnection con = url.openConnection();
-                con.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11");
-                con.connect();
+        final List<RankedDocument> docs;
+        final Queue<RankResult> ranks;
+        int top;
 
-                con.setConnectTimeout(connectTimeout);
-                con.setReadTimeout(readTimeout);
-                Utility.info("downloading " + res.url);
-                String html = Utility.copyStreamToString(con.getInputStream());
-                if (!filterOutHtml(html)) {
-                    docs.add(new RankedDocument(res.getName(), res.rank, res.url, html));
-                } else {
-                    Utility.info("filter out " +  res.url + "\nContent:\n" + html);
+        public WebpageDownloader(Queue<RankResult> ranks, List<RankedDocument> docs, int top) {
+            this.ranks = ranks;
+            this.docs = docs;
+            this.top = top;
+        }
+
+        @Override
+        public void run() {
+
+            while (true) {
+                RankResult res = getNexRank();
+                if (res == null) {
+                    break;
                 }
-            } catch (MalformedURLException ex) {
-                Logger.getLogger(BingSearchEngine.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (IOException ex) {
-                Logger.getLogger(BingSearchEngine.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            if (docs.size() >= top) {
-                break;
+                try {
+                    URL url = new URL(res.url);
+                    URLConnection con = url.openConnection();
+                    con.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11");
+                    con.connect();
+
+                    con.setConnectTimeout(connectTimeout);
+                    con.setReadTimeout(readTimeout);
+                    Utility.info("downloading " + res.url);
+                    String html = Utility.copyStreamToString(con.getInputStream());
+                    if (!filterOutHtml(html)) {
+                        addDoc(new RankedDocument(res.getName(), res.rank, res.url, html));
+                    } else {
+                        Utility.info("filter out " + res.url + "\nContent:\n" + html);
+                    }
+                } catch (MalformedURLException ex) {
+                    Logger.getLogger(BingSearchEngine.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException ex) {
+                    Logger.getLogger(BingSearchEngine.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+                if (getDocsSize() >= top) {
+                    break;
+                }
             }
         }
+
+        private boolean filterOutHtml(String html) {
+            return !(html.contains("html") || html.contains("HTML"));
+        }
+
+        private RankResult getNexRank() {
+            synchronized (ranks) {
+                return ranks.poll();
+            }
+        }
+
+        private void addDoc(RankedDocument rankedDocument) {
+            synchronized (docs) {
+                docs.add(rankedDocument);
+            }
+        }
+
+        private int getDocsSize() {
+            synchronized (docs) {
+                return docs.size();
+            }
+        }
+    }
+
+    private List<RankedDocument> crawl(List<RankResult> ranks, int top) {
+        List<RankedDocument> docs = new ArrayList<>();
+        Queue<RankResult> ranksQueue = new LinkedList<>();
+        ranksQueue.addAll(ranks);
+        Thread[] threads = new Thread[numThreads];
+        for (int i = 0; i < numThreads; i++) {
+            threads[i] = new Thread(new WebpageDownloader(ranksQueue, docs, top));
+            threads[i].start();
+        }
+
+        for (int i = 0; i < numThreads; i++) {
+            try {
+                threads[i].join();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(BingSearchEngine.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        docs = docs.subList(0, Math.min(docs.size(), top));
+        Collections.sort(docs);
+        
+        System.out.println("crawled " + docs.size() + " webpages");
+        for(RankedDocument d : docs) {
+            System.out.println(d.rank + " : " + d.url);
+        }
+
         return docs;
     }
 
@@ -125,10 +198,6 @@ public class BingSearchEngine implements SearchEngine {
             return true;
         }
         return false;
-    }
-
-    private boolean filterOutHtml(String html) {
-        return !(html.contains("html") || html.contains("HTML"));
     }
 
     public static class RankResult {

@@ -23,7 +23,7 @@ import org.lemurproject.galago.tupleflow.Parameters;
  *
  * @author wkong
  */
-public class RankedDocument {
+public class RankedDocument implements Comparable<RankedDocument> {
 
     public long rank;
     public String name;
@@ -82,5 +82,10 @@ public class RankedDocument {
             docs.add(new RankedDocument(sd, doc));
         }
         return docs;
+    }
+
+    @Override
+    public int compareTo(RankedDocument other) {
+        return Long.compare(this.rank, other.rank);
     }
 }
