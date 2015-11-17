@@ -33,8 +33,8 @@ public class BingSearchEngine implements SearchEngine {
     String accountKeyEnc;
     static int numThreads;
     final static int bingTop = 50; // max request
-    final static int connectTimeout = 1000 * 20;
-    final static int readTimeout = 1000 * 20;
+    final static int connectTimeout = 1000 * 5; // for donwloading webpages
+    final static int readTimeout = 1000 * 10;
     final static String BingURLBase = "https://api.datamarket.azure.com/Bing/Search/Web?";
 
     public BingSearchEngine(Parameters p) {
@@ -91,9 +91,9 @@ public class BingSearchEngine implements SearchEngine {
     }
 
     public static class WebpageDownloader implements Runnable {
-
-        final List<RankedDocument> docs;
-        final Queue<RankResult> ranks;
+        
+        final Queue<RankResult> ranks; // each downloader will fetch one rank each time from this shared queue
+        final List<RankedDocument> docs; // each downloader will save the result into this shared list
         int top;
 
         public WebpageDownloader(Queue<RankResult> ranks, List<RankedDocument> docs, int top) {
