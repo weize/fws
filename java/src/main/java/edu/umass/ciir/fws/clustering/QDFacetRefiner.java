@@ -7,6 +7,8 @@
 package edu.umass.ciir.fws.clustering;
 
 import edu.umass.ciir.fws.clist.CandidateList;
+import edu.umass.ciir.fws.clustering.qd.FacetFeatures;
+import edu.umass.ciir.fws.clustering.qd.QdFacetFeatureOnlineExtractor;
 import edu.umass.ciir.fws.demo.search.GalagoSearchEngine;
 import edu.umass.ciir.fws.retrieval.RankedDocument;
 import java.util.List;
@@ -17,12 +19,14 @@ import org.lemurproject.galago.tupleflow.Parameters;
  * @author wkong
  */
 public class QDFacetRefiner implements FacetRefiner {
-
+    QdFacetFeatureOnlineExtractor facetFeatureExtractor;
     public QDFacetRefiner(Parameters p, GalagoSearchEngine galago) {
+        facetFeatureExtractor = new QdFacetFeatureOnlineExtractor(p, galago);
     }
 
     @Override
     public List<ScoredFacet> refine(List<CandidateList> clists, List<RankedDocument> docs) {
+        List<FacetFeatures> nodes = facetFeatureExtractor.extract(clists, docs);
         
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
