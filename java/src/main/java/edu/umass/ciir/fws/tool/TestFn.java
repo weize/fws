@@ -10,6 +10,7 @@ import edu.umass.ciir.fws.clist.CandidateListTextExtractor;
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.clustering.gm.GmCoordinateAscentClusterer;
 import edu.umass.ciir.fws.clustering.gm.lr.LinearRegressionModel;
+import edu.umass.ciir.fws.clustering.qd.QdFacetFeaturesTFExtractor;
 import edu.umass.ciir.fws.demo.search.BingSearchEngine;
 import edu.umass.ciir.fws.demo.search.BingSearchEngine.RankResult;
 import edu.umass.ciir.fws.eval.ClusteringEvaluator;
@@ -18,7 +19,6 @@ import edu.umass.ciir.fws.nlp.HtmlContentExtractor;
 import edu.umass.ciir.fws.nlp.PeerPatternNLPParser;
 import edu.umass.ciir.fws.query.QueryTopic;
 import edu.umass.ciir.fws.query.TrecFullTopicXmlParser;
-import edu.umass.ciir.fws.retrieval.RankedDocument;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
@@ -46,6 +46,7 @@ import org.lemurproject.galago.core.parse.TagTokenizer;
 import org.lemurproject.galago.core.retrieval.Retrieval;
 import org.lemurproject.galago.core.retrieval.RetrievalFactory;
 import org.lemurproject.galago.core.tools.AppFunction;
+import org.lemurproject.galago.tupleflow.FakeParameters;
 import org.lemurproject.galago.tupleflow.Parameters;
 
 /**
@@ -69,7 +70,8 @@ public class TestFn extends AppFunction {
         output.println("in test");
         output.println();
         //testBingSearch(p);
-        testCrawl(p);
+        //testCrawl(p);
+        testQdFacetFeaturesTFExtractor(p);
 
         //testPrintHTML(p, output);
         //testNlp(output);
@@ -442,6 +444,11 @@ public class TestFn extends AppFunction {
         }
         
 
+    }
+
+    private void testQdFacetFeaturesTFExtractor(Parameters p) throws Exception {
+        QdFacetFeaturesTFExtractor extractor = new QdFacetFeaturesTFExtractor(new FakeParameters(p));
+        extractor.process(new TfQuery("21", "volvo"));
     }
 
 }
