@@ -22,7 +22,7 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 
 /**
  * Extract term features for each query.
- * !! haven't tested after extending QdFacetFeatureExtractor
+ *
  * @author wkong
  */
 @Verified
