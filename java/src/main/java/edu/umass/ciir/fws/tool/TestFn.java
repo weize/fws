@@ -11,6 +11,7 @@ import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.clustering.gm.GmCoordinateAscentClusterer;
 import edu.umass.ciir.fws.clustering.gm.lr.LinearRegressionModel;
 import edu.umass.ciir.fws.clustering.qd.QdFacetFeaturesTFExtractor;
+import edu.umass.ciir.fws.clustering.qd.QueryDimensionTFClusterer;
 import edu.umass.ciir.fws.demo.search.BingSearchEngine;
 import edu.umass.ciir.fws.demo.search.BingSearchEngine.RankResult;
 import edu.umass.ciir.fws.eval.ClusteringEvaluator;
@@ -20,6 +21,7 @@ import edu.umass.ciir.fws.nlp.PeerPatternNLPParser;
 import edu.umass.ciir.fws.query.QueryTopic;
 import edu.umass.ciir.fws.query.TrecFullTopicXmlParser;
 import edu.umass.ciir.fws.types.TfQuery;
+import edu.umass.ciir.fws.types.TfQueryParameters;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
@@ -71,7 +73,8 @@ public class TestFn extends AppFunction {
         output.println();
         //testBingSearch(p);
         //testCrawl(p);
-        testQdFacetFeaturesTFExtractor(p);
+        //testQdFacetFeaturesTFExtractor(p);
+        testQueryDimensionTFClusterer(p);
 
         //testPrintHTML(p, output);
         //testNlp(output);
@@ -449,6 +452,15 @@ public class TestFn extends AppFunction {
     private void testQdFacetFeaturesTFExtractor(Parameters p) throws Exception {
         QdFacetFeaturesTFExtractor extractor = new QdFacetFeaturesTFExtractor(new FakeParameters(p));
         extractor.process(new TfQuery("21", "volvo"));
+    }
+
+    private void testQueryDimensionTFClusterer(Parameters p) throws IOException {
+        QueryDimensionTFClusterer c = new QueryDimensionTFClusterer(new FakeParameters(p));
+        String id = "21";
+        String text = "volvo";
+        String params = "0.4-2.0";
+        TfQueryParameters runParams = new TfQueryParameters(id, text, params);
+        c.process(runParams);
     }
 
 }
