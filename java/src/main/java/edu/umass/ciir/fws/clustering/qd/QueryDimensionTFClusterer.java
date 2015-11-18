@@ -27,7 +27,7 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
  */
 @Verified
 @InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
-public class QueryDimensionClusterers implements Processor<TfQueryParameters> {
+public class QueryDimensionTFClusterer implements Processor<TfQueryParameters> {
 
     boolean debug = false;
     // lists
@@ -49,7 +49,7 @@ public class QueryDimensionClusterers implements Processor<TfQueryParameters> {
 
     String qid;
 
-    public QueryDimensionClusterers(TupleFlowParameters parameters) {
+    public QueryDimensionTFClusterer(TupleFlowParameters parameters) {
         Parameters p = parameters.getJSON();
         String runDir = p.getString("qdRunDir");
         featureDir = Utility.getFileName(runDir, "feature");
@@ -67,13 +67,13 @@ public class QueryDimensionClusterers implements Processor<TfQueryParameters> {
     @Override
     public void process(TfQueryParameters queryParameters) throws IOException {
         System.err.println(String.format("Processing qid:%s parameters:%s", queryParameters.id, queryParameters.parameters));
-        
+
         //setQueryParameters
         qid = queryParameters.id;
         String[] fields = Utility.splitParameters(queryParameters.parameters);
         distanceMax = Double.parseDouble(fields[0]);
         websiteCountMin = Double.parseDouble(fields[1]);
-        
+
         File clusterFile = new File(Utility.getQdClusterFileName(clusterDir, qid, distanceMax, websiteCountMin));
         if (clusterFile.exists()) {
             Utility.infoFileExists(clusterFile);
@@ -108,6 +108,10 @@ public class QueryDimensionClusterers implements Processor<TfQueryParameters> {
 
             int maxPreIndex = -1;
             boolean skipFlag = false;
+
+            // Build a candidate cluster for the most important point
+            // by iteratively including the point that is closest to the
+            // group, until the diameter of the cluster surpasses the distanceMax
             while (true) {
                 findCloseNode(cluster, candidatePool);
                 if (this.closeNodeDist > this.distanceMax) {
@@ -188,6 +192,8 @@ public class QueryDimensionClusterers implements Processor<TfQueryParameters> {
             }
 
             if (distance > this.distanceMax) {
+                // these nodes will not be add into the cluster
+                // so remove it from candiate pool to save some computation
                 candidatePool.remove(node);
             }
         }
