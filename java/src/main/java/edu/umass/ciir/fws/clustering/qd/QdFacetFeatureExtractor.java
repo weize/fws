@@ -1,44 +1,30 @@
 /*
- * To change this template, choose Tools | Templates
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
 package edu.umass.ciir.fws.clustering.qd;
 
 import edu.umass.ciir.fws.clist.CandidateList;
-import edu.umass.ciir.fws.retrieval.RankedDocument;
-import edu.umass.ciir.fws.retrieval.QuerySetResults;
-import edu.umass.ciir.fws.feature.CluewebDocFreqMap;
 import edu.umass.ciir.fws.feature.TermFeaturesExtractor;
-import edu.umass.ciir.fws.types.TfQuery;
-import edu.umass.ciir.fws.utility.Utility;
-import java.io.File;
-import java.io.IOException;
-import java.io.Writer;
+import edu.umass.ciir.fws.retrieval.RankedDocument;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import org.lemurproject.galago.tupleflow.InputClass;
-import org.lemurproject.galago.tupleflow.Parameters;
-import org.lemurproject.galago.tupleflow.Processor;
-import org.lemurproject.galago.tupleflow.TupleFlowParameters;
-import org.lemurproject.galago.tupleflow.execution.Verified;
 
 /**
- * Extract term features for each query.
  *
  * @author wkong
  */
-@Verified
-@InputClass(className = "edu.umass.ciir.fws.types.TfQuery")
-public class QdFacetFeaturesExtractor implements Processor<TfQuery> {
+public abstract class QdFacetFeatureExtractor {
 
     /**
      * Need to extract some basic features for term first. Then combine the term
      * features into their facet features.
      */
-    private class TermFeatures {
+    private static class TermFeatures {
 
         String term;
         String[] sites;
@@ -50,70 +36,27 @@ public class QdFacetFeaturesExtractor implements Processor<TfQuery> {
         }
     }
 
-    HashMap<String, TermFeatures> termFeatures;
-    CluewebDocFreqMap clueDfs;
-    QuerySetResults querySetResults;
-    List<RankedDocument> docs;
-    List<FacetFeatures> facetFeatures;
-    TfQuery query;
-    long topNum;
-    String rankedListFile;
-    String docDir;
+    public List<FacetFeatures> extract(List<CandidateList> clists, List<RankedDocument> docs) {
+        List<FacetFeatures> facetFeatures = loadCandidateListsToFacetFeatures(clists);
+        HashMap<String, TermFeatures> termFeatures = initializeTermFeatures(facetFeatures);
+        buildDocumentNgramMap(docs, termFeatures);
 
-    String clistDir;
-    String qdFeatureDir;
-    double clueCdf;
+        extractTermFeatures(termFeatures, docs);
+        extractFacetFeatures(docs, facetFeatures, termFeatures);
 
-    public QdFacetFeaturesExtractor(TupleFlowParameters parameters) throws Exception {
-        Parameters p = parameters.getJSON();
-        clistDir = p.getString("clistDir");
-        qdFeatureDir = p.getString("qdFeatureDir");
-        String clueDfFile = p.getString("clueDfFile");
-        clueCdf = p.getLong("clueCdf");
-        topNum = p.getLong("topNum");
-        rankedListFile = p.getString("rankedListFile");
-        docDir = p.getString("docDir");
-        termFeatures = new HashMap<>();
-        clueDfs = new CluewebDocFreqMap(new File(clueDfFile), clueCdf);
-
-        loadQuerySetResults();
-
+        return facetFeatures;
     }
 
-    @Override
-    public void process(TfQuery query) throws IOException {
-        this.query = query;
-
-        System.err.println(String.format("processing query %s", query.id));
-
-        loadCandidateListsToFacetFeatures();
-
-        initializeTermFeatures();
-
-        loadDocuments();
-
-        extractTermFeatures();
-
-        extractFacetFeatures();
-
-        output();
-    }
-
-    private void loadQuerySetResults() throws Exception {
-        querySetResults = new QuerySetResults(rankedListFile, topNum);
-    }
-
-    private void loadCandidateListsToFacetFeatures() throws IOException {
-        File clistFile = new File(Utility.getCandidateListFileName(clistDir, query.id, "clean.clist"));
-        List<CandidateList> clists = CandidateList.loadCandidateLists(clistFile, topNum);
-        this.facetFeatures = new ArrayList<>();
+    protected List<FacetFeatures> loadCandidateListsToFacetFeatures(List<CandidateList> clists) {
+        List<FacetFeatures> facetFeatures = new ArrayList<>();
         for (CandidateList clist : clists) {
             facetFeatures.add(new FacetFeatures(clist));
         }
+        return facetFeatures;
     }
 
-    private void initializeTermFeatures() {
-        termFeatures.clear();
+    private HashMap<String, TermFeatures> initializeTermFeatures(List<FacetFeatures> facetFeatures) {
+        HashMap<String, TermFeatures> termFeatures = new HashMap<>();
         for (FacetFeatures clist : facetFeatures) {
             for (String term : clist.items) {
                 if (!termFeatures.containsKey(term)) {
@@ -121,10 +64,10 @@ public class QdFacetFeaturesExtractor implements Processor<TfQuery> {
                 }
             }
         }
+        return termFeatures;
     }
 
-    private void loadDocuments() throws IOException {
-        docs = RankedDocument.loadDocumentsFromFiles(querySetResults.get(query.id), docDir, query.id);
+    private void buildDocumentNgramMap(List<RankedDocument> docs, HashMap<String, TermFeatures> termFeatures) {
         for (RankedDocument doc : docs) {
             doc.ngramMap = new HashMap<>();
             TermFeaturesExtractor.buildNgramMapFomText(doc.ngramMap, doc.terms, termFeatures);
@@ -134,11 +77,11 @@ public class QdFacetFeaturesExtractor implements Processor<TfQuery> {
     /**
      * Extract wdf, idf and sites for terms.
      */
-    private void extractTermFeatures() {
+    private void extractTermFeatures(HashMap<String, TermFeatures> termFeatures, List<RankedDocument> docs) {
         HashSet<String> sites = new HashSet<>();
         for (String term : termFeatures.keySet()) {
             TermFeatures termFeature = termFeatures.get(term);
-            double clueDf = clueDfs.getDf(term);
+            double clueDf = getDf(term);
             double wdf = 0;
             sites.clear();
             for (RankedDocument doc : docs) {
@@ -147,19 +90,14 @@ public class QdFacetFeaturesExtractor implements Processor<TfQuery> {
                     sites.add(doc.site);
                 }
             }
-            termFeature.clueIDF = TermFeaturesExtractor.idf(clueDf, clueCdf);
+            termFeature.clueIDF = TermFeaturesExtractor.idf(clueDf, getCdf());
             termFeature.contentWDF = wdf;
             termFeature.sites = sites.toArray(new String[0]);
         }
 
     }
 
-    @Override
-    public void close() throws IOException {
-
-    }
-
-    private void extractFacetFeatures() {
+    private void extractFacetFeatures(List<RankedDocument> docs, List<FacetFeatures> facetFeatures, HashMap<String, TermFeatures> termFeatures) {
         ArrayList<String> joinSites = new ArrayList<>();
         HashSet<String> curSites = new HashSet<>();
 
@@ -208,7 +146,7 @@ public class QdFacetFeaturesExtractor implements Processor<TfQuery> {
             // of stanford parsing, and Galago.
             String originalSite = docMap.get(ff.docRank).site;
             joinSites.add(originalSite);
-            
+
             ff.sites = joinSites.toArray(new String[0]);
 
             sdoc /= (double) len;
@@ -220,14 +158,16 @@ public class QdFacetFeaturesExtractor implements Processor<TfQuery> {
         }
     }
 
-    private void output() throws IOException {
-        String fileName = Utility.getQdFacetFeatureFileName(qdFeatureDir, query.id);
-        Writer writer = Utility.getWriter(fileName);
-        for (FacetFeatures ff : facetFeatures) {
-            writer.write(ff.toString());
-            writer.write("\n");
-        }
-        writer.close();
-        System.err.println(String.format("Written in %s", fileName));
-    }
+    /**
+     * document frequency
+     * @param term
+     * @return 
+     */
+    protected abstract double getDf(String term);
+
+    /**
+     * collection document frequency (the total number of documents in the collection)
+     * @return 
+     */
+    protected abstract double getCdf();
 }

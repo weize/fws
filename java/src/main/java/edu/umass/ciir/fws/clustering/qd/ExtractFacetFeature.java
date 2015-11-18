@@ -12,7 +12,7 @@ public class ExtractFacetFeature extends ProcessQueryApp {
 
     @Override
     protected Class getProcessClass() {
-        return QdFacetFeaturesExtractor.class;
+        return QdFacetFeaturesTFExtractor.class;
     }
 
     @Override
