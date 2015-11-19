@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import org.lemurproject.galago.tupleflow.Parameters;
 
 /**
  * Query Dimension Clustering. See Paper: Zhicheng Dou. Finding Dimensions for
@@ -27,11 +28,12 @@ public class QueryDimensionClusterer {
     final static int maxListNum = 5000; // only use top maxListNum lists for clustering b/c memory issue
     double distanceMax; // Dia_max in the paper. The threshold for including the list into the cluster. 
     double websiteCountMin; // w_c in the paper. The threshold for a valid cluster.
+    double itemRatio;
 
     public static class QDCluster extends ScoredFacet {
 
         Integer[] nodeIds;
-        int numOfSite;
+        public int numOfSite;
 
         public QDCluster(List<Integer> nodeList) {
             this.nodeIds = nodeList.toArray(new Integer[0]);
@@ -40,6 +42,17 @@ public class QueryDimensionClusterer {
 
     public QueryDimensionClusterer() {
 
+    }
+
+    public QueryDimensionClusterer(Parameters p) {
+        this.distanceMax = p.getDouble("qdDistanceMax");
+        this.websiteCountMin = p.getDouble("qdWebsiteCountMin");
+        this.itemRatio = p.getDouble("qdItemRatio");
+        
+    }
+
+    public List<ScoredFacet> clusterToFacets(List<FacetFeatures> nodes) {
+        return clustersToFacets(cluster(nodes, distanceMax, websiteCountMin), itemRatio);
     }
 
     /**
@@ -319,5 +332,25 @@ public class QueryDimensionClusterer {
             System.err.println("---------------------------------\n");
         }
 
+    }
+
+    public static List<ScoredFacet> clustersToFacets(List<QDCluster> clusters, double itemRatio) {
+        ArrayList<ScoredFacet> facets = new ArrayList<>();
+        for (QDCluster c : clusters) {
+            double threshold = c.numOfSite * itemRatio;
+
+            ArrayList<ScoredItem> items = new ArrayList<>();
+            for (ScoredItem scoredItem : c.items) {
+                if (scoredItem.score > 1 && scoredItem.score > threshold) {
+                    items.add(scoredItem);
+                }
+            }
+
+            if (items.size() > 0) {
+                facets.add(new ScoredFacet(items, c.score));
+            }
+
+        }
+        return facets;
     }
 }
