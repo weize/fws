@@ -55,6 +55,7 @@ public class LocalFWSEngine implements FWSEngine {
         Utility.info("extract candidate lists...");
         List<CandidateList> clists = clistExtractor.extract(docs, query);
         clists = clistCleaner.clean(clists);
+        Utility.info("#candiateLists=" + clists.size());
         List<ScoredFacet> facet = facetRefiner.refine(clists, docs);
         Utility.info("done");
         return facet;
