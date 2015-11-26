@@ -176,9 +176,7 @@ public class DemoWebHandler implements WebHandler {
     }
 
     private void writeHeadMessage(PrintWriter writer) {
-        writer.append("<div class=\"message\"> Please be patient. "
-                + "It may take minutes to run one query, "
-                + "because the system need to download webpages for produceing amazing facets.</div>");
+        writer.append("<div class=\"message\"> Please be patient. The system need some to download webpages for producing amazing results.</div>");
         
     }
 
