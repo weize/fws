@@ -33,13 +33,15 @@ public class BingSearchEngine implements SearchEngine {
     String accountKeyEnc;
     static int numThreads;
     final static int bingTop = 50; // max request
-    final static int connectTimeout = 1000 * 5; // for donwloading webpages
-    final static int readTimeout = 1000 * 10;
+    static int connectTimeout = 1000 * 3; // for donwloading webpages
+    static int readTimeout = 1000 * 3;
     final static String BingURLBase = "https://api.datamarket.azure.com/Bing/Search/Web?";
 
     public BingSearchEngine(Parameters p) {
         setAccoutKey(p);
         numThreads = (int) p.getLong("numCrawlThread");
+        connectTimeout = (int) p.getLong("connectTimeout");
+        readTimeout = (int) p.getLong("readTimeout");
     }
 
     @Override
@@ -91,7 +93,7 @@ public class BingSearchEngine implements SearchEngine {
     }
 
     public static class WebpageDownloader implements Runnable {
-        
+
         final Queue<RankResult> ranks; // each downloader will fetch one rank each time from this shared queue
         final List<RankedDocument> docs; // each downloader will save the result into this shared list
         int top;
@@ -118,13 +120,14 @@ public class BingSearchEngine implements SearchEngine {
 
                     con.setConnectTimeout(connectTimeout);
                     con.setReadTimeout(readTimeout);
-                    Utility.info("downloading " + res.url);
+                    Utility.info("downloading " + res.rankUrl());
                     String html = Utility.copyStreamToString(con.getInputStream());
                     if (!filterOutHtml(html)) {
                         addDoc(new RankedDocument(res.getName(), res.rank, res.url, html));
                     } else {
                         Utility.info("filter out " + res.url + "\nContent:\n" + html);
                     }
+                    
                 } catch (MalformedURLException ex) {
                     Logger.getLogger(BingSearchEngine.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (IOException ex) {
@@ -174,15 +177,15 @@ public class BingSearchEngine implements SearchEngine {
             try {
                 threads[i].join();
             } catch (InterruptedException ex) {
-                Logger.getLogger(BingSearchEngine.class.getName()).log(Level.SEVERE, null, ex);
+                throw new RuntimeException(ex);
             }
         }
 
         docs = docs.subList(0, Math.min(docs.size(), top));
         Collections.sort(docs);
-        
+
         System.out.println("crawled " + docs.size() + " webpages");
-        for(RankedDocument d : docs) {
+        for (RankedDocument d : docs) {
             System.out.println(d.rank + " : " + d.url);
         }
 
@@ -221,6 +224,10 @@ public class BingSearchEngine implements SearchEngine {
         @Override
         public String toString() {
             return String.format("%s\t%d\t%s\t%s\t%s", qid, rank, url, title, desc);
+        }
+                
+        public String rankUrl() {
+            return String.format("%d: %s", rank, url);
         }
 
         public String getName() {

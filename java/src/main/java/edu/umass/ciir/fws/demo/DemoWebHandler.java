@@ -41,10 +41,11 @@ public class DemoWebHandler implements WebHandler {
         writer.write("#header { background: rgb(210, 233, 217); border: 1px solid #ccc; }\n");
         writer.write("#result { padding: 10px 5px; max-width: 550px; }\n");
         writer.write("#meta { font-size: small; color: rgb(60, 100, 60); }\n");
-        writer.write(".flist {position: absolute; width: 250px; top:40px}\n");
         writer.write(".fterm {  }\n");
-        writer.write(".search { position: absolute; left: 270px; top:20px }\n");
-        writer.write(".dlist {position: absolute; left: 270px; top:60px }\n");
+        writer.write(".message { position: absolute;  color:green; border: solid 1px yellowgreen; margin-left: 40px; margin-top: 10px; padding: 2px}\n");
+        writer.write(".search { position: absolute; left: 270px; top:70px }\n");
+        writer.write(".dlist {position: absolute; left: 270px; top:95px }\n");
+        writer.write(".flist {position: absolute; width: 250px; top:55px}\n");
         writer.write("#summary { font-size: small; }\n");
         writer.write("#debug { display: none; }\n");
         writer.write("</style>");
@@ -59,6 +60,7 @@ public class DemoWebHandler implements WebHandler {
         writeStyle(writer);
         writer.append("<title>Faceted Web Search</title></head>");
         writer.append("<body>");
+        writeHeadMessage(writer);
         writer.append("<div class=\"search\">");
         writer.append("<form action=\"search\"><input name=\"q\" size=\"40\">"
                 + "<input value=\"Search\" type=\"submit\" /></form><br/><br/>");
@@ -103,6 +105,7 @@ public class DemoWebHandler implements WebHandler {
         writeStyle(writer);
         writer.append("<title>Faceted Web Search</title></head>");
         writer.append("<body>");
+        writeHeadMessage(writer);
         writer.append("<div class=\"search\">");
         writer.append("<form action=\"search\">");
         // query
@@ -126,11 +129,11 @@ public class DemoWebHandler implements WebHandler {
             writer.append("</ul>");
             writer.append("</li>");
         }
-        writer.append("<ul></div>");        
+        writer.append("<ul></div>");
 
         // web results
         writer.append("<div class=\"dlist\">");
-        
+
         for (RankedDocument d : docs) {
             writer.append("<div id=\"result\">\n");
             writer.append(String.format("<a href=\"%s\">%s</a><br/>"
@@ -170,6 +173,13 @@ public class DemoWebHandler implements WebHandler {
         TfQuery query = new TfQuery(qid, queryText);
         Utility.info("q:" + query);
         return query;
+    }
+
+    private void writeHeadMessage(PrintWriter writer) {
+        writer.append("<div class=\"message\"> Please be patient. "
+                + "It may take minutes to run one query, "
+                + "because the system need to download webpages for produceing amazing facets.</div>");
+        
     }
 
 }
