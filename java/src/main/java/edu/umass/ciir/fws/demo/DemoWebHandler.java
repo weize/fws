@@ -43,8 +43,8 @@ public class DemoWebHandler implements WebHandler {
         writer.write("#meta { font-size: small; color: rgb(60, 100, 60); }\n");
         writer.write(".fterm {  }\n");
         writer.write(".message { position: absolute;  color:green; border: solid 1px yellowgreen; margin-left: 40px; margin-top: 10px; padding: 2px}\n");
-        writer.write(".search { position: absolute; left: 270px; top:70px }\n");
-        writer.write(".dlist {position: absolute; left: 270px; top:95px }\n");
+        writer.write(".search { position: absolute; left: 270px; top:55px }\n");
+        writer.write(".dlist {position: absolute; left: 270px; top:80px }\n");
         writer.write(".flist {position: absolute; width: 250px; top:55px}\n");
         writer.write("#summary { font-size: small; }\n");
         writer.write("#debug { display: none; }\n");
@@ -176,7 +176,7 @@ public class DemoWebHandler implements WebHandler {
     }
 
     private void writeHeadMessage(PrintWriter writer) {
-        writer.append("<div class=\"message\"> Please be patient. The system need time to download webpages for producing amazing results.</div>");
+        writer.append("<div class=\"message\"> Please be patient. The system need time to download webpages to produce amazing results.</div>");
         
     }
 
