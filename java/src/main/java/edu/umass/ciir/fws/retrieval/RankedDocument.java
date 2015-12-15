@@ -45,7 +45,7 @@ public class RankedDocument implements Comparable<RankedDocument> {
         titleRaw = HtmlContentExtractor.extractTitle(html);
         title = TextProcessing.clean(titleRaw);
     }
-    
+
     public RankedDocument(String name, int rank, String url, String html) {
         this.name = name;
         this.rank = rank;
@@ -76,9 +76,7 @@ public class RankedDocument implements Comparable<RankedDocument> {
         ArrayList<RankedDocument> docs = new ArrayList<>();
         for (ScoredDocument sd : queryResults.getIterator()) {
             DataInputStream data = new DataInputStream(new FileInputStream(Utility.getDocDataFileName(docDir, qid, sd.documentName)));
-            org.lemurproject.galago.core.parse.Document doc
-                    = org.lemurproject.galago.core.parse.Document.deserialize(data, new Parameters(),
-                            new org.lemurproject.galago.core.parse.Document.DocumentComponents(true, true, false));
+            Document doc = Document.deserialize(data, new Parameters(), new Document.DocumentComponents(true, true, false));
             docs.add(new RankedDocument(sd, doc));
         }
         return docs;
