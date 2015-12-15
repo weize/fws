@@ -288,7 +288,7 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         System.err.println(String.format("Processing %s", infile.getAbsoluteFile()));
     }
 
-    public static void infoProcessing(Type object) {
+    public static void infoProcessing(Object object) {
         System.err.println(String.format("Processing %s", object.toString()));
     }
 
