@@ -1,20 +1,13 @@
 package edu.umass.ciir.fws.nlp;
 
-import edu.umass.ciir.fws.clist.CandidateListHtmlExtractor;
-import edu.umass.ciir.fws.clist.CandidateListTextExtractor;
-import edu.umass.ciir.fws.clist.ExtractCandidateListCorpus;
-import edu.umass.ciir.fws.types.TfCandidateList;
 import edu.umass.ciir.fws.types.TfDocumentName;
-import edu.umass.ciir.fws.types.TfQueryDocumentName;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-import org.lemurproject.galago.core.parse.Document;
 import org.lemurproject.galago.core.retrieval.Retrieval;
-import org.lemurproject.galago.core.retrieval.RetrievalFactory;
 import org.lemurproject.galago.core.tools.AppFunction;
 import org.lemurproject.galago.tupleflow.FileSource;
 import org.lemurproject.galago.tupleflow.InputClass;
@@ -160,7 +153,7 @@ public class CheckNlpParseCorpus extends AppFunction {
             System.err.println("processing " + docName.name);
 
             // extract by text patterns
-            String parseFileName = edu.umass.ciir.fws.utility.Utility.getParsedCorpusDocFileName(parseCorpusDir, docName.name);
+            String parseFileName = edu.umass.ciir.fws.utility.Utility.getParsedGalagoCorpusDocFileName(parseCorpusDir, docName.name);
             try {
                 String parseFileContent = edu.umass.ciir.fws.utility.Utility.readFileToString(new File(parseFileName));
             } catch (IOException ex) {  

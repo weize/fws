@@ -130,7 +130,7 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         return getFileNameWithSuffix(docDir, qid, docName, "dat");
     }
 
-    public static String getParsedCorpusDocFileName(String corpusDocDir, String docName) {
+    public static String getParsedGalagoCorpusDocFileName(String corpusDocDir, String docName) {
         String[] subDirNames = docName.split("-");
         return getFileNameWithSuffix(corpusDocDir, subDirNames[1], subDirNames[2], docName, "parse.gz");
     }

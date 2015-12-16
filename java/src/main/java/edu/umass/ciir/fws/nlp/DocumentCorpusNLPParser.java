@@ -4,15 +4,13 @@
  */
 package edu.umass.ciir.fws.nlp;
 
+import edu.umass.ciir.fws.retrieval.CorpusAccessor;
+import edu.umass.ciir.fws.retrieval.CorpusAccessorFactory;
 import edu.umass.ciir.fws.types.TfDocumentName;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Logger;
 import org.lemurproject.galago.core.parse.Document;
-import org.lemurproject.galago.core.parse.Document.DocumentComponents;
-import org.lemurproject.galago.core.retrieval.Retrieval;
-import org.lemurproject.galago.core.retrieval.RetrievalFactory;
 import org.lemurproject.galago.tupleflow.InputClass;
 import org.lemurproject.galago.tupleflow.Parameters;
 import org.lemurproject.galago.tupleflow.Processor;
@@ -32,28 +30,28 @@ public class DocumentCorpusNLPParser implements Processor<TfDocumentName> {
     Parameters parameters;
     PeerPatternNLPParser stanfordParser;
     String parseCorpusDir;
-    Retrieval retrieval;
+    CorpusAccessor corpusAccessor;
 
     public DocumentCorpusNLPParser(TupleFlowParameters parameters) throws Exception {
         this.parameters = parameters.getJSON();
         stanfordParser = new PeerPatternNLPParser();
         parseCorpusDir = this.parameters.getString("parseCorpusDir");
-        retrieval = RetrievalFactory.instance(this.parameters);
+        corpusAccessor = CorpusAccessorFactory.instance(this.parameters);
     }
 
     @Override
     public void process(TfDocumentName docName) throws IOException {
         System.err.println("processing  " + docName.name);
-        String outputFileName = Utility.getParsedCorpusDocFileName(parseCorpusDir, docName.name);
-        Utility.createDirectoryForFile(outputFileName);
-
+        String outputFileName = corpusAccessor.getParsedDocumentFilename(docName.name);
         // Do not parse again if the parse file already exists
-        //if (new File(outputFileName).exists()) {
-        //    System.err.println(String.format("Warning: file exists ", outputFileName));
-        //    return;
-        //}
-
-        Document doc = retrieval.getDocument(docName.name, new DocumentComponents(true, false, false));
+        if (new File(outputFileName).exists()) {
+            System.err.println(String.format("Warning: file exists ", outputFileName));
+            return;
+        }
+        
+        Utility.createDirectoryForFile(outputFileName);
+        
+        Document doc = corpusAccessor.getHtmlDocument(docName.name);
         String content = HtmlContentExtractor.extractFromContent(doc.text);
         
         stanfordParser.parse(content , outputFileName);
@@ -62,7 +60,7 @@ public class DocumentCorpusNLPParser implements Processor<TfDocumentName> {
 
     @Override
     public void close() throws IOException {
-        retrieval.close();
+        corpusAccessor.close();
     }
 
 }

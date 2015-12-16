@@ -39,9 +39,9 @@ public class NlpParseCorpus extends AppFunction {
 
     @Override
     public void run(Parameters p, PrintStream output) throws Exception {
-        assert (p.isString("docNameFile")) : "missing input file, --docNameFile";
-        assert (p.isString("parseCorpusDir")) : "missing --parseCorpusDir";
-        assert (p.isString("index")) : "missing --index";
+//        assert (p.isString("docNameFile")) : "missing input file, --docNameFile";
+//        assert (p.isString("parseCorpusDir")) : "missing --parseCorpusDir";
+//        assert (p.isString("index")) : "missing --index";
         
         Job job = createJob(p);
         AppFunction.runTupleFlowJob(job, p, output);
