@@ -5,7 +5,9 @@ import edu.umass.ciir.fws.types.TfCandidateList;
 import edu.umass.ciir.fws.types.TfDocumentName;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedWriter;
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -142,19 +144,20 @@ public class ExtractCandidateListCorpus extends AppFunction {
 
             // extract by html patterns
             Document doc = retrieval.getDocument(docName.name, new Document.DocumentComponents(true, false, false));
-            for (edu.umass.ciir.fws.clist.CandidateList clist : cListHtmlExtractor.extract(doc.text, docRank, docName.name, qid)) {
+            for (CandidateList clist : cListHtmlExtractor.extract(doc.text, docRank, docName.name, qid)) {
                 processor.process(new TfCandidateList(clist.qid, clist.docRank, clist.docName, clist.listType, clist.itemList));
             }
             System.err.println("Done html");
 
             // extract by text patterns
-            String parseFileName = Utility.getParsedCorpusDocFileName(parseCorpusDir, docName.name);
+            String parseFileName = Utility.getParsedGalagoCorpusDocFileName(parseCorpusDir, docName.name);
             String parseFileContent = Utility.readFileToString(new File(parseFileName));
-            for (edu.umass.ciir.fws.clist.CandidateList clist : cListTextExtractor.extract(parseFileContent, docRank, docName.name, qid)) {
+            for (CandidateList clist : cListTextExtractor.extract(parseFileContent, docRank, docName.name, qid)) {
                 processor.process(new TfCandidateList(clist.qid, clist.docRank, clist.docName, clist.listType, clist.itemList));
             }
             System.err.println("Done text");
         }
+
     }
 
 }
