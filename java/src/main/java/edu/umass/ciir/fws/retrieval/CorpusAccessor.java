@@ -13,10 +13,13 @@ import org.lemurproject.galago.core.parse.Document;
  * @author wkong
  */
 public interface CorpusAccessor {
+    String getSystemName();
 
     Document getHtmlDocument(String name) throws IOException;
 
     String getParsedDocumentFilename(String name);
+    
+    String getClistFileName(String docName, String suffix);
     
     void close() throws IOException;
 }

@@ -20,7 +20,7 @@ public class CorpusAccessorFactory {
             case "galago":
                 return new GalagoCorpusAccessor(p);
             case "bing":
-                return new LocalCorpusAcessor(p);
+                return new LocalCorpusAccessor(p);
             default:
                 return null;
         }

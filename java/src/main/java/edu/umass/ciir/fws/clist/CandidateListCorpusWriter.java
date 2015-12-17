@@ -5,6 +5,8 @@
  */
 package edu.umass.ciir.fws.clist;
 
+import edu.umass.ciir.fws.retrieval.CorpusAccessor;
+import edu.umass.ciir.fws.retrieval.CorpusAccessorFactory;
 import edu.umass.ciir.fws.types.TfCandidateList;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedWriter;
@@ -24,20 +26,20 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 public class CandidateListCorpusWriter implements Processor<TfCandidateList> {
 
     String fileName; // current filename
-    String clistCorpusDir;
+    CorpusAccessor corpusAccessor;
     String suffix;
     BufferedWriter writer;
 
-    public CandidateListCorpusWriter(TupleFlowParameters parameters) {
+    public CandidateListCorpusWriter(TupleFlowParameters parameters) throws Exception {
         Parameters p = parameters.getJSON();
-        clistCorpusDir = p.getString("clistCorpusDir");
+        corpusAccessor = CorpusAccessorFactory.instance(p);
         suffix = p.getString("suffix");
         fileName = null;
     }
 
     @Override
     public void process(TfCandidateList clist) throws IOException {
-        String newFileName = Utility.getCorpusCandidateListFileName(clistCorpusDir, clist.docName, suffix);
+        String newFileName = corpusAccessor.getClistFileName(clist.docName, suffix);
         if (fileName == null) {
             onNewFile(newFileName);
         } else {

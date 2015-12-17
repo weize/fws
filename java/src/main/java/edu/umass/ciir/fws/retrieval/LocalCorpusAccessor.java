@@ -18,14 +18,16 @@ import org.lemurproject.galago.tupleflow.Parameters;
  * parse in $parseCorpusDir/$qid/bing-$qid-$rank.parse
  * @author wkong
  */
-public class LocalCorpusAcessor implements CorpusAccessor {
+public class LocalCorpusAccessor implements CorpusAccessor {
 
     String docCorpusDir;
     String parseCorpusDir;
+    String clistCorpusDir;
 
-    public LocalCorpusAcessor(Parameters p) throws Exception {
-        docCorpusDir = p.getString("docCorpusDir");
-        parseCorpusDir = p.getString("parseCorpusDir");
+    public LocalCorpusAccessor(Parameters p) throws Exception {
+        docCorpusDir = p.get("docCorpusDir", "");
+        parseCorpusDir = p.get("parseCorpusDir", "");
+        clistCorpusDir = p.get("clistCorpusDir", "");
     }
 
     @Override
@@ -47,6 +49,34 @@ public class LocalCorpusAcessor implements CorpusAccessor {
 
     @Override
     public void close() throws IOException {
+    }
+
+    
+    public static String praseQid(String docName) {
+        String[] elems = docName.split("-"); // bing-$qid-$rank
+        String qid = elems[1];
+        String rank = elems[2];
+        return qid;
+    }
+    
+    public static int praseRank(String docName) {
+        String[] elems = docName.split("-"); // bing-$qid-$rank
+        String qid = elems[1];
+        String rank = elems[2];
+        return Integer.parseInt(rank);
+    }
+    
+    
+    
+    @Override
+    public String getSystemName() {
+        return "bing";
+    }
+
+    @Override
+    public String getClistFileName(String docName, String suffix) {
+        String qid = praseQid(docName);
+        return Utility.getFileNameWithSuffix(clistCorpusDir, qid, docName, suffix);
     }
 
 }

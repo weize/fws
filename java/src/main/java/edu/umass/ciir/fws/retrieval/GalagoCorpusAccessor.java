@@ -21,10 +21,13 @@ public class GalagoCorpusAccessor implements CorpusAccessor {
 
     Retrieval retrieval;
     String parseCorpusDir;
+    String clistCorpusDir;
 
     public GalagoCorpusAccessor(Parameters p) throws Exception {
-        retrieval = RetrievalFactory.instance(p);
-        parseCorpusDir = p.getString("parseCorpusDir");
+        boolean needIndex = p.get("needIndex", true);
+        retrieval = needIndex ? RetrievalFactory.instance(p) : null;
+        parseCorpusDir = p.get("parseCorpusDir", "");
+        clistCorpusDir = p.get("clistCorpusDir", "");
     }
 
     @Override
@@ -41,5 +44,15 @@ public class GalagoCorpusAccessor implements CorpusAccessor {
     @Override
     public void close() throws IOException{
         retrieval.close();
+    }
+
+    @Override
+    public String getSystemName() {
+        return "galago";
+    }
+
+    @Override
+    public String getClistFileName(String docName, String suffix) {
+        return Utility.getGalagoCorpusCandidateListFileName(clistCorpusDir, docName, suffix);
     }
 }
