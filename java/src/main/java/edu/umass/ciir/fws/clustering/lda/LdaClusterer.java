@@ -156,10 +156,19 @@ public class LdaClusterer implements Processor<TfQueryParameters> {
                 Collections.sort(items);
                 items = items.subList(0, Math.min(items.size(), 50));
 
-                // normalization for P(topic)
-                double score = topicModel.alpha[topic];
+                // unnormalizated  P(a word from topic)
+                double score = weightSum;
 
                 facets.add(new ScoredFacet(items, score));
+            }
+            
+            
+            double allWeightSum = 0;
+            for(ScoredFacet f : facets) {
+                allWeightSum += f.score;
+            }
+            for(ScoredFacet f : facets) {
+                f.score /= allWeightSum;
             }
 
             return facets;
