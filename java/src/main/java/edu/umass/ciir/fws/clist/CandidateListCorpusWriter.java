@@ -67,7 +67,7 @@ public class CandidateListCorpusWriter implements Processor<TfCandidateList> {
     private void onNewFile(String newFileName) throws IOException {
         fileName = newFileName;
         Utility.createDirectoryForFile(fileName);
-        writer = Utility.getGzipWriter(fileName);
+        writer = Utility.getWriter(fileName);
     }
 
 }
