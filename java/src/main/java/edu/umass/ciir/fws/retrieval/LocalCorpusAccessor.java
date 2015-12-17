@@ -32,8 +32,7 @@ public class LocalCorpusAccessor implements CorpusAccessor {
 
     @Override
     public Document getHtmlDocument(String name) throws IOException {
-        String[] elems = name.split("-"); // bing-$qid-$rank
-        String qid = elems[1];
+        String qid = praseQid(name);
         DataInputStream data = new DataInputStream(new FileInputStream(Utility.getDocDataFileName(docCorpusDir, qid, name)));
         Document doc = Document.deserialize(data, new Parameters(), new Document.DocumentComponents(true, true, false));
         return doc;
@@ -41,8 +40,7 @@ public class LocalCorpusAccessor implements CorpusAccessor {
 
     @Override
     public String getParsedDocumentFilename(String name) {
-        String[] elems = name.split("-"); // bing-$qid-$rank
-        String qid = elems[1];
+        String qid = praseQid(name);
         return Utility.getParsedDocFileName(parseCorpusDir, qid, name);
 
     }
@@ -76,7 +74,7 @@ public class LocalCorpusAccessor implements CorpusAccessor {
     @Override
     public String getClistFileName(String docName, String suffix) {
         String qid = praseQid(docName);
-        return Utility.getFileNameWithSuffix(clistCorpusDir, qid, docName, suffix);
+        return Utility.getFileNameWithSuffix(clistCorpusDir, qid, docName, suffix+".gz");
     }
 
 }
