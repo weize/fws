@@ -42,8 +42,10 @@ public class ExtractTermPairDataForPrediectedTerms extends StandardStep<TfQueryP
         String gmDir = p.getString("gmDir");
         predictDir = Utility.getFileName(gmDir, "predict");
         trainDir = Utility.getFileName(gmDir, "train");
-        File facetJsonFile = new File(p.getString("facetAnnotationJson"));
-        facetMap = FacetAnnotation.loadAsMap(facetJsonFile);
+        //        File facetJsonFile = new File(p.getString("facetAnnotationJson"));
+//        facetMap = FacetAnnotation.loadAsMap(facetJsonFile);
+        File facetTextFile = new File(p.getString("facetAnnotationText"));
+        facetMap = FacetAnnotation.loadAsMapFromTextFile(facetTextFile);
         pfExtractor = new TermPairFeatureExtractor(p);
     }
 

@@ -41,8 +41,10 @@ public class TermFeatureToData extends StandardStep<TfQuery, TfQuery> {
         Parameters p = parameters.getJSON();
         String gmDir = p.getString("gmDir");
         predictDir = Utility.getFileName(gmDir, "predict");
-        File facetJsonFile = new File(p.getString("facetAnnotationJson"));
-        facetMap = FacetAnnotation.loadAsMap(facetJsonFile);
+//        File facetJsonFile = new File(p.getString("facetAnnotationJson"));
+//        facetMap = FacetAnnotation.loadAsMap(facetJsonFile);
+        File facetTextFile = new File(p.getString("facetAnnotationText"));
+        facetMap = FacetAnnotation.loadAsMapFromTextFile(facetTextFile);
         featureDir = p.getString("featureDir");
     }
 

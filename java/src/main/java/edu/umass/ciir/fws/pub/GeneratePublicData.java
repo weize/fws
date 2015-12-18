@@ -45,12 +45,14 @@ public class GeneratePublicData extends AppFunction {
         File subtopicSelectedIdFile = new File(p.getString("subtopicSelectedIdFile"));
         File outfile = new File(p.getString("output"));
 
-        File facetJsonFile = new File(p.getString("facetAnnotationJson"));
-        HashMap<String, FacetAnnotation> facetMap = FacetAnnotation.loadAsMap(facetJsonFile);
-        
+        //        File facetJsonFile = new File(p.getString("facetAnnotationJson"));
+//        HashMap<String, FacetAnnotation> facetMap = FacetAnnotation.loadAsMap(facetJsonFile);
+        File facetTextFile = new File(p.getString("facetAnnotationText"));
+        HashMap<String, FacetAnnotation> facetMap = FacetAnnotation.loadAsMapFromTextFile(facetTextFile);
+
         File feedbackJsonFile = new File(p.getString("feedbackAnnotationJson"));
-        
-        HashMap<String, FeedbackAnnotation> feedbackMap =  FeedbackAnnotation.loadAsMap(feedbackJsonFile);
+
+        HashMap<String, FeedbackAnnotation> feedbackMap = FeedbackAnnotation.loadAsMap(feedbackJsonFile);
 
         BufferedReader reader = Utility.getReader(subtopicSelectedIdFile);
         String line;

@@ -40,8 +40,10 @@ public class ExtractTermPairDataForPostiveTerm extends StandardStep<TfQuery, TfQ
         Parameters p = parameters.getJSON();
         String gmDir = p.getString("gmDir");
         predictDir = Utility.getFileName(gmDir, "predict");
-        File facetJsonFile = new File(p.getString("facetAnnotationJson"));
-        facetMap = FacetAnnotation.loadAsMap(facetJsonFile);
+        //        File facetJsonFile = new File(p.getString("facetAnnotationJson"));
+//        facetMap = FacetAnnotation.loadAsMap(facetJsonFile);
+        File facetTextFile = new File(p.getString("facetAnnotationText"));
+        facetMap = FacetAnnotation.loadAsMapFromTextFile(facetTextFile);
         pfExtractor = new TermPairFeatureExtractor(p);
     }
 
@@ -60,10 +62,10 @@ public class ExtractTermPairDataForPostiveTerm extends StandardStep<TfQuery, TfQ
                 }
             }
         }
-        
+
         // output file
         File dataFile = new File(Utility.getGmPtTermPairDataFileName(predictDir, query.id));
-        
+
         pfExtractor.extract(items, query.id);
         pfExtractor.output(dataFile, facetMap.get(query.id));
         Utility.infoWritten(dataFile);
