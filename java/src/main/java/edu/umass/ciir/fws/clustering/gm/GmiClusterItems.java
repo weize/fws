@@ -114,8 +114,6 @@ public class GmiClusterItems extends AppFunction {
         List<Double> pairProbThs;
         String trainDir;
         String[] rankers = new String[]{"sum", "avg"};
-        List<Long> metricIndices;
-        BufferedWriter writer;
 
         public SplitTuneRuns(TupleFlowParameters parameters) throws IOException {
             Parameters p = parameters.getJSON();
@@ -125,8 +123,6 @@ public class GmiClusterItems extends AppFunction {
 
             String gmDir = p.getString("gmDir");
             trainDir = Utility.getFileName(gmDir, "train");
-            metricIndices = p.getAsList("facetTuneMetricIndices", Long.class);
-            writer = Utility.getWriter(p.getString("gmiTunedParamFile"));
         }
 
         @Override
