@@ -7,6 +7,7 @@ package edu.umass.ciir.fws.feature;
 
 import edu.umass.ciir.fws.types.TfTerm;
 import edu.umass.ciir.fws.types.TfTermCount;
+import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
 import org.lemurproject.galago.core.retrieval.Retrieval;
@@ -50,6 +51,7 @@ public class GalagoDocFreqExtractor extends StandardStep<TfTerm, TfTermCount> {
 
     @Override
     public void process(TfTerm term) throws IOException {
+        Utility.infoProcessing(term);
         if (existsClueDfs && clueDfs.contains(term.term)) {
             long count = clueDfs.getDf(term.term);
             processor.process(new TfTermCount(term.term, count));
