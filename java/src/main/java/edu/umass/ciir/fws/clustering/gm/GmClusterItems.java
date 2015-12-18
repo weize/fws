@@ -29,7 +29,8 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 
 /**
  *
- * This is just for the initial run.
+ * For learning gm models
+ * TODO: separate gmj out
  *
  * @author wkong
  */
