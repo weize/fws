@@ -170,6 +170,7 @@ public class LdaClusterer implements Processor<TfQueryParameters> {
             for(ScoredFacet f : facets) {
                 f.score /= allWeightSum;
             }
+            Collections.sort(facets);
 
             return facets;
         }
