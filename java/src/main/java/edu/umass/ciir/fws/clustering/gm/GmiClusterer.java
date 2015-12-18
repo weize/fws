@@ -25,13 +25,13 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 @Verified
 @InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
 @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
-public class GmiClusterItems extends StandardStep<TfQueryParameters, TfQueryParameters> {
+public class GmiClusterer extends StandardStep<TfQueryParameters, TfQueryParameters> {
 
     String predictDir;
     String gmiClusterDir;
     String trainDir;
 
-    public GmiClusterItems(TupleFlowParameters parameters) {
+    public GmiClusterer(TupleFlowParameters parameters) {
         Parameters p = parameters.getJSON();
         String gmDir = p.getString("gmDir");
         predictDir = Utility.getFileName(gmDir, "predict");

@@ -104,7 +104,7 @@ public class GmiTuneFacet extends AppFunction {
         stage.addOutput("facets", new TfQueryParameters.IdParametersOrder());
 
         stage.add(new InputStep("clusters"));
-        stage.add(new Step(GmiClusterItems.class, parameters));
+        stage.add(new Step(GmiClusterer.class, parameters));
         stage.add(new Step(AppendFacetRankerParameter.class));
         stage.add(new Step(GmiClusterToFacetConverter.class, parameters));
         stage.add(Utility.getSorter(new TfQueryParameters.IdParametersOrder()));
@@ -159,7 +159,7 @@ public class GmiTuneFacet extends AppFunction {
         stage.addInput("selectedParams", new TfQueryParameters.IdParametersOrder());
 
         stage.add(new InputStep("selectedParams"));
-        stage.add(new Step(GmiClusterItems.class, parameters));
+        stage.add(new Step(GmiClusterer.class, parameters));
         stage.add(new Step(GmiClusterToFacetConverter.class, parameters));
         stage.add(new Step(GmLearn.DoNonethingForQueryParams.class));
 
