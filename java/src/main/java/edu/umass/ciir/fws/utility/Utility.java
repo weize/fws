@@ -291,6 +291,10 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
     public static void infoProcessing(Object object) {
         System.err.println(String.format("Processing %s", object.toString()));
     }
+    
+    public static void infoProcessing(Type object) {
+        System.err.println(String.format("Processing %s", object.toString()));
+    }
 
     public static void info(String message) {
         Logger.getLogger("runtime").log(Level.INFO, message);
