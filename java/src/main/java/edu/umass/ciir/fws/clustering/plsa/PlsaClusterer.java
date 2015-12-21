@@ -37,6 +37,7 @@ public class PlsaClusterer implements Processor<TfQueryParameters> {
     String clistDir;
     long topNum;
     long iterNum;
+    long topTermNum;
 
     public PlsaClusterer(TupleFlowParameters parameters) {
         Parameters p = parameters.getJSON();
@@ -45,6 +46,7 @@ public class PlsaClusterer implements Processor<TfQueryParameters> {
         iterNum = p.getLong("plsaIterNum");
         clistDir = p.getString("clistDir");
         topNum = p.getLong("topNum");
+        topTermNum = p.getLong("plsaTopTermNum");
 
     }
 
@@ -67,7 +69,7 @@ public class PlsaClusterer implements Processor<TfQueryParameters> {
         List<CandidateList> clist = CandidateList.loadCandidateLists(clistFile, topNum);
 
         // clustering
-        Plsa plsa = new Plsa(clist, iterNum);
+        Plsa plsa = new Plsa(clist, iterNum, topTermNum);
         List<ScoredFacet> facets = plsa.cluster(topicNum);
 
         Utility.infoOpen(clusterFile);
@@ -102,6 +104,7 @@ public class PlsaClusterer implements Processor<TfQueryParameters> {
         double[][] Pw_z;
 
         long iterNum;
+        long topTermNum;
 
         class Feature {
 
@@ -153,8 +156,9 @@ public class PlsaClusterer implements Processor<TfQueryParameters> {
             }
         }
 
-        private Plsa(List<CandidateList> clists, long iterNum) {
+        private Plsa(List<CandidateList> clists, long iterNum, long topTermNum) {
             this.iterNum = iterNum;
+            this.topTermNum = topTermNum;
 
             // loadClusters data
             datas = new ArrayList<>();
@@ -188,7 +192,7 @@ public class PlsaClusterer implements Processor<TfQueryParameters> {
                     items.add(new ScoredItem(dict[w], Pw_z[z][w]));
                 }
                 Collections.sort(items);
-                ScoredFacet facet = new ScoredFacet(items.subList(0, Math.min(items.size(), 50)), Pz[z]);
+                ScoredFacet facet = new ScoredFacet(items.subList(0, Math.min(items.size(), (int)topTermNum)), Pz[z]);
                 facets.add(facet);
             }
             Collections.sort(facets);

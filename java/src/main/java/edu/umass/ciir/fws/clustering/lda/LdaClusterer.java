@@ -43,8 +43,9 @@ public class LdaClusterer implements Processor<TfQueryParameters> {
 
     String clusterDir;
     String clistDir;
-    long topNum;
+    long topNum; // top num of docs
     long iterNum;
+    long topTermNum; // #terms to output for each topic
 
     public LdaClusterer(TupleFlowParameters parameters) {
         Parameters p = parameters.getJSON();
@@ -53,6 +54,7 @@ public class LdaClusterer implements Processor<TfQueryParameters> {
         iterNum = p.getLong("ldaIterNum");
         clistDir = p.getString("clistDir");
         topNum = p.getLong("topNum");
+        topTermNum = p.getLong("ldaTopTermNum");
     }
 
     @Override
@@ -72,7 +74,7 @@ public class LdaClusterer implements Processor<TfQueryParameters> {
         List<CandidateList> clist = CandidateList.loadCandidateLists(clistFile, topNum);
 
         // clustering
-        Lda lda = new Lda(clist, iterNum);
+        Lda lda = new Lda(clist, iterNum, topTermNum);
         List<ScoredFacet> facets = lda.cluster(topicNum);
 
         // output
@@ -92,10 +94,12 @@ public class LdaClusterer implements Processor<TfQueryParameters> {
         final Pattern tokenPattern = Pattern.compile("[^\\|]+");
 
         long iterNum;
+        long topTermNum;
         InstanceList instances; // documents (candidate lists) data
 
-        public Lda(List<CandidateList> clists, long iterNum) {
+        public Lda(List<CandidateList> clists, long iterNum, long topTermNum) {
             this.iterNum = iterNum;
+            this.topTermNum = topTermNum;
             loadData(clists);
         }
 
@@ -154,7 +158,7 @@ public class LdaClusterer implements Processor<TfQueryParameters> {
                     item.score /= weightSum;
                 }
                 Collections.sort(items);
-                items = items.subList(0, Math.min(items.size(), 50));
+                items = items.subList(0, Math.min(items.size(), (int)topTermNum));
 
                 // unnormalizated  P(a word from topic)
                 double score = weightSum;
