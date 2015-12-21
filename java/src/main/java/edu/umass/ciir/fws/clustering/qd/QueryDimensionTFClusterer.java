@@ -45,14 +45,15 @@ public class QueryDimensionTFClusterer extends QueryDimensionClusterer implement
         distanceMax = Double.parseDouble(fields[0]);
         websiteCountMin = Double.parseDouble(fields[1]);
 
-        List<FacetFeatures> nodes = loadFacetFeatures(qid);
-        List<QDCluster> clusters = cluster(nodes, distanceMax, websiteCountMin);
-
         File clusterFile = new File(Utility.getQdClusterFileName(clusterDir, qid, distanceMax, websiteCountMin));
         if (clusterFile.exists()) {
             Utility.infoFileExists(clusterFile);
             return;
         }
+        
+        List<FacetFeatures> nodes = loadFacetFeatures(qid);
+        List<QDCluster> clusters = cluster(nodes, distanceMax, websiteCountMin);
+        
         Utility.createDirectoryForFile(clusterFile);
         output(clusters, clusterFile);
     }
