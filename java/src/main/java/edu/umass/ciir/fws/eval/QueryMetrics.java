@@ -68,6 +68,7 @@ public class QueryMetrics {
             }
         }
         reader.close();
+        Utility.info("close file: "+evalFile.getAbsolutePath());
         throw new IOException("cannot find avg score for index " + metricIdx + " in " + evalFile);
     }
 
