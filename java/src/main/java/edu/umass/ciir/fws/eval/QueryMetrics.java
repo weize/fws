@@ -63,12 +63,12 @@ public class QueryMetrics {
             if (!line.trim().startsWith("#")) {
                 QueryMetrics qm = QueryMetrics.parse(line);
                 if (qm.qid.equals("all")) {
+                    reader.close();
                     return qm.values[metricIdx];
                 }
             }
         }
         reader.close();
-        Utility.info("close file: "+evalFile.getAbsolutePath());
         throw new IOException("cannot find avg score for index " + metricIdx + " in " + evalFile);
     }
 

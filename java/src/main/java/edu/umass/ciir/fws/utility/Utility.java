@@ -37,8 +37,7 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         return getReader(new File(filename));
     }
 
-    public static BufferedReader getReader(File file) throws IOException {
-        Utility.info("!!open file: " + file.getAbsolutePath());
+    public static BufferedReader getReader(File file) throws IOException {        
         FileInputStream stream = new FileInputStream(file);
         if (file.getName().endsWith(".gz")) {
             return new BufferedReader(
