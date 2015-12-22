@@ -19,7 +19,7 @@ import org.lemurproject.galago.tupleflow.Parameters;
 /**
  * Query Dimension Clustering. See Paper: Zhicheng Dou. Finding Dimensions for
  * Queries. CIKM'11.
- *
+ * 
  * @author wkong
  */
 public class QueryDimensionClusterer {
@@ -48,7 +48,8 @@ public class QueryDimensionClusterer {
         this.distanceMax = p.getDouble("qdDistanceMax");
         this.websiteCountMin = p.getDouble("qdWebsiteCountMin");
         this.itemRatio = p.getDouble("qdItemRatio");
-        
+        this.debug = p.get("debug", false);
+
     }
 
     public List<ScoredFacet> clusterToFacets(List<FacetFeatures> nodes) {
@@ -67,6 +68,7 @@ public class QueryDimensionClusterer {
         // settings
         this.distanceMax = distanceMax;
         this.websiteCountMin = websiteCountMin;
+        boolean noDistanceLimit = Double.compare(distanceMax, 1.0) >= 0;
 
         // initialization
         nodes = sortSelectNodes(nodes);
@@ -88,8 +90,13 @@ public class QueryDimensionClusterer {
 
             // try to form a new cluster
             cluster.clear();
-            cluster.add(i);
-            pool.remove(i); // remove from pool;
+            if (noDistanceLimit) {
+                cluster.addAll(pool);
+                pool.clear();
+            } else {
+                cluster.add(i);
+                pool.remove(i); // remove from pool;
+            }
 
             candidatePool.clear();
             candidatePool.addAll(pool);
@@ -97,6 +104,9 @@ public class QueryDimensionClusterer {
             int maxPreIndex = -1;
             boolean skipFlag = false;
 
+            if (debug) {
+                System.err.println("start: " + i + " ----- " + nodes.get(i).itemList);
+            }
             // Build a candidate cluster for the most important point
             // by iteratively including the point that is closest to the
             // group, until the diameter of the cluster surpasses the distanceMax
@@ -106,12 +116,19 @@ public class QueryDimensionClusterer {
                 double closestNodeDist = (double) res[1];
 
                 if (closestNodeDist > distanceMax) {
+                    if (debug) {
+                        System.err.println("dist: " + closestNodeId + " -- " + closestNodeDist);
+                    }
                     break;
                 }
                 // add into cluster
                 cluster.add(closestNodeId);
                 candidatePool.remove(closestNodeId);
                 pool.remove(closestNodeId);
+
+                if (debug) {
+                    System.err.println("add: " + closestNodeId + " ----- " + nodes.get(closestNodeId).itemList);
+                }
 
                 if (prevFailedNodesIndex.containsKey(closestNodeId)) { // learn from previous failure
                     int curPreIndex = prevFailedNodesIndex.get(closestNodeId);
@@ -127,9 +144,19 @@ public class QueryDimensionClusterer {
             int siteCount = countWebSite(cluster, nodes);
             if (siteCount >= this.websiteCountMin) {
                 // construct cluster
+                if (debug) {
+                    System.err.println("site-ok");
+                }
                 QDCluster qdCluster = new QDCluster(cluster);
                 clusters.add(qdCluster);
             } else {
+                if (debug) {
+                    System.err.println("site-failed");
+                }
+
+                if (noDistanceLimit) {
+                    break; // impossible to find another cluster with larger siteCount => stop searching
+                }
                 // revoke
                 for (int id : cluster) {
                     pool.add(id);
