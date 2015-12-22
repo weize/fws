@@ -130,6 +130,9 @@ public class QueryDimensionClusterer {
                 QDCluster qdCluster = new QDCluster(cluster);
                 clusters.add(qdCluster);
             } else {
+                if (Double.compare(distanceMax, 1.0) >= 0) {
+                    break; // impossible to find another cluster with larger siteCount => stop searching
+                }
                 // revoke
                 for (int id : cluster) {
                     pool.add(id);
