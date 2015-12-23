@@ -1,4 +1,5 @@
 {
+	"readme" : "qf13 data, but processed using fws2",
 	"system" : "bing",
 	"queryFile" : "../exp/query/query_selected",
 	"queryAllFile" : "../exp/query/query_all",
