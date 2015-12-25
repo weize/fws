@@ -7,7 +7,6 @@ package edu.umass.ciir.fws.ffeedback;
 
 import edu.umass.ciir.fws.clustering.FacetModelParamGenerator;
 import edu.umass.ciir.fws.clustering.ScoredFacet;
-import edu.umass.ciir.fws.eval.QueryFacetEvaluator;
 import edu.umass.ciir.fws.types.TfFacetFeedbackParams;
 import edu.umass.ciir.fws.types.TfFeedbackParams;
 import edu.umass.ciir.fws.utility.Utility;
