@@ -33,10 +33,11 @@ public class CombinedEvaluator implements QueryFacetEvaluator{
 
     public CombinedEvaluator(int numTopFacets, File annotatedFacetTextFile) throws IOException {
         evaluators = new ArrayList<>();
-        evaluators.add(new PrfEvaluator(numTopFacets));
+        //evaluators.add(new PrfEvaluator(numTopFacets));
+        evaluators.add(new PrfNewEvaluator(numTopFacets));
         evaluators.add(new RpndcgEvaluator(numTopFacets));
         evaluators.add(new ClusteringEvaluator(numTopFacets));
-        evaluators.add(new PrfNewEvaluator(numTopFacets));
+        
         
         facetMap = FacetAnnotation.loadAsMapFromTextFile(annotatedFacetTextFile);
     }
