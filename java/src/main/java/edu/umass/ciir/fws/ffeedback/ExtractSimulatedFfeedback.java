@@ -165,7 +165,6 @@ public class ExtractSimulatedFfeedback extends AppFunction {
     @InputClass(className = "edu.umass.ciir.fws.types.TfFacetFeedbackParams")
     public static class ExtractFeedback implements Processor<TfFacetFeedbackParams> {
 
-        QueryFacetEvaluator evaluator;
         String allFacetDir;
         String allFeedbackDir;
 
