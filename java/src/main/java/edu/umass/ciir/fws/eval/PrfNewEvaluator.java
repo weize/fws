@@ -13,15 +13,16 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.lemurproject.galago.tupleflow.Utility;
 
 /**
  *
  * @author wkong
  */
-public class PrfEvaluator implements QueryFacetEvaluator {
+public class PrfNewEvaluator implements QueryFacetEvaluator {
 
-    protected static final int metricNum = 10;
+    protected static final int metricNum = 4;
     int numTopFacets;
     List<ScoredFacet> sysFacets; // system
     List<AnnotatedFacet> annFacets; // annotators
@@ -30,12 +31,14 @@ public class PrfEvaluator implements QueryFacetEvaluator {
     double beta = 1;
 
     Map<String, Double> itemWeightMap; // only stored postive items
+    Set<String> systemItemSet; // all items in the system facets
     List<HashSet<String>> itemSets; // stores annotator sysFacets as sets
 
-    public PrfEvaluator(int numTopFacets) {
+    public PrfNewEvaluator(int numTopFacets) {
         this.numTopFacets = numTopFacets;
         itemWeightMap = new HashMap<>();
         itemSets = new ArrayList<>();
+        systemItemSet = new HashSet<>();
     }
 
     protected void loadFacets(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets) {
@@ -55,6 +58,7 @@ public class PrfEvaluator implements QueryFacetEvaluator {
         loadFacets(afacets, sfacets);
         loadItemWeightMap();
         loadItemSets();
+        loadSystemItemSet();
 
         double p = precision(false);
         double wp = precision(true);
@@ -70,7 +74,7 @@ public class PrfEvaluator implements QueryFacetEvaluator {
         double prf = hamitionMean(p, r, f1c);
         double wprf = hamitionMean(wp, wr, wf1c);
 
-        return new double[]{p, wp, r, wr, f1, wf1, f1c, wf1c, prf, wprf};
+        return new double[]{f1c, wf1c, prf, wprf};
     }
 
     /**
@@ -99,6 +103,15 @@ public class PrfEvaluator implements QueryFacetEvaluator {
             HashSet<String> set = new HashSet<>();
             set.addAll(facet.terms);
             itemSets.add(set);
+        }
+    }
+    
+    private void loadSystemItemSet() {
+        systemItemSet.clear();
+        for (ScoredFacet facet : sysFacets) {
+            for (ScoredItem item : facet.items) {
+                systemItemSet.add(item.item);
+            }
         }
     }
 
@@ -151,6 +164,11 @@ public class PrfEvaluator implements QueryFacetEvaluator {
         return correct / total;
     }
 
+    /**
+     * only consider terms/items that appear both in system and annotator facets
+     * @param toWeight
+     * @return 
+     */
     private double clusteringF1(boolean toWeight) {
 
         double correct = 0;
@@ -177,8 +195,14 @@ public class PrfEvaluator implements QueryFacetEvaluator {
             }
         }
 
+        // only consider terms in both system and annoator facets
         for (AnnotatedFacet afacet : annFacets) {
-            int size = afacet.size();
+            int size = 0; 
+            for(String term : afacet.terms) {
+                if(this.systemItemSet.contains(term)) {
+                    size ++;
+                }
+            }
             double weight = weight(afacet.get(0), afacet.get(0), toWeight);
             aTotal += size * (size - 1) * weight / 2;
         }
@@ -216,5 +240,7 @@ public class PrfEvaluator implements QueryFacetEvaluator {
     public int metricNum() {
         return metricNum;
     }
+
+    
 
 }

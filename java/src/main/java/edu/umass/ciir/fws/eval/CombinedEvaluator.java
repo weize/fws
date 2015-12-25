@@ -36,6 +36,7 @@ public class CombinedEvaluator implements QueryFacetEvaluator{
         evaluators.add(new PrfEvaluator(numTopFacets));
         evaluators.add(new RpndcgEvaluator(numTopFacets));
         evaluators.add(new ClusteringEvaluator(numTopFacets));
+        evaluators.add(new PrfNewEvaluator(numTopFacets));
         
         facetMap = FacetAnnotation.loadAsMapFromTextFile(annotatedFacetTextFile);
     }
