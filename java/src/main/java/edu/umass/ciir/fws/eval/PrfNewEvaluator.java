@@ -22,7 +22,7 @@ import org.lemurproject.galago.tupleflow.Utility;
  */
 public class PrfNewEvaluator implements QueryFacetEvaluator {
 
-    protected static final int metricNum = 4;
+    protected static final int metricNum = 10;
     int numTopFacets;
     List<ScoredFacet> sysFacets; // system
     List<AnnotatedFacet> annFacets; // annotators
