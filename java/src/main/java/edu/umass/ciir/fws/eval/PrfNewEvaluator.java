@@ -74,7 +74,7 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
         double prf = hamitionMean(p, r, f1c);
         double wprf = hamitionMean(wp, wr, wf1c);
 
-        return new double[]{f1c, wf1c, prf, wprf};
+        return new double[]{p, wp, r, wr, f1, wf1, f1c, wf1c, prf, wprf};
     }
 
     /**
