@@ -5,7 +5,7 @@
  */
 package edu.umass.ciir.fws.clustering.gm;
 
-import edu.umass.ciir.fws.eval.QueryFacetEvaluator;
+import edu.umass.ciir.fws.eval.CombinedEvaluator;
 import edu.umass.ciir.fws.types.TfFolder;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
@@ -28,7 +28,7 @@ public class EvalTuneGmi extends StandardStep<TfFolder, TfFolder> {
 
     //String predictDir;
     String trainDir;
-    QueryFacetEvaluator evaluator;
+    CombinedEvaluator evaluator;
     final static String model = "gmi";
     int facetTuneRank;
 
@@ -41,7 +41,7 @@ public class EvalTuneGmi extends StandardStep<TfFolder, TfFolder> {
         File facetTextFile = new File(p.getString("facetAnnotationText"));
         facetTuneRank = new Long(p.getLong("facetTuneRank")).intValue();
         
-        evaluator = new QueryFacetEvaluator(10, facetTextFile);
+        evaluator = new CombinedEvaluator(10, facetTextFile);
     }
 
     @Override

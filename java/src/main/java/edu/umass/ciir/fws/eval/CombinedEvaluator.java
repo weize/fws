@@ -18,10 +18,10 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- *
+ * Combine other query facet evaluators together
  * @author wkong
  */
-public class QueryFacetEvaluator {
+public class CombinedEvaluator {
 
     PrfEvaluator prfEvaluator;
     RpndcgEvaluator rpndcgEvaluator;
@@ -30,14 +30,14 @@ public class QueryFacetEvaluator {
 
     HashMap<String, FacetAnnotation> facetMap;
 
-    public QueryFacetEvaluator(int numTopFacets, File annotatedFacetTextFile) throws IOException {
+    public CombinedEvaluator(int numTopFacets, File annotatedFacetTextFile) throws IOException {
         prfEvaluator = new PrfEvaluator(numTopFacets);
         rpndcgEvaluator = new RpndcgEvaluator(numTopFacets);
         clusteringEvaluator = new ClusteringEvaluator(numTopFacets);
         facetMap = FacetAnnotation.loadAsMapFromTextFile(annotatedFacetTextFile);
     }
     
-    public QueryFacetEvaluator(File annotatedFacetTextFile) throws IOException {
+    public CombinedEvaluator(File annotatedFacetTextFile) throws IOException {
         prfEvaluator = new PrfEvaluator(10);
         rpndcgEvaluator = new RpndcgEvaluator(10);
         clusteringEvaluator = new ClusteringEvaluator(10);
@@ -52,7 +52,7 @@ public class QueryFacetEvaluator {
             FacetAnnotation annotator = facetMap.get(query.id);
             File systemFile = new File(Utility.getFacetFileName(facetDir, query.id, model, paramFileNameStr));
             List<ScoredFacet> system = ScoredFacet.loadFacets(systemFile);
-            double[] result = getResults(annotator.facets, system, numTopFacets);
+            double[] result = eval(annotator.facets, system, numTopFacets);
             results.add(new QueryMetrics(query.id, result));
             Utility.add(avg, result);
         }
@@ -61,7 +61,7 @@ public class QueryFacetEvaluator {
         QueryMetrics.output(results, outfile);
     }
 
-    private double[] getResults(ArrayList<AnnotatedFacet> facets, List<ScoredFacet> system, int numTopFacets) throws IOException {
+    public double[] eval(ArrayList<AnnotatedFacet> facets, List<ScoredFacet> system, int numTopFacets) throws IOException {
         double[] scores = new double[metricNum];
         int i = 0;
         for (double score : prfEvaluator.eval(facets, system, numTopFacets)) {
@@ -82,7 +82,7 @@ public class QueryFacetEvaluator {
     }
 
     public static double f1(double p, double r) {
-        return p + r < org.lemurproject.galago.tupleflow.Utility.epsilon ? 0 : 2 * p * r / (p + r);
+        return p + r < Utility.epsilon ? 0 : 2 * p * r / (p + r);
     }
 
 }

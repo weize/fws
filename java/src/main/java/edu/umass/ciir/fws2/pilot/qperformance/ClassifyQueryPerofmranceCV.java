@@ -9,7 +9,7 @@ import edu.emory.mathcs.backport.java.util.Arrays;
 import edu.umass.ciir.fws.clustering.ScoredItem;
 import edu.umass.ciir.fws.clustering.gm.TrainDataSampler;
 import edu.umass.ciir.fws.clustering.gm.lr.LinearRegressionModel;
-import edu.umass.ciir.fws.eval.QueryFacetEvaluator;
+import edu.umass.ciir.fws.eval.CombinedEvaluator;
 import edu.umass.ciir.fws.query.QueryFileParser;
 import edu.umass.ciir.fws.types.TfFolder;
 import edu.umass.ciir.fws.types.TfQuery;
@@ -289,7 +289,7 @@ public class ClassifyQueryPerofmranceCV extends AppFunction {
             }
             double precision = (double) posReturn / (double) posLabeled;
             double recall = (double) posReturn / (double) posTotal;
-            double f1 = QueryFacetEvaluator.f1(precision, recall);
+            double f1 = CombinedEvaluator.f1(precision, recall);
             avgPerf /= posLabeled;
             writer.close();
             writerEval.write(String.format("f1\t%s\nprecision\t%s\nrecall\t%s\nperfAvg\t%f\n", f1, precision, recall, avgPerf));
@@ -426,7 +426,7 @@ public class ClassifyQueryPerofmranceCV extends AppFunction {
                 }
                 double precision = (double) posReturn / (double) sizeReturn;
                 double recall = (double) posReturn / (double) posTotal;
-                double f1 = QueryFacetEvaluator.f1(precision, recall);
+                double f1 = CombinedEvaluator.f1(precision, recall);
                 if (f1 > f1Best) {
                     f1Best = f1;
                     precisionBest = precision;

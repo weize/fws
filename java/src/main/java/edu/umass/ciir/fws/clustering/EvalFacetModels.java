@@ -7,7 +7,7 @@ package edu.umass.ciir.fws.clustering;
 
 import edu.emory.mathcs.backport.java.util.Arrays;
 import edu.umass.ciir.fws.clustering.gm.GmLearn;
-import edu.umass.ciir.fws.eval.QueryFacetEvaluator;
+import edu.umass.ciir.fws.eval.CombinedEvaluator;
 import edu.umass.ciir.fws.types.TfQueryParameters;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
@@ -101,7 +101,7 @@ public class EvalFacetModels extends AppFunction {
     @InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
     public static class EvalFacetModel implements Processor<TfQueryParameters> {
 
-        QueryFacetEvaluator evaluator;
+        CombinedEvaluator evaluator;
         String allFacetDir;
         File queryFile;
 
@@ -109,7 +109,7 @@ public class EvalFacetModels extends AppFunction {
             Parameters p = parameters.getJSON();
             allFacetDir = p.getString("facetDir");
             File facetTextFile = new File(p.getString("facetAnnotationText"));
-            evaluator = new QueryFacetEvaluator(10, facetTextFile);
+            evaluator = new CombinedEvaluator(10, facetTextFile);
             queryFile = new File(p.getString("queryFile"));
         }
 

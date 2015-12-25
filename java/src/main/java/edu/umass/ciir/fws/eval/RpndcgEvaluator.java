@@ -113,7 +113,7 @@ public class RpndcgEvaluator {
             case 2:
                 return facet.precision * facet.recall;
             case 3:
-                return QueryFacetEvaluator.f1(facet.precision, facet.recall);
+                return CombinedEvaluator.f1(facet.precision, facet.recall);
             default:
                 throw new IOException("weight function flag error");
         }

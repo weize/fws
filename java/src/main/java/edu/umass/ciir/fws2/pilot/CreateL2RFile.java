@@ -9,7 +9,7 @@ import edu.umass.ciir.fws.anntation.AnnotatedFacet;
 import edu.umass.ciir.fws.anntation.FacetAnnotation;
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.clustering.ScoredItem;
-import edu.umass.ciir.fws.eval.QueryFacetEvaluator;
+import edu.umass.ciir.fws.eval.CombinedEvaluator;
 import edu.umass.ciir.fws.query.QueryFileParser;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.utility.TextProcessing;
@@ -86,7 +86,7 @@ public class CreateL2RFile extends AppFunction {
                     }
                     double precision = (double) count / sysItems.size();
                     double recall = (double) count / af.size();
-                    double f1 = QueryFacetEvaluator.f1(precision, recall);
+                    double f1 = CombinedEvaluator.f1(precision, recall);
                     optimalF1 = Math.max(f1, optimalF1);
                     optimalP = Math.max(precision, optimalP);
                 }
