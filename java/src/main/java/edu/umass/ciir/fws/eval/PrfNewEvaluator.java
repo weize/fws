@@ -91,7 +91,7 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
         itemWeightMap.clear();
         for (AnnotatedFacet facet : annFacets) {
             for (String item : facet.terms) {
-                double weight = facet.rating;
+                double weight = ((double)facet.rating) / facet.terms.size();
                 itemWeightMap.put(item, weight);
             }
         }
