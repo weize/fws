@@ -21,32 +21,32 @@ import java.util.List;
  * Combine other query facet evaluators together
  * @author wkong
  */
-public class CombinedEvaluator {
+public class CombinedEvaluator implements QueryFacetEvaluator{
 
+    protected  static int defulatNumTopFacets = 10;
+    List<QueryFacetEvaluator> evaluators;
     PrfEvaluator prfEvaluator;
     RpndcgEvaluator rpndcgEvaluator;
     ClusteringEvaluator clusteringEvaluator;
-    final static int metricNum = PrfEvaluator.metricNum + RpndcgEvaluator.metricNum + ClusteringEvaluator.metricNum;
 
     HashMap<String, FacetAnnotation> facetMap;
 
     public CombinedEvaluator(int numTopFacets, File annotatedFacetTextFile) throws IOException {
-        prfEvaluator = new PrfEvaluator(numTopFacets);
-        rpndcgEvaluator = new RpndcgEvaluator(numTopFacets);
-        clusteringEvaluator = new ClusteringEvaluator(numTopFacets);
+        evaluators = new ArrayList<>();
+        evaluators.add(new PrfEvaluator(numTopFacets));
+        evaluators.add(new RpndcgEvaluator(numTopFacets));
+        evaluators.add(new ClusteringEvaluator(numTopFacets));
+        
         facetMap = FacetAnnotation.loadAsMapFromTextFile(annotatedFacetTextFile);
     }
     
     public CombinedEvaluator(File annotatedFacetTextFile) throws IOException {
-        prfEvaluator = new PrfEvaluator(10);
-        rpndcgEvaluator = new RpndcgEvaluator(10);
-        clusteringEvaluator = new ClusteringEvaluator(10);
-        facetMap = FacetAnnotation.loadAsMapFromTextFile(annotatedFacetTextFile);
+        this(defulatNumTopFacets, annotatedFacetTextFile);
     }
 
     public void eval(File queryFile, String facetDir, String model, String paramFileNameStr, File outfile, int numTopFacets) throws IOException {
         List<TfQuery> queries = QueryFileParser.loadQueries(queryFile);
-        double[] avg = new double[metricNum];
+        double[] avg = new double[metricNum()];
         ArrayList<QueryMetrics> results = new ArrayList<>();
         for (TfQuery query : queries) {
             FacetAnnotation annotator = facetMap.get(query.id);
@@ -61,28 +61,33 @@ public class CombinedEvaluator {
         QueryMetrics.output(results, outfile);
     }
 
-    public double[] eval(ArrayList<AnnotatedFacet> facets, List<ScoredFacet> system, int numTopFacets) throws IOException {
-        double[] scores = new double[metricNum];
+    @Override
+    public double[] eval(List<AnnotatedFacet> facets, List<ScoredFacet> system, int numTopFacets) {
+        double[] scores = new double[metricNum()];
+        
         int i = 0;
-        for (double score : prfEvaluator.eval(facets, system, numTopFacets)) {
-            scores[i] = score;
-            i++;
+        for(QueryFacetEvaluator evaluator : evaluators) {
+            for(double score : evaluator.eval(facets, system, numTopFacets)) {
+                scores[i++] = score;
+            }
         }
-
-        for (double score : rpndcgEvaluator.eval(facets, system, numTopFacets)) {
-            scores[i] = score;
-            i++;
-        }
-
-        for (double score : clusteringEvaluator.eval(facets, system, numTopFacets)) {
-            scores[i] = score;
-            i++;
-        }
+        
         return scores;
     }
 
     public static double f1(double p, double r) {
         return p + r < Utility.epsilon ? 0 : 2 * p * r / (p + r);
     }
+
+    @Override
+    public int metricNum() {
+        int num = 0;
+        for(QueryFacetEvaluator evaluator : evaluators) {
+            num += evaluator.metricNum();
+        }
+        return num;
+    }
+
+    
 
 }

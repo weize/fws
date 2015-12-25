@@ -8,7 +8,6 @@ package edu.umass.ciir.fws.eval;
 import edu.umass.ciir.fws.anntation.AnnotatedFacet;
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.clustering.ScoredItem;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -19,9 +18,9 @@ import org.lemurproject.galago.tupleflow.Utility;
  *
  * @author wkong
  */
-public class RpndcgEvaluator {
+public class RpndcgEvaluator implements QueryFacetEvaluator {
 
-    public final static int metricNum = 4;
+    protected final static int metricNum = 4;
     int numTopFacets;
     List<PrFacet> sysFacets; // system
     List<PrFacet> annFacets; // annotators
@@ -49,7 +48,8 @@ public class RpndcgEvaluator {
         }
     }
     
-    public double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets, int numTopFacets) throws IOException {
+    @Override
+    public double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets, int numTopFacets) {
         this.numTopFacets = numTopFacets;
         loadFacets(afacets, sfacets);
 
@@ -75,12 +75,13 @@ public class RpndcgEvaluator {
      *
      * @param afacets facets from annotator
      * @param sfacets facet from system
+     * @return
      */
-    public double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets) throws IOException {
+    public double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets) {
        return eval(afacets, sfacets, this.numTopFacets);
     }
 
-    private double idealDCG() throws IOException {
+    private double idealDCG()  {
         // sort rated aspects
         Collections.sort(annFacets);
 
@@ -89,7 +90,7 @@ public class RpndcgEvaluator {
         return weightedDCG(idealTopFacets, 0);
     }
 
-    private double weightedDCG(List<PrFacet> facets, int flag) throws IOException {
+    private double weightedDCG(List<PrFacet> facets, int flag) {
         int rank = 0;
         double dcg = 0;
         for (PrFacet f : facets) {
@@ -104,7 +105,7 @@ public class RpndcgEvaluator {
         return Math.log(a) / Utility.log2;
     }
 
-    private double weight(PrFacet facet, int flag) throws IOException {
+    private double weight(PrFacet facet, int flag) {
         switch (flag) {
             case 0:
                 return 1;
@@ -115,7 +116,7 @@ public class RpndcgEvaluator {
             case 3:
                 return CombinedEvaluator.f1(facet.precision, facet.recall);
             default:
-                throw new IOException("weight function flag error");
+                throw new RuntimeException("weight function flag error");
         }
     }
 
@@ -160,6 +161,11 @@ public class RpndcgEvaluator {
             }
         }
         return count;
+    }
+
+    @Override
+    public int metricNum() {
+        return metricNum;
     }
 
     private static class PrFacet implements Comparable<PrFacet> {

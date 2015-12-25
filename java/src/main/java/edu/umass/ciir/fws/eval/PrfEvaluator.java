@@ -6,11 +6,9 @@
 package edu.umass.ciir.fws.eval;
 
 import edu.umass.ciir.fws.anntation.AnnotatedFacet;
-import edu.umass.ciir.fws.anntation.FacetAnnotation;
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.clustering.ScoredItem;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -21,9 +19,9 @@ import org.lemurproject.galago.tupleflow.Utility;
  *
  * @author wkong
  */
-public class PrfEvaluator {
+public class PrfEvaluator implements QueryFacetEvaluator {
 
-    public static final int metricNum = 10;
+    private static final int metricNum = 10;
     int numTopFacets;
     List<ScoredFacet> sysFacets; // system
     List<AnnotatedFacet> annFacets; // annotators
@@ -51,6 +49,7 @@ public class PrfEvaluator {
         }
     }
 
+    @Override
     public double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets, int numTopFacets) {
         this.numTopFacets = numTopFacets;
         loadFacets(afacets, sfacets);
@@ -211,6 +210,11 @@ public class PrfEvaluator {
 
     private double weight(String kp, String kp2, boolean toWeight) {
         return toWeight ? weight(kp, true) + weight(kp2, true) : 2;
+    }
+
+    @Override
+    public int metricNum() {
+        return metricNum;
     }
 
 }

@@ -17,9 +17,9 @@ import org.lemurproject.galago.tupleflow.Utility;
  *
  * @author wkong
  */
-public class ClusteringEvaluator {
+public class ClusteringEvaluator implements QueryFacetEvaluator {
 
-    public static final int metricNum = 2;
+    protected static final int metricNum = 2;
     int numTopFacets;
     List<HashSet<String>> annFacets;
     List<HashSet<String>> sysFacets;
@@ -29,6 +29,7 @@ public class ClusteringEvaluator {
         this.numTopFacets = numTopFacets;
     }
 
+    @Override
     public double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets, int numTopFacets) {
         this.numTopFacets = numTopFacets;
         loadFacets(afacets, sfacets);
@@ -162,6 +163,11 @@ public class ClusteringEvaluator {
             }
         }
         return count;
+    }
+
+    @Override
+    public int metricNum() {
+        return metricNum;
     }
 
 }
