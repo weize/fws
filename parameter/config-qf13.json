@@ -52,4 +52,5 @@
 	"facetTuneMetricIndices" : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
 	"topFacetNum" : 10,
 	"facetModelsToEval" : ["gmi", "gmj", "plsa", "lda", "qd"],
+	"facetEvaluators" : ["edu.umass.ciir.fws.eval.PrfNewEvaluator", "edu.umass.ciir.fws.eval.RpndcgEvaluator", "edu.umass.ciir.fws.eval.ClusteringEvaluator"], 
 }
