@@ -145,7 +145,7 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
 
         double precision = stotal < Utility.epsilon ? 0 : correct / stotal;
         double recall = atotal < Utility.epsilon ? 0 : correct / atotal;
-        double f1 = CombinedEvaluator.f1(precision, recall);
+        double f1 = CombinedFacetEvaluator.f1(precision, recall);
         return new double[]{precision, recall, f1};
     }
 
@@ -197,7 +197,7 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
 
         double precision = sTotal == 0 ? 0 : correct / sTotal;
         double recall = aTotal == 0 ? 0 : correct / aTotal;
-        double f1 = CombinedEvaluator.f1(precision, recall);
+        double f1 = CombinedFacetEvaluator.f1(precision, recall);
         return new double[]{precision, recall, f1};
     }
 

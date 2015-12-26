@@ -10,7 +10,7 @@ import edu.umass.ciir.fws.anntation.FacetAnnotation;
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.clustering.ScoredItem;
 import edu.umass.ciir.fws.eval.PrfEvaluator;
-import edu.umass.ciir.fws.eval.CombinedEvaluator;
+import edu.umass.ciir.fws.eval.CombinedFacetEvaluator;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedWriter;
@@ -129,7 +129,7 @@ public class FacetQualityFeaturesExtractor implements Processor<TfQuery> {
             }
             double precision = (double) count / sysItems.size();
             double recall = (double) count / af.size();
-            double f1 = CombinedEvaluator.f1(precision, recall);
+            double f1 = CombinedFacetEvaluator.f1(precision, recall);
             double wf1 = f1 * af.terms.size() * af.rating / weightSum;
             optimalF1 = Math.max(f1, optimalF1);
             optimalWf1 = Math.max(wf1, optimalWf1);

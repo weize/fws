@@ -61,8 +61,8 @@ public class PrfEvaluator implements QueryFacetEvaluator {
         double r = recall(false);
         double wr = recall(true);
 
-        double f1 = CombinedEvaluator.f1(p, r);
-        double wf1 = CombinedEvaluator.f1(wp, wr);
+        double f1 = CombinedFacetEvaluator.f1(p, r);
+        double wf1 = CombinedFacetEvaluator.f1(wp, wr);
 
         double f1c = clusteringF1(false);
         double wf1c = clusteringF1(true);
@@ -185,7 +185,7 @@ public class PrfEvaluator implements QueryFacetEvaluator {
 
         double p = sTotal == 0 ? 0 : correct / sTotal;
         double r = aTotal == 0 ? 0 : correct / aTotal;
-        return CombinedEvaluator.f1(p, r);
+        return CombinedFacetEvaluator.f1(p, r);
     }
 
     private double hamitionMean(double p, double r, double f) {

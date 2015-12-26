@@ -25,7 +25,7 @@ import org.lemurproject.galago.tupleflow.Parameters;
  * Combine other query facet evaluators together
  * @author wkong
  */
-public class CombinedEvaluator implements QueryFacetEvaluator{
+public class CombinedFacetEvaluator implements QueryFacetEvaluator{
 
     List<QueryFacetEvaluator> evaluators;
     PrfEvaluator prfEvaluator;
@@ -34,7 +34,7 @@ public class CombinedEvaluator implements QueryFacetEvaluator{
 
     HashMap<String, FacetAnnotation> facetMap;
 
-    public CombinedEvaluator(Parameters p) throws IOException {
+    public CombinedFacetEvaluator(Parameters p) throws IOException {
         String annotatedFacetTextFile = p.getString("facetAnnotationText");
         facetMap = FacetAnnotation.loadAsMapFromTextFile(new File(annotatedFacetTextFile));
         List<String> evaluatorNames = p.getAsList("facetEvaluators");
@@ -45,14 +45,14 @@ public class CombinedEvaluator implements QueryFacetEvaluator{
                 Class<?> c = Class.forName(className);
                 evaluators.add((QueryFacetEvaluator)c.newInstance());
             } catch (ClassNotFoundException | IllegalAccessException | InstantiationException ex) {
-                Logger.getLogger(CombinedEvaluator.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(CombinedFacetEvaluator.class.getName()).log(Level.SEVERE, null, ex);
                 throw new RuntimeException(ex);
             }
         }
     }
     
     
-//    public CombinedEvaluator(File annotatedFacetTextFile) throws IOException {
+//    public CombinedFacetEvaluator(File annotatedFacetTextFile) throws IOException {
 //        evaluators = new ArrayList<>();
 //        //evaluators.add(new PrfEvaluator(numTopFacets));
 //        evaluators.add(new PrfNewEvaluator());

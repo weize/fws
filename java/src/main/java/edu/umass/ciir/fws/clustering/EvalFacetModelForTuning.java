@@ -5,7 +5,7 @@
  */
 package edu.umass.ciir.fws.clustering;
 
-import edu.umass.ciir.fws.eval.CombinedEvaluator;
+import edu.umass.ciir.fws.eval.CombinedFacetEvaluator;
 import edu.umass.ciir.fws.types.TfFolder;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
@@ -28,7 +28,7 @@ public class EvalFacetModelForTuning extends StandardStep<TfFolder, TfFolder> {
 
     String tuneDir;
     String runFacetDir;
-    CombinedEvaluator evaluator;
+    CombinedFacetEvaluator evaluator;
     String model;
     int facetTuneRank;
 
@@ -39,7 +39,7 @@ public class EvalFacetModelForTuning extends StandardStep<TfFolder, TfFolder> {
         tuneDir = Utility.getFileName(modelDir, "tune");
         runFacetDir = Utility.getFileName(modelDir, "run", "facet");
         facetTuneRank = new Long(p.getLong("facetTuneRank")).intValue();
-        evaluator = new CombinedEvaluator(p);
+        evaluator = new CombinedFacetEvaluator(p);
     }
 
     @Override

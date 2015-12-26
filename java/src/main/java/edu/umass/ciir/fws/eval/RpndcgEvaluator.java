@@ -101,7 +101,7 @@ public class RpndcgEvaluator implements QueryFacetEvaluator {
             case 2:
                 return facet.precision * facet.recall;
             case 3:
-                return CombinedEvaluator.f1(facet.precision, facet.recall);
+                return CombinedFacetEvaluator.f1(facet.precision, facet.recall);
             default:
                 throw new RuntimeException("weight function flag error");
         }
