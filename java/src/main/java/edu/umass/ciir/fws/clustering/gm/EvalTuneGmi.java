@@ -41,7 +41,7 @@ public class EvalTuneGmi extends StandardStep<TfFolder, TfFolder> {
         File facetTextFile = new File(p.getString("facetAnnotationText"));
         facetTuneRank = new Long(p.getLong("facetTuneRank")).intValue();
         
-        evaluator = new CombinedEvaluator(10, facetTextFile);
+        evaluator = new CombinedEvaluator(facetTextFile);
     }
 
     @Override

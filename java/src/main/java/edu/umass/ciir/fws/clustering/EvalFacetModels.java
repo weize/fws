@@ -109,7 +109,7 @@ public class EvalFacetModels extends AppFunction {
             Parameters p = parameters.getJSON();
             allFacetDir = p.getString("facetDir");
             File facetTextFile = new File(p.getString("facetAnnotationText"));
-            evaluator = new CombinedEvaluator(10, facetTextFile);
+            evaluator = new CombinedEvaluator(facetTextFile);
             queryFile = new File(p.getString("queryFile"));
         }
 

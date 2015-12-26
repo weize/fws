@@ -23,7 +23,6 @@ import java.util.List;
  */
 public class CombinedEvaluator implements QueryFacetEvaluator{
 
-    protected  static int defulatNumTopFacets = 10;
     List<QueryFacetEvaluator> evaluators;
     PrfEvaluator prfEvaluator;
     RpndcgEvaluator rpndcgEvaluator;
@@ -31,21 +30,17 @@ public class CombinedEvaluator implements QueryFacetEvaluator{
 
     HashMap<String, FacetAnnotation> facetMap;
 
-    public CombinedEvaluator(int numTopFacets, File annotatedFacetTextFile) throws IOException {
+    public CombinedEvaluator(File annotatedFacetTextFile) throws IOException {
         evaluators = new ArrayList<>();
         //evaluators.add(new PrfEvaluator(numTopFacets));
-        evaluators.add(new PrfNewEvaluator(numTopFacets));
-        evaluators.add(new RpndcgEvaluator(numTopFacets));
-        evaluators.add(new ClusteringEvaluator(numTopFacets));
+        evaluators.add(new PrfNewEvaluator());
+        evaluators.add(new RpndcgEvaluator());
+        evaluators.add(new ClusteringEvaluator());
         
         
         facetMap = FacetAnnotation.loadAsMapFromTextFile(annotatedFacetTextFile);
     }
-    
-    public CombinedEvaluator(File annotatedFacetTextFile) throws IOException {
-        this(defulatNumTopFacets, annotatedFacetTextFile);
-    }
-
+   
     public void eval(File queryFile, String facetDir, String model, String paramFileNameStr, File outfile, int numTopFacets) throws IOException {
         List<TfQuery> queries = QueryFileParser.loadQueries(queryFile);
         double[] avg = new double[metricNum()];

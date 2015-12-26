@@ -402,7 +402,7 @@ public class TestFn extends AppFunction {
     }
 
     private void testEal(Parameters p, PrintStream output) throws IOException {
-        ClusteringEvaluator clusteringEvaluator = new ClusteringEvaluator(10);
+        ClusteringEvaluator clusteringEvaluator = new ClusteringEvaluator();
         File annotatedFacetJsonFile = new File(p.getString("facetAnnotationJson"));
         String facetFilename = p.getString("facetFilename");
         HashMap<String, FacetAnnotation> facetMap = FacetAnnotation.loadAsMap(annotatedFacetJsonFile);
@@ -414,7 +414,7 @@ public class TestFn extends AppFunction {
     }
 
     private void testRpndcgEvaluator(Parameters p, PrintStream output) throws IOException {
-        RpndcgEvaluator RpndcgEvaluator = new RpndcgEvaluator(10);
+        RpndcgEvaluator RpndcgEvaluator = new RpndcgEvaluator();
         File annotatedFacetJsonFile = new File(p.getString("facetAnnotationJson"));
         String facetFilename = p.getString("facetFilename");
         HashMap<String, FacetAnnotation> facetMap = FacetAnnotation.loadAsMap(annotatedFacetJsonFile);

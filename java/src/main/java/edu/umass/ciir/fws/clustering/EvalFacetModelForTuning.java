@@ -42,7 +42,7 @@ public class EvalFacetModelForTuning extends StandardStep<TfFolder, TfFolder> {
         //File facetJsonFile = new File(p.getString("facetAnnotationJson"));
         File facetTextFile = new File(p.getString("facetAnnotationText"));
 
-        evaluator = new CombinedEvaluator(10, facetTextFile);
+        evaluator = new CombinedEvaluator(facetTextFile);
     }
 
     @Override

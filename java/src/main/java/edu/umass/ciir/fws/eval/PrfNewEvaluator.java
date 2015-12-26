@@ -22,8 +22,7 @@ import org.lemurproject.galago.tupleflow.Utility;
  */
 public class PrfNewEvaluator implements QueryFacetEvaluator {
 
-    protected static final int metricNum = 10;
-    int numTopFacets;
+    private static final int metricNum = 10;
     List<ScoredFacet> sysFacets; // system
     List<AnnotatedFacet> annFacets; // annotators
 
@@ -34,14 +33,13 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
     Set<String> systemItemSet; // all items in the system facets
     List<HashSet<String>> itemSets; // stores annotator sysFacets as sets
 
-    public PrfNewEvaluator(int numTopFacets) {
-        this.numTopFacets = numTopFacets;
+    public PrfNewEvaluator() {
         itemWeightMap = new HashMap<>();
         itemSets = new ArrayList<>();
         systemItemSet = new HashSet<>();
     }
 
-    protected void loadFacets(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets) {
+    protected void loadFacets(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets, int numTopFacets) {
         // only using top n sysFacets
         sysFacets = sfacets.subList(0, Math.min(sfacets.size(), numTopFacets));
         annFacets = new ArrayList<>();
@@ -54,8 +52,7 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
 
     @Override
     public double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets, int numTopFacets) {
-        this.numTopFacets = numTopFacets;
-        loadFacets(afacets, sfacets);
+        loadFacets(afacets, sfacets, numTopFacets);
         loadItemWeightMap();
         loadItemSets();
         loadSystemItemSet();
@@ -77,16 +74,6 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
         return new double[]{p, wp, r, wr, f1, wf1, f1c, wf1c, prf, wprf};
     }
 
-    /**
-     *
-     * @param afacets sysFacets from annotator
-     * @param sfacets sysFacets from system
-     * @return
-     */
-    public double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets) {
-        return eval(afacets, sfacets, this.numTopFacets);
-    }
-
     private void loadItemWeightMap() {
         itemWeightMap.clear();
         for (AnnotatedFacet facet : annFacets) {
@@ -106,7 +93,7 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
             itemSets.add(set);
         }
     }
-    
+
     private void loadSystemItemSet() {
         systemItemSet.clear();
         for (ScoredFacet facet : sysFacets) {
@@ -167,8 +154,9 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
 
     /**
      * only consider terms/items that appear both in system and annotator facets
+     *
      * @param toWeight
-     * @return 
+     * @return
      */
     private double clusteringF1(boolean toWeight) {
 
@@ -198,10 +186,10 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
 
         // only consider terms in both system and annoator facets
         for (AnnotatedFacet afacet : annFacets) {
-            int size = 0; 
-            for(String term : afacet.terms) {
-                if(this.systemItemSet.contains(term)) {
-                    size ++;
+            int size = 0;
+            for (String term : afacet.terms) {
+                if (this.systemItemSet.contains(term)) {
+                    size++;
                 }
             }
             double weight = weight(afacet.get(0), afacet.get(0), toWeight);
@@ -241,7 +229,5 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
     public int metricNum() {
         return metricNum;
     }
-
-    
 
 }

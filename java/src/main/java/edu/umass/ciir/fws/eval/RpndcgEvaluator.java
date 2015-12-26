@@ -20,16 +20,14 @@ import org.lemurproject.galago.tupleflow.Utility;
  */
 public class RpndcgEvaluator implements QueryFacetEvaluator {
 
-    protected final static int metricNum = 4;
-    int numTopFacets;
+    private final static int metricNum = 4;
     List<PrFacet> sysFacets; // system
     List<PrFacet> annFacets; // annotators
 
-    public RpndcgEvaluator(int numTopFacets) {
-        this.numTopFacets = numTopFacets;
+    public RpndcgEvaluator() {
     }
 
-    private void loadFacets(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets) {
+    private void loadFacets(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets, int numTopFacets) {
         // only using top n sysFacets
         sysFacets = new ArrayList<>();
         for (ScoredFacet facet : sfacets.subList(0, Math.min(sfacets.size(), numTopFacets))) {
@@ -50,15 +48,14 @@ public class RpndcgEvaluator implements QueryFacetEvaluator {
     
     @Override
     public double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets, int numTopFacets) {
-        this.numTopFacets = numTopFacets;
-        loadFacets(afacets, sfacets);
+        loadFacets(afacets, sfacets, numTopFacets);
 
         // map system sysFacets to annotator sysFacets
         for (PrFacet facet : sysFacets) {
             mapToAnnotatorFacet(facet);
         }
 
-        double idealDCG = idealDCG();
+        double idealDCG = idealDCG(numTopFacets);
 
         // different weight: no weight,  precision, precison * recall, f1
         double[] scores = new double[metricNum];
@@ -71,17 +68,7 @@ public class RpndcgEvaluator implements QueryFacetEvaluator {
     }
     
 
-    /**
-     *
-     * @param afacets facets from annotator
-     * @param sfacets facet from system
-     * @return
-     */
-    public double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets) {
-       return eval(afacets, sfacets, this.numTopFacets);
-    }
-
-    private double idealDCG()  {
+    private double idealDCG(int numTopFacets)  {
         // sort rated aspects
         Collections.sort(annFacets);
 

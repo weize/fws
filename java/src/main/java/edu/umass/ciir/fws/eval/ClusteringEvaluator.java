@@ -19,35 +19,20 @@ import org.lemurproject.galago.tupleflow.Utility;
  */
 public class ClusteringEvaluator implements QueryFacetEvaluator {
 
-    protected static final int metricNum = 2;
-    int numTopFacets;
+    private static final int metricNum = 2;
     List<HashSet<String>> annFacets;
     List<HashSet<String>> sysFacets;
     int itemNumInAnnFacets;
 
-    public ClusteringEvaluator(int numTopFacets) {
-        this.numTopFacets = numTopFacets;
-    }
-
     @Override
     public double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets, int numTopFacets) {
-        this.numTopFacets = numTopFacets;
-        loadFacets(afacets, sfacets);
+        loadFacets(afacets, sfacets, numTopFacets);
         double purity = purity();
         double nmi = nmi();
 
         return new double[]{purity, nmi};
     }
     
-    /**
-     *
-     * @param afacets sysFacets from annotator
-     * @param sfacets sysFacets from system
-     * @return
-     */
-    public double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets) {
-        return eval(afacets, sfacets, numTopFacets);
-    }
 
     private double nmi() {
         double mutualInfo = mutualInfo();
@@ -93,7 +78,7 @@ public class ClusteringEvaluator implements QueryFacetEvaluator {
         return score;
     }
 
-    private void loadFacets(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets) {
+    private void loadFacets(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets, int numTopFacets) {
         // annotator clusters
         annFacets = new ArrayList<>();
         HashSet<String> annItemsNeeToCover = new HashSet<>();
