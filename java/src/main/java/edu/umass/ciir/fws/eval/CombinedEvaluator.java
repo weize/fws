@@ -13,9 +13,13 @@ import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.lemurproject.galago.tupleflow.Parameters;
 
 /**
  * Combine other query facet evaluators together
@@ -30,16 +34,34 @@ public class CombinedEvaluator implements QueryFacetEvaluator{
 
     HashMap<String, FacetAnnotation> facetMap;
 
-    public CombinedEvaluator(File annotatedFacetTextFile) throws IOException {
-        evaluators = new ArrayList<>();
-        //evaluators.add(new PrfEvaluator(numTopFacets));
-        evaluators.add(new PrfNewEvaluator());
-        evaluators.add(new RpndcgEvaluator());
-        evaluators.add(new ClusteringEvaluator());
+    public CombinedEvaluator(Parameters p) throws IOException {
+        String annotatedFacetTextFile = p.getString("facetAnnotationText");
+        facetMap = FacetAnnotation.loadAsMapFromTextFile(new File(annotatedFacetTextFile));
+        List<String> evaluatorNames = p.getAsList("facetEvaluators");
+        evaluators = new ArrayList<>(evaluatorNames.size());
         
-        
-        facetMap = FacetAnnotation.loadAsMapFromTextFile(annotatedFacetTextFile);
+        for(String className : evaluatorNames) {
+            try {
+                Class<?> c = Class.forName(className);
+                evaluators.add((QueryFacetEvaluator)c.newInstance());
+            } catch (ClassNotFoundException | IllegalAccessException | InstantiationException ex) {
+                Logger.getLogger(CombinedEvaluator.class.getName()).log(Level.SEVERE, null, ex);
+                throw new RuntimeException(ex);
+            }
+        }
     }
+    
+    
+//    public CombinedEvaluator(File annotatedFacetTextFile) throws IOException {
+//        evaluators = new ArrayList<>();
+//        //evaluators.add(new PrfEvaluator(numTopFacets));
+//        evaluators.add(new PrfNewEvaluator());
+//        evaluators.add(new RpndcgEvaluator());
+//        evaluators.add(new ClusteringEvaluator());
+//        
+//        
+//        facetMap = FacetAnnotation.loadAsMapFromTextFile(annotatedFacetTextFile);
+//    }
    
     public void eval(File queryFile, String facetDir, String model, String paramFileNameStr, File outfile, int numTopFacets) throws IOException {
         List<TfQuery> queries = QueryFileParser.loadQueries(queryFile);

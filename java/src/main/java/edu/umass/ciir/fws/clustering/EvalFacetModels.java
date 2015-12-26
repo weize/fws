@@ -108,8 +108,7 @@ public class EvalFacetModels extends AppFunction {
         public EvalFacetModel(TupleFlowParameters parameters) throws IOException {
             Parameters p = parameters.getJSON();
             allFacetDir = p.getString("facetDir");
-            File facetTextFile = new File(p.getString("facetAnnotationText"));
-            evaluator = new CombinedEvaluator(facetTextFile);
+            evaluator = new CombinedEvaluator(p);
             queryFile = new File(p.getString("queryFile"));
         }
 

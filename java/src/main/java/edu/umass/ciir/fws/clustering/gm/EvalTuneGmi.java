@@ -38,10 +38,8 @@ public class EvalTuneGmi extends StandardStep<TfFolder, TfFolder> {
         //predictDir = Utility.getFileName(gmDir, "predict");
         trainDir = Utility.getFileName(gmDir, "train");
         //File facetJsonFile = new File(p.getString("facetAnnotationJson"));
-        File facetTextFile = new File(p.getString("facetAnnotationText"));
         facetTuneRank = new Long(p.getLong("facetTuneRank")).intValue();
-        
-        evaluator = new CombinedEvaluator(facetTextFile);
+        evaluator = new CombinedEvaluator(p);
     }
 
     @Override
