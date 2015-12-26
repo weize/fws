@@ -5,6 +5,7 @@
  */
 package edu.umass.ciir.fws.eval;
 
+import edu.emory.mathcs.backport.java.util.Arrays;
 import edu.umass.ciir.fws.anntation.AnnotatedFacet;
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.clustering.ScoredItem;
@@ -22,7 +23,7 @@ import org.lemurproject.galago.tupleflow.Utility;
  */
 public class PrfNewEvaluator implements QueryFacetEvaluator {
 
-    private static final int metricNum = 10;
+    private static final int metricNum = 22;
     List<ScoredFacet> sysFacets; // system
     List<AnnotatedFacet> annFacets; // annotators
 
@@ -50,28 +51,42 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
         }
     }
 
+    
     @Override
     public double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets, int numTopFacets) {
         loadFacets(afacets, sfacets, numTopFacets);
         loadItemWeightMap();
         loadItemSets();
         loadSystemItemSet();
+        
+        double [] noWeight = eval(false);
+        double [] hasWeight = eval(true);
+        double [] all = new double[metricNum];
+        int i = 0;
+        for(double res : noWeight) {
+            all[i++] = res;
+        }
+        for(double res : hasWeight) {
+            all[i++] = res;
+        }
+        return all;
+    }
+    
+    public double[] eval(boolean toWeight) {
+         // term precisoin recall
+        double[] termPRF = termPrecisionRecallF1(toWeight);
+        // pair precision recall (for clustering)
+        double[] pairPRFComplete = pairPrecisionRecallF1(toWeight, false);
+        double[] pairPRFOverlap = pairPrecisionRecallF1(toWeight, true);
 
-        double p = precision(false);
-        double wp = precision(true);
-        double r = recall(false);
-        double wr = recall(true);
-
-        double f1 = CombinedEvaluator.f1(p, r);
-        double wf1 = CombinedEvaluator.f1(wp, wr);
-
-        double f1c = clusteringF1(false);
-        double wf1c = clusteringF1(true);
-
-        double prf = hamitionMean(p, r, f1c);
-        double wprf = hamitionMean(wp, wr, wf1c);
-
-        return new double[]{p, wp, r, wr, f1, wf1, f1c, wf1c, prf, wprf};
+        double prfComplete = harmonicMean(termPRF[0], termPRF[1], pairPRFComplete[2]);
+        double prfOverlap = harmonicMean(termPRF[0], termPRF[1], pairPRFOverlap[2]);
+        
+        return new double[] {termPRF[0], termPRF[1], termPRF[2],
+          pairPRFComplete[0], pairPRFComplete[1], pairPRFComplete[2],
+          pairPRFOverlap[0], pairPRFOverlap[1], pairPRFOverlap[2],
+          prfComplete, prfOverlap
+        };    
     }
 
     private void loadItemWeightMap() {
@@ -103,9 +118,10 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
         }
     }
 
-    private double precision(boolean toWeight) {
+    private double[] termPrecisionRecallF1(boolean toWeight) {
         double correct = 0;
-        double total = 0;
+        double stotal = 0;
+        double atotal = 0;
 
         HashSet<String> set = new HashSet<>();
         for (ScoredFacet facet : sysFacets) {
@@ -116,49 +132,32 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
                     if (itemWeightMap.containsKey(term)) {
                         correct += weight;
                     }
-                    total += weight;
+                    stotal += weight;
                     set.add(term);
                 }
             }
         }
-
-        return total < Utility.epsilon ? 0 : correct / total;
-    }
-
-    private double recall(boolean toWeight) {
-        double correct = 0;
-        double total = 0;
 
         for (String item : itemWeightMap.keySet()) {
             double weight = weight(item, toWeight);
-            total += weight;
+            atotal += weight;
         }
 
-        HashSet<String> set = new HashSet<>();
-
-        for (ScoredFacet facet : sysFacets) {
-            for (ScoredItem item : facet.items) {
-                String term = item.item;
-                if (!set.contains(term)) {
-                    double weight = weight(term, toWeight);
-                    if (itemWeightMap.containsKey(term)) {
-                        correct += weight;
-                    }
-                    set.add(term);
-                }
-            }
-        }
-
-        return correct / total;
+        double precision = stotal < Utility.epsilon ? 0 : correct / stotal;
+        double recall = atotal < Utility.epsilon ? 0 : correct / atotal;
+        double f1 = CombinedEvaluator.f1(precision, recall);
+        return new double[]{precision, recall, f1};
     }
 
     /**
-     * only consider terms/items that appear both in system and annotator facets
      *
      * @param toWeight
+     * @param overalap only consider system items that also appear in annotator
+     * facets, otherwise also consider annotator terms that are not in system
+     * facets (assume they are singletons).
      * @return
      */
-    private double clusteringF1(boolean toWeight) {
+    private double[] pairPrecisionRecallF1(boolean toWeight, boolean overalap) {
 
         double correct = 0;
         double aTotal = 0; // annotator
@@ -188,7 +187,7 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
         for (AnnotatedFacet afacet : annFacets) {
             int size = 0;
             for (String term : afacet.terms) {
-                if (this.systemItemSet.contains(term)) {
+                if (!overalap || systemItemSet.contains(term)) {
                     size++;
                 }
             }
@@ -196,12 +195,13 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
             aTotal += size * (size - 1) * weight / 2;
         }
 
-        double p = sTotal == 0 ? 0 : correct / sTotal;
-        double r = aTotal == 0 ? 0 : correct / aTotal;
-        return CombinedEvaluator.f1(p, r);
+        double precision = sTotal == 0 ? 0 : correct / sTotal;
+        double recall = aTotal == 0 ? 0 : correct / aTotal;
+        double f1 = CombinedEvaluator.f1(precision, recall);
+        return new double[]{precision, recall, f1};
     }
 
-    private double hamitionMean(double p, double r, double f) {
+    private double harmonicMean(double p, double r, double f) {
         double a = alpha * alpha;
         double b = beta * beta;
         double d = a * r * f + b * p * f + p * r;
