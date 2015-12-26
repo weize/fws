@@ -16,7 +16,7 @@ import java.util.Map;
 import org.lemurproject.galago.tupleflow.Utility;
 
 /**
- *
+ * Used in CIKM'14 paper.
  * @author wkong
  */
 public class PrfEvaluator implements QueryFacetEvaluator {
