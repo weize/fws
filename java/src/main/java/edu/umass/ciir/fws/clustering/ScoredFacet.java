@@ -108,20 +108,24 @@ public class ScoredFacet implements Comparable<ScoredFacet> {
         BufferedReader reader = Utility.getReader(file);
         String line;
         while ((line = reader.readLine()) != null) {
-            String[] fields = line.split("\t");
-            double score = Double.parseDouble(fields[0]);
-            String scoredItemList = fields[1];
-
-            ArrayList<ScoredItem> items = new ArrayList<>();
-            for (String scoredItemStr : scoredItemList.split("\\|")) {
-                ScoredItem scoredItem = new ScoredItem(scoredItemStr, 0);
-                items.add(scoredItem);
-            }
-
-            facets.add(new ScoredFacet(items, score));
+            facets.add(parseFacet(line));
         }
         reader.close();
         return facets;
+    }
+
+    public static ScoredFacet parseFacet(String line) {
+        String[] fields = line.split("\t");
+        double score = Double.parseDouble(fields[0]);
+        String scoredItemList = fields[1];
+
+        ArrayList<ScoredItem> items = new ArrayList<>();
+        for (String scoredItemStr : scoredItemList.split("\\|")) {
+            ScoredItem scoredItem = new ScoredItem(scoredItemStr, 0);
+            items.add(scoredItem);
+        }
+
+        return new ScoredFacet(items, score);
     }
 
     @Override
