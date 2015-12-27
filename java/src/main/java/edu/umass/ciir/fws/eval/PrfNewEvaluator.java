@@ -264,12 +264,20 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
         int sTotal = 0; // system
         double weight = 0.0;
 
+        HashSet<String> pairSet = new HashSet<>();
+        
         for (ScoredFacet facet : sysFacets) {
             for (int i = 0; i < facet.items.size(); i++) {
                 String item1 = facet.items.get(i).item;
                 if (itemWeightMap.containsKey(item1)) {
                     for (int j = i + 1; j < facet.items.size(); j++) {
                         String item2 = facet.items.get(j).item;
+                        String pairId = getPairId(item1, item2);
+                        if (pairSet.contains(pairId)) { // do not count duplidates
+                            continue;
+                        } else {
+                            pairSet.add(pairId);
+                        }
                         if (itemWeightMap.containsKey(item2)) {
                             sTotal++;
                             // correct ?
@@ -307,6 +315,10 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
         return new double[]{precision, recall, f1};
     }
 
+    private String getPairId(String item1, String item2) {
+        return item1.compareTo(item2) < 0 ? item1 + "|" + item2 : item2 + "|" + item1;
+    }
+    
     private double harmonicMean(double p, double r, double f) {
         double a = alpha * alpha;
         double b = beta * beta;
