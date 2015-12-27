@@ -24,7 +24,7 @@ import org.lemurproject.galago.tupleflow.Utility;
  */
 public class PrfNewEvaluator implements QueryFacetEvaluator {
 
-    private static final int metricNum = 44;
+    private static final int metricNum = 44; // 4 weighting X 11 metrics
     List<ScoredFacet> sysFacets; // system
     List<AnnotatedFacet> annFacets; // annotators
 
@@ -35,7 +35,8 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
     Set<String> systemItemSet; // all items in the system facets
     List<HashSet<String>> itemSets; // stores annotator sysFacets as sets
     double[][] idealTermCW; // idea clumulative term weight [#num of postive cases][#different weigting methods]
-    double[][] idealPairCW; // idea clumulative Pair weight
+    double[][] idealPairCWComplete; // idea clumulative Pair weight for complete case
+    double[][] idealPairCWOverlap; // idea clumulative Pair weight for overlap case
 
     public static enum TermWeighting {
 
@@ -68,9 +69,9 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
         loadFacets(afacets, sfacets, numTopFacets);
         loadItemWeightMap();
         loadItemSets();
+        loadSystemItemSet();
         cumulateTermWeights();
         cumulatePairWeights();
-        loadSystemItemSet();
 
         double[] all = new double[metricNum];
         int i = 0;
@@ -124,7 +125,9 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
 
     private void cumulatePairWeights() {
         // compute idea cumulative weighting
-        ArrayList<double[]> pairWeightList = new ArrayList<>();
+        ArrayList<double[]> pairWeightListComplete = new ArrayList<>();
+        ArrayList<double[]> pairWeightListOverlap = new ArrayList<>();
+
         for (AnnotatedFacet facet : annFacets) {
             List<String> terms = facet.terms;
             for (int i = 0; i < terms.size(); i++) {
@@ -135,13 +138,18 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
                     for (TermWeighting weighting : TermWeighting.values()) {
                         weights[weighting.ordinal()] = weight(t1, t2, weighting);
                     }
-                    pairWeightList.add(weights);
+                    pairWeightListComplete.add(weights);
+                    if (systemItemSet.contains(t1) && systemItemSet.contains(t2)) {
+                        pairWeightListOverlap.add(weights);
+                    }
                 }
             }
         }
 
-        double[][] pairWeights = pairWeightList.toArray(new double[0][]); // store weights in there temporarily 
-        idealPairCW = cumulateWeights(pairWeights);
+        double[][] pairWeightsComoplete = pairWeightListComplete.toArray(new double[0][]);
+        idealPairCWComplete = cumulateWeights(pairWeightsComoplete);
+        double[][] pairWeightsOverlap = pairWeightListOverlap.toArray(new double[0][]);
+        idealPairCWOverlap = cumulateWeights(pairWeightsOverlap);
     }
 
     public double[][] cumulateWeights(double[][] weights) {
@@ -206,7 +214,7 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
     private double[] termPrecisionRecallF1(TermWeighting weighting) {
         int correct = 0;
         int stotal = 0;
-        int atotal = 0;
+        int atotal = itemWeightMap.size();
         double weight = 0; // cumulative postive case weight
 
         HashSet<String> set = new HashSet<>();
@@ -232,11 +240,11 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
         double f1 = CombinedFacetEvaluator.f1(precision, recall);
         return new double[]{precision, recall, f1};
     }
-    
+
     public static double safelyDivide(int numerator, int denominator) {
         return denominator == 0 ? 0.0 : (double) numerator / (double) denominator;
     }
-    
+
     public static double safelyDivide(double numerator, double denominator) {
         return Math.abs(denominator) < Utility.epsilon ? 0.0 : numerator / denominator;
     }
@@ -249,7 +257,7 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
      * facets (assume they are singletons).
      * @return
      */
-    private double[] pairPrecisionRecallF1(TermWeighting weighting, boolean overalap) {
+    private double[] pairPrecisionRecallF1(TermWeighting weighting, boolean overlap) {
 
         int correct = 0;
         int aTotal = 0; // annotator
@@ -263,10 +271,10 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
                     for (int j = i + 1; j < facet.items.size(); j++) {
                         String item2 = facet.items.get(j).item;
                         if (itemWeightMap.containsKey(item2)) {
-                            sTotal ++;
+                            sTotal++;
                             // correct ?
                             if (inSameItemSet(item1, item2)) {
-                                correct ++;
+                                correct++;
                                 weight += weight(item1, item2, weighting);
                             }
                         }
@@ -276,18 +284,20 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
             }
         }
 
-        double idealWeight = correct == 0 ? 0.0 : idealPairCW[correct - 1][weighting.ordinal()];
+        double idealWeight = correct == 0 ? 0.0
+                : (overlap ? idealPairCWOverlap[correct - 1][weighting.ordinal()]
+                : idealPairCWComplete[correct - 1][weighting.ordinal()]);
         double weightRatio = safelyDivide(weight, idealWeight);
-        
+
         // only consider terms in both system and annoator facets
         for (AnnotatedFacet afacet : annFacets) {
             int size = 0;
             for (String term : afacet.terms) {
-                if (!overalap || systemItemSet.contains(term)) {
+                if (!overlap || systemItemSet.contains(term)) {
                     size++;
                 }
             }
-            
+
             aTotal += size * (size - 1) / 2;
         }
 
