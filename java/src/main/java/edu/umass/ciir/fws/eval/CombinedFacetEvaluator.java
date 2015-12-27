@@ -28,10 +28,6 @@ import org.lemurproject.galago.tupleflow.Parameters;
 public class CombinedFacetEvaluator implements QueryFacetEvaluator{
 
     List<QueryFacetEvaluator> evaluators;
-    PrfEvaluator prfEvaluator;
-    RpndcgEvaluator rpndcgEvaluator;
-    ClusteringEvaluator clusteringEvaluator;
-
     HashMap<String, FacetAnnotation> facetMap;
 
     public CombinedFacetEvaluator(Parameters p) throws IOException {
