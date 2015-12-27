@@ -73,11 +73,11 @@ public class EvalFacetModelForTuning extends StandardStep<TfFolder, TfFolder> {
 
         File evalFile = new File(Utility.getFacetEvalFileName(evalDir, model, param, facetTuneRank));
 
-        if (evalFile.exists()) {
-            Utility.infoFileExists(evalFile);
-            processor.process(folder);
-            return;
-        }
+//        if (evalFile.exists()) {
+//            Utility.infoFileExists(evalFile);
+//            processor.process(folder);
+//            return;
+//        }
 
         Utility.infoOpen(evalFile);
         evaluator.eval(trainQueryFile, runFacetDir, model, param, evalFile, facetTuneRank);
