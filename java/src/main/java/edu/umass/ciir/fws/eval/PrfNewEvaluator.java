@@ -102,7 +102,7 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
         };
     }
 
-    private void loadItemWeightMap() {
+    protected void loadItemWeightMap() {
         itemWeightMap.clear();
         for (AnnotatedFacet facet : annFacets) {
             for (String item : facet.terms) {
@@ -117,13 +117,13 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
 
     }
 
-    private void cumulateTermWeights() {
+    protected void cumulateTermWeights() {
         // compute idea cumulative weighting
         double[][] termWeights = itemWeightMap.values().toArray(new double[0][]);
         idealTermCW = cumulateWeights(termWeights);
     }
 
-    private void cumulatePairWeights() {
+    protected void cumulatePairWeights() {
         // compute idea cumulative weighting
         ArrayList<double[]> pairWeightListComplete = new ArrayList<>();
         ArrayList<double[]> pairWeightListOverlap = new ArrayList<>();
@@ -152,7 +152,7 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
         idealPairCWOverlap = cumulateWeights(pairWeightsOverlap);
     }
 
-    public double[][] cumulateWeights(double[][] weights) {
+    protected double[][] cumulateWeights(double[][] weights) {
         // new idealTermCW
         int size = weights.length;
         double[][] idealCWs = new double[size][]; // ideal cumulative weights
@@ -193,7 +193,7 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
 
     }
 
-    private void loadItemSets() {
+    protected void loadItemSets() {
         itemSets.clear();
         for (AnnotatedFacet facet : annFacets) {
             HashSet<String> set = new HashSet<>();
@@ -202,7 +202,7 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
         }
     }
 
-    private void loadSystemItemSet() {
+    protected void loadSystemItemSet() {
         systemItemSet.clear();
         for (ScoredFacet facet : sysFacets) {
             for (ScoredItem item : facet.items) {
@@ -211,7 +211,7 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
         }
     }
 
-    private double[] termPrecisionRecallF1(TermWeighting weighting) {
+    protected double[] termPrecisionRecallF1(TermWeighting weighting) {
         int correct = 0;
         int stotal = 0;
         int atotal = itemWeightMap.size();
@@ -257,7 +257,7 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
      * facets (assume they are singletons).
      * @return
      */
-    private double[] pairPrecisionRecallF1(TermWeighting weighting, boolean overlap) {
+    protected double[] pairPrecisionRecallF1(TermWeighting weighting, boolean overlap) {
 
         int correct = 0;
         int aTotal = 0; // annotator
@@ -315,11 +315,11 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
         return new double[]{precision, recall, f1};
     }
 
-    private String getPairId(String item1, String item2) {
+    protected String getPairId(String item1, String item2) {
         return item1.compareTo(item2) < 0 ? item1 + "|" + item2 : item2 + "|" + item1;
     }
     
-    private double harmonicMean(double p, double r, double f) {
+    protected double harmonicMean(double p, double r, double f) {
         double a = alpha * alpha;
         double b = beta * beta;
         double d = a * r * f + b * p * f + p * r;
@@ -335,11 +335,11 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
         return false;
     }
 
-    private double weight(String item, TermWeighting weighting) {
+    protected double weight(String item, TermWeighting weighting) {
         return itemWeightMap.get(item)[weighting.ordinal()];
     }
 
-    private double weight(String kp, String kp2, TermWeighting weighting) {
+    protected double weight(String kp, String kp2, TermWeighting weighting) {
         return weight(kp, weighting) + weight(kp2, weighting);
     }
 
