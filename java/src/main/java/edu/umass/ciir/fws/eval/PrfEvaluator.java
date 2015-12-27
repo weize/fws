@@ -21,8 +21,7 @@ import org.lemurproject.galago.tupleflow.Utility;
  */
 public class PrfEvaluator implements QueryFacetEvaluator {
 
-    protected static final int metricNum = 10;
-    int numTopFacets;
+    protected static final int metricNum = 10;    
     List<ScoredFacet> sysFacets; // system
     List<AnnotatedFacet> annFacets; // annotators
 
@@ -32,13 +31,13 @@ public class PrfEvaluator implements QueryFacetEvaluator {
     Map<String, Double> itemWeightMap; // only stored postive items
     List<HashSet<String>> itemSets; // stores annotator sysFacets as sets
 
-    public PrfEvaluator(int numTopFacets) {
-        this.numTopFacets = numTopFacets;
+    
+    public PrfEvaluator() {
         itemWeightMap = new HashMap<>();
         itemSets = new ArrayList<>();
     }
 
-    protected void loadFacets(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets) {
+    protected void loadFacets(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets, int numTopFacets) {
         // only using top n sysFacets
         sysFacets = sfacets.subList(0, Math.min(sfacets.size(), numTopFacets));
         annFacets = new ArrayList<>();
@@ -51,8 +50,7 @@ public class PrfEvaluator implements QueryFacetEvaluator {
 
     @Override
     public double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets, int numTopFacets) {
-        this.numTopFacets = numTopFacets;
-        loadFacets(afacets, sfacets);
+        loadFacets(afacets, sfacets, numTopFacets);
         loadItemWeightMap();
         loadItemSets();
 
@@ -71,16 +69,6 @@ public class PrfEvaluator implements QueryFacetEvaluator {
         double wprf = hamitionMean(wp, wr, wf1c);
 
         return new double[]{p, wp, r, wr, f1, wf1, f1c, wf1c, prf, wprf};
-    }
-
-    /**
-     *
-     * @param afacets sysFacets from annotator
-     * @param sfacets sysFacets from system
-     * @return
-     */
-    public double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets) {
-        return eval(afacets, sfacets, this.numTopFacets);
     }
 
     private void loadItemWeightMap() {
