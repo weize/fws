@@ -49,8 +49,9 @@
 	"pairFeatureIndices" : [1, 2, 3, 4],
 	"cvFolderNum": 10,
 	"facetTuneRank" : 10,
-	"facetTuneMetricIndices" : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
+	"facetTuneMetricIndices" : [4, 5, 6, 7, 8, 9, 11, 12, 13, 18, 21, 24, 25, 26, 29, 32, 35, 36, 37, 40, 43, 46, 47, 48, 51, 54, 57, 58, 59],
+	"facetTuneMetricIndicesTest" : [9],
 	"topFacetNum" : 10,
 	"facetModelsToEval" : ["gmi", "gmj", "plsa", "lda", "qd"],
-	"facetEvaluators" : ["edu.umass.ciir.fws.eval.PrfNewEvaluator", "edu.umass.ciir.fws.eval.RpndcgEvaluator", "edu.umass.ciir.fws.eval.ClusteringEvaluator"], 
+	"facetEvaluators" : ["edu.umass.ciir.fws.eval.PrfEvaluator", "edu.umass.ciir.fws.eval.RpndcgEvaluator", "edu.umass.ciir.fws.eval.ClusteringEvaluator", "edu.umass.ciir.fws.eval.PrfNewEvaluator", "edu.umass.ciir.fws.eval.FacetSizeEvaluator"], 
 }
