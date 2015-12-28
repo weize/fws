@@ -59,20 +59,23 @@ public class GmiClusterer extends StandardStep<TfQueryParameters, TfQueryParamet
             String gmiParam = Utility.parametersToFileNameString(params[4], params[5]);
             clusterFile = new File(Utility.getClusterFileName(gmiClusterDir, queryParams.id, "gmi", gmiParam));
 
+            // do not skip for predicting, should overwrite for new tuning results.
+            // if (clusterFile.exists()) { ...
         } else {
             String tuneDir = Utility.getFileName(trainDir, folderId, "tune");
             termPredictFile = new File(Utility.getGmTermPredictFileName(tuneDir, queryParams.id));
             termPairPredictFile = new File(Utility.getGmTermPairPredictFileName(tuneDir, queryParams.id));
             String gmiParam = Utility.parametersToFileNameString(termProbTh, pairProbTh);
             clusterFile = new File(Utility.getClusterFileName(tuneDir, queryParams.id, "gmi", gmiParam));
+
+            // skip for tuning cases 
+            if (clusterFile.exists()) {
+                Utility.infoFileExists(clusterFile);
+                processor.process(queryParams);
+                return;
+            }
         }
 
-//        if (clusterFile.exists()) {
-//            Utility.infoFileExists(clusterFile);
-//            processor.process(queryParams);
-//            return;
-//        }
-        
         Utility.infoOpen(clusterFile);
         Utility.createDirectoryForFile(clusterFile);
         GmIndependentClusterer gmi = new GmIndependentClusterer(termProbTh, pairProbTh);
