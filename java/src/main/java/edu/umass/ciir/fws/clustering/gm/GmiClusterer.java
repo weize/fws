@@ -67,11 +67,11 @@ public class GmiClusterer extends StandardStep<TfQueryParameters, TfQueryParamet
             clusterFile = new File(Utility.getClusterFileName(tuneDir, queryParams.id, "gmi", gmiParam));
         }
 
-        if (clusterFile.exists()) {
-            Utility.infoFileExists(clusterFile);
-            processor.process(queryParams);
-            return;
-        }
+//        if (clusterFile.exists()) {
+//            Utility.infoFileExists(clusterFile);
+//            processor.process(queryParams);
+//            return;
+//        }
         
         Utility.infoOpen(clusterFile);
         Utility.createDirectoryForFile(clusterFile);
