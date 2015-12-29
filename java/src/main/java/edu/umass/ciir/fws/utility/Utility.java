@@ -37,7 +37,7 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         return getReader(new File(filename));
     }
 
-    public static BufferedReader getReader(File file) throws IOException {        
+    public static BufferedReader getReader(File file) throws IOException {
         FileInputStream stream = new FileInputStream(file);
         if (file.getName().endsWith(".gz")) {
             return new BufferedReader(
@@ -176,8 +176,18 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         return getFileName(clusterDir, qid, name);
     }
 
+    public static String getQdClusterFileName(String clusterDir, String qid, String paramsFilename) {
+        String name = String.format("%s.qd.%s.cluster", qid, paramsFilename);
+        return getFileName(clusterDir, qid, name);
+    }
+
     public static String getQdFacetFileName(String facetDir, String qid, double distanceMax, double websiteCountMin, double itemRatio) {
         String name = String.format("%s.qd.%s.facet", qid, parametersToFileNameString(distanceMax, websiteCountMin, itemRatio));
+        return getFileName(facetDir, qid, name);
+    }
+    
+    public static String getQdFacetFileName(String facetDir, String qid, String paramsFilename) {
+        String name = String.format("%s.qd.%s.facet", qid, paramsFilename);
         return getFileName(facetDir, qid, name);
     }
 
@@ -291,7 +301,7 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
     public static void infoProcessing(Object object) {
         System.err.println(String.format("Processing %s", object.toString()));
     }
-    
+
     public static void infoProcessing(Type object) {
         System.err.println(String.format("Processing %s", object.toString()));
     }

@@ -1,18 +1,17 @@
 package edu.umass.ciir.fws.clustering.qd;
 
+import edu.umass.ciir.fws.clustering.ModelParameters;
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.clustering.ScoredItem;
+import edu.umass.ciir.fws.clustering.qd.QdParameterSettings.FacetParameters;
 import edu.umass.ciir.fws.tool.app.ProcessQueryParametersApp;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.types.TfQueryParameters;
-import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import org.lemurproject.galago.tupleflow.InputClass;
 import org.lemurproject.galago.tupleflow.OutputClass;
 import org.lemurproject.galago.tupleflow.Parameters;
@@ -50,16 +49,12 @@ public class QdClusterToFacet extends ProcessQueryParametersApp {
     @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
     public static class GenerateQdFacetParameters extends StandardStep<TfQuery, TfQueryParameters> {
 
-        List<Double> distanceMaxs;
-        List<Double> websiteCountMins;
-        List<Double> itemRatios;
         String facetDir;
+        QdParameterSettings qdSettings;
 
         public GenerateQdFacetParameters(TupleFlowParameters parameters) {
             Parameters p = parameters.getJSON();
-            distanceMaxs = p.getList("qdDistanceMaxs");
-            websiteCountMins = p.getList("qdWebsiteCountMins");
-            itemRatios = p.getList("qdItemRatios");
+            qdSettings = new QdParameterSettings(p);
             String runDir = p.getString("qdRunDir");
             facetDir = Utility.getFileName(runDir, "facet");
 
@@ -67,20 +62,14 @@ public class QdClusterToFacet extends ProcessQueryParametersApp {
 
         @Override
         public void process(TfQuery query) throws IOException {
-            for (double distanceMax : distanceMaxs) {
-                for (double websiteCountMin : websiteCountMins) {
-                    for (double itemRatio : itemRatios) {
-                        File facetFile = new File(Utility.getQdFacetFileName(facetDir, query.id, distanceMax, websiteCountMin, itemRatio));
-                        if (facetFile.exists()) {
-                            Utility.infoFileExists(facetFile);
-                        } else {
-                            String parameters = Utility.parametersToString(distanceMax, websiteCountMin, itemRatio);
-                            processor.process(new TfQueryParameters(query.id, query.text, parameters));
-                        }
-                    }
+            for (ModelParameters params : qdSettings.getFacetParametersList()) {
+                File facetFile = new File(Utility.getQdFacetFileName(facetDir, query.id, params.toFilenameString()));
+                if (facetFile.exists()) {
+                    Utility.infoFileExists(facetFile);
+                } else {
+                    processor.process(new TfQueryParameters(query.id, query.text, params.toString()));
                 }
             }
-
         }
 
     }
@@ -108,12 +97,15 @@ public class QdClusterToFacet extends ProcessQueryParametersApp {
         public void process(TfQueryParameters queryParameters) throws IOException {
             System.err.println(String.format("Processing qid:%s parameters:%s", queryParameters.id, queryParameters.parameters));
             String qid = queryParameters.id;
-            String[] fields = Utility.splitParameters(queryParameters.parameters);
-            double distanceMax = Double.parseDouble(fields[0]);
-            double websiteCountMin = Double.parseDouble(fields[1]);
-            double itemRatio = Double.parseDouble(fields[2]);
+            FacetParameters params = new FacetParameters(queryParameters.parameters);
+            double distanceMax = params.distanceMax;
+            double websiteCountMin = params.websiteCountMin;
+            double itemRatio = params.itemRatio;
+            double itemThreshold = params.itemThreshld;
 
-            File facetFile = new File(Utility.getQdFacetFileName(facetDir, qid, distanceMax, websiteCountMin, itemRatio));
+            File facetFile = new File(Utility.getQdFacetFileName(facetDir, qid, params.toFilenameString()));
+            
+            // should not exists because we filtered them out in generating params process
             if (facetFile.exists()) {
                 Utility.infoFileExists(facetFile);
                 return;
@@ -135,7 +127,7 @@ public class QdClusterToFacet extends ProcessQueryParametersApp {
                 ArrayList<ScoredItem> items = new ArrayList<>();
                 for (String scoredItemStr : facetTermList.split("\\|")) {
                     ScoredItem scoredItem = new ScoredItem(scoredItemStr);
-                    if (scoredItem.score > 1 && scoredItem.score > threshold) {
+                    if (scoredItem.score > itemThreshold && scoredItem.score > threshold) {
                         items.add(scoredItem);
                     }
                 }

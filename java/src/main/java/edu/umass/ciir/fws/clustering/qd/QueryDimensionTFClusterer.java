@@ -4,6 +4,7 @@
  */
 package edu.umass.ciir.fws.clustering.qd;
 
+import edu.umass.ciir.fws.clustering.qd.QdParameterSettings.ClusterParameters;
 import edu.umass.ciir.fws.types.TfQueryParameters;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
@@ -28,7 +29,7 @@ public class QueryDimensionTFClusterer extends QueryDimensionClusterer implement
     String clusterDir;
     String featureDir;
 
-    public QueryDimensionTFClusterer(TupleFlowParameters parameters) {        
+    public QueryDimensionTFClusterer(TupleFlowParameters parameters) {
         Parameters p = parameters.getJSON();
         this.debug = p.get("debug", false);
         String runDir = p.getString("qdRunDir");
@@ -42,19 +43,19 @@ public class QueryDimensionTFClusterer extends QueryDimensionClusterer implement
 
         //setQueryParameters
         String qid = queryParameters.id;
-        String[] fields = Utility.splitParameters(queryParameters.parameters);
-        distanceMax = Double.parseDouble(fields[0]);
-        websiteCountMin = Double.parseDouble(fields[1]);
+        ClusterParameters params = new ClusterParameters(queryParameters.parameters);
+        distanceMax = params.distanceMax;
+        websiteCountMin = params.websiteCountMin;
 
-        File clusterFile = new File(Utility.getQdClusterFileName(clusterDir, qid, distanceMax, websiteCountMin));
+        File clusterFile = new File(Utility.getQdClusterFileName(clusterDir, qid, params.toFilenameString()));
         if (clusterFile.exists()) {
             Utility.infoFileExists(clusterFile);
             return;
         }
-        
+
         List<FacetFeatures> nodes = loadFacetFeatures(qid);
         List<QDCluster> clusters = cluster(nodes, distanceMax, websiteCountMin);
-        
+
         Utility.createDirectoryForFile(clusterFile);
         output(clusters, clusterFile);
     }

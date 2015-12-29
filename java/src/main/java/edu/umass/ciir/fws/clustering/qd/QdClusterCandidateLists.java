@@ -1,12 +1,13 @@
 package edu.umass.ciir.fws.clustering.qd;
 
+import edu.umass.ciir.fws.clustering.ModelParameters;
+import edu.umass.ciir.fws.clustering.ParameterSettings;
 import edu.umass.ciir.fws.tool.app.ProcessQueryParametersApp;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.types.TfQueryParameters;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import org.lemurproject.galago.tupleflow.InputClass;
 import org.lemurproject.galago.tupleflow.OutputClass;
 import org.lemurproject.galago.tupleflow.Parameters;
@@ -46,14 +47,12 @@ public class QdClusterCandidateLists extends ProcessQueryParametersApp {
     @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
     public static class GenerateQdClusterParameters extends StandardStep<TfQuery, TfQueryParameters> {
 
-        List<Double> distanceMaxs;
-        List<Double> websiteCountMins;
+        QdParameterSettings qdParams;
         String clusterDir;
 
         public GenerateQdClusterParameters(TupleFlowParameters parameters) {
             Parameters p = parameters.getJSON();
-            distanceMaxs = p.getList("qdDistanceMaxs");
-            websiteCountMins = p.getList("qdWebsiteCountMins");
+            qdParams = new QdParameterSettings(p);
             String runDir = p.getString("qdRunDir");
             clusterDir = Utility.getFileName(runDir, "cluster");
 
@@ -61,18 +60,14 @@ public class QdClusterCandidateLists extends ProcessQueryParametersApp {
 
         @Override
         public void process(TfQuery query) throws IOException {
-            for (double distanceMax : distanceMaxs) {
-                for (double websiteCountMin : websiteCountMins) {
-                    File clusterFile = new File(Utility.getQdClusterFileName(clusterDir, query.id, distanceMax, websiteCountMin));
-                    if (clusterFile.exists()) {
-                        Utility.infoFileExists(clusterFile);
-                    } else {
-                        String parameters = Utility.parametersToString(distanceMax, websiteCountMin);
-                        processor.process(new TfQueryParameters(query.id, query.text, parameters));
-                    }
+            for (ModelParameters params : qdParams.getClusterParametersList()) {
+                File clusterFile = new File(Utility.getQdClusterFileName(clusterDir, query.id, params.toFilenameString()));
+                if (clusterFile.exists()) {
+                    Utility.infoFileExists(clusterFile);
+                } else {
+                    processor.process(new TfQueryParameters(query.id, query.text, params.toString()));
                 }
             }
-
         }
 
     }

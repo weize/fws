@@ -10,6 +10,7 @@ import edu.umass.ciir.fws.clustering.gm.GmLearn;
 import edu.umass.ciir.fws.eval.QueryMetrics;
 import edu.umass.ciir.fws.query.QueryFileParser;
 import edu.umass.ciir.fws.types.TfFolder;
+import edu.umass.ciir.fws.types.TfFolderParameters;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.types.TfQueryParameters;
 import edu.umass.ciir.fws.utility.TextProcessing;
@@ -121,7 +122,7 @@ public class TuneFacetModel extends AppFunction {
     private Stage getSplitStage(Parameters parameter) {
         Stage stage = new Stage("split");
 
-        stage.addOutput("folderParams", new TfFolder.IdOrder());
+        stage.addOutput("folderParams", new TfFolderParameters.IdOptionParametersOrder());
 
         List<String> inputFiles = parameter.getAsList("queryFile");
 
@@ -133,7 +134,7 @@ public class TuneFacetModel extends AppFunction {
 
         stage.add(new Step(FileSource.class, p));
         stage.add(new Step(SplitFoldersForTuneEval.class, parameter));
-        stage.add(Utility.getSorter(new TfFolder.IdOrder()));
+        stage.add(Utility.getSorter(new TfFolderParameters.IdOptionParametersOrder()));
         stage.add(new OutputStep("folderParams"));
 
         return stage;
@@ -142,12 +143,12 @@ public class TuneFacetModel extends AppFunction {
     private Stage getEvalStage(Parameters parameter) {
         Stage stage = new Stage("eval");
 
-        stage.addInput("folderParams", new TfFolder.IdOrder());
-        stage.addOutput("folderParams2", new TfFolder.IdOrder());
+        stage.addInput("folderParams", new TfFolderParameters.IdOptionParametersOrder());
+        stage.addOutput("folderParams2", new TfFolderParameters.IdOptionParametersOrder());
 
         stage.add(new InputStep("folderParams"));
         stage.add(new Step(EvalFacetModelForTuning.class, parameter));
-        stage.add(Utility.getSorter(new TfFolder.IdOrder()));
+        stage.add(Utility.getSorter(new TfFolderParameters.IdOptionParametersOrder()));
         stage.add(new OutputStep("folderParams2"));
 
         return stage;
@@ -156,7 +157,7 @@ public class TuneFacetModel extends AppFunction {
     private Stage getSelectStage(Parameters parameter) {
         Stage stage = new Stage("select");
 
-        stage.addInput("folderParams2", new TfFolder.IdOrder());
+        stage.addInput("folderParams2", new TfFolderParameters.IdOptionParametersOrder());
         stage.addOutput("queryParams", new TfQueryParameters.IdParametersOrder());
 
         stage.add(new InputStep("folderParams2"));
@@ -200,18 +201,10 @@ public class TuneFacetModel extends AppFunction {
 
         @Override
         public void process(TfQueryParameters queryParams) throws IOException {
-            String[] params = Utility.splitParameters(queryParams.parameters);
-            String folderId = params[0];
-            String predictOrTune = params[1];
-            String metricIndex = params[2];
+            String metricIndex = queryParams.text; // user query text field for metric index
+            String paramsFilenameString = queryParams.parameters;
 
-            String[] modelParams = new String[params.length - 3];
-            for (int i = 0; i < modelParams.length; i++) {
-                modelParams[i] = params[i + 3];
-            }
-
-            String modelParamsFileStr = Utility.parametersToFileNameString(modelParams);
-            File runFacetFile = new File(Utility.getFacetFileName(runFacetDir, queryParams.id, model, modelParamsFileStr));
+            File runFacetFile = new File(Utility.getFacetFileName(runFacetDir, queryParams.id, model, paramsFilenameString));
             File facetFile = new File(Utility.getFacetFileName(facetDir, queryParams.id, model, metricIndex));
             Utility.infoOpen(facetFile);
             Utility.createDirectoryForFile(facetFile);
@@ -232,9 +225,9 @@ public class TuneFacetModel extends AppFunction {
     }
 
     @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.TfFolder")
+    @InputClass(className = "edu.umass.ciir.fws.types.TfFolderParameters")
     @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
-    public static class SelectBestParam extends StandardStep<TfFolder, TfQueryParameters> {
+    public static class SelectBestParam extends StandardStep<TfFolderParameters, TfQueryParameters> {
 
         Parameters p;
         BufferedWriter writer;
@@ -250,7 +243,7 @@ public class TuneFacetModel extends AppFunction {
         }
 
         @Override
-        public void process(TfFolder object) throws IOException {
+        public void process(TfFolderParameters object) throws IOException {
 
         }
 
@@ -277,49 +270,12 @@ public class TuneFacetModel extends AppFunction {
             String folderDir = Utility.getFileName(modelDir, "tune", folderId);
             String evalDir = Utility.getFileName(folderDir, "eval");
 
-            ArrayList<String> params = new ArrayList<>();
-
-            if (model.equals("plsa")) {
-                List<Long> topicNums = p.getAsList("plsaTopicNums");
-                List<Long> termNums = p.getAsList("plsaTermNums");
-
-                for (long topic : topicNums) {
-                    for (long term : termNums) {
-                        String newParams = Utility.parametersToString(topic, term);
-                        params.add(newParams);
-                    }
-                }
-            } else if (model.equals("lda")) {
-                List<Long> topicNums = p.getAsList("ldaTopicNums");
-                List<Long> termNums = p.getAsList("ldaTermNums");
-
-                for (long topic : topicNums) {
-                    for (long term : termNums) {
-                        String newParams = Utility.parametersToString(topic, term);
-                        params.add(newParams);
-                    }
-                }
-
-            } else if (model.equals("qd")) {
-                List<Double> qdDistanceMaxs = p.getAsList("qdDistanceMaxs");
-                List<Double> qdWebsiteCountMins = p.getAsList("qdWebsiteCountMins");
-                List<Double> qdItemRatios = p.getAsList("qdItemRatios");
-
-                for (double dx : qdDistanceMaxs) {
-                    for (double wc : qdWebsiteCountMins) {
-                        for (double ir : qdItemRatios) {
-                            String newParams = Utility.parametersToString(dx, wc, ir);
-                            params.add(newParams);
-                        }
-                    }
-                }
-            }
+            List<ModelParameters> params = ParameterSettings.instance(p, model).getFacetParametersList();
 
             double maxScore = Double.NEGATIVE_INFINITY;
-            String maxScoreParams = "";
-            for (String param : params) {
-                String filenameParam = Utility.parametersToFileNameString(param);
-                File evalFile = new File(Utility.getFacetEvalFileName(evalDir, model, filenameParam, facetTuneRank));
+            ModelParameters maxScoreParams = null;
+            for (ModelParameters param : params) {
+                File evalFile = new File(Utility.getFacetEvalFileName(evalDir, model, param.toFilenameString(), facetTuneRank));
                 double score = QueryMetrics.getAvgScore(evalFile, metricIndex);
                 if (score > maxScore) {
                     maxScore = score;
@@ -328,13 +284,13 @@ public class TuneFacetModel extends AppFunction {
             }
 
             writer.write(String.format("%s\t%s\t%d\t%s\n", model, folderId,
-                    metricIndex, TextProcessing.join(Utility.splitParameters(maxScoreParams), "\t")));
+                    metricIndex, TextProcessing.join(maxScoreParams.paramArray, "\t")));
 
             String testQueryFileName = Utility.getFileName(folderDir, "test.query");
             TfQuery[] queries = QueryFileParser.loadQueryList(testQueryFileName);
             for (TfQuery q : queries) {
-                String qParams = Utility.parametersToString(folderId, "predict", metricIndex, maxScoreParams);
-                processor.process(new TfQueryParameters(q.id, q.text, qParams));
+                // user query text field for metric index
+                processor.process(new TfQueryParameters(q.id, String.valueOf(metricIndex), maxScoreParams.toFilenameString()));
             }
 
         }
@@ -343,8 +299,8 @@ public class TuneFacetModel extends AppFunction {
 
     @Verified
     @InputClass(className = "org.lemurproject.galago.tupleflow.types.FileName")
-    @OutputClass(className = "edu.umass.ciir.fws.types.TfFolder")
-    public static class SplitFoldersForTuneEval extends StandardStep<FileName, TfFolder> {
+    @OutputClass(className = "edu.umass.ciir.fws.types.TfFolderParameters")
+    public static class SplitFoldersForTuneEval extends StandardStep<FileName, TfFolderParameters> {
 
         Parameters p;
 
@@ -363,46 +319,15 @@ public class TuneFacetModel extends AppFunction {
 
             for (int i = 1; i <= numFolders; i++) {
                 String folderId = String.valueOf(i);
-                if (model.equals("plsa")) {
-                    List<Long> topicNums = p.getAsList("plsaTopicNums");
-                    List<Long> termNums = p.getAsList("plsaTermNums");
-
-                    for (long topic : topicNums) {
-                        for (long term : termNums) {
-                            String newParams = Utility.parametersToString(folderId, "tune", topic, term);
-                            processor.process(new TfFolder(newParams));
-                        }
-                    }
-                } else if (model.equals("lda")) {
-                    List<Long> topicNums = p.getAsList("ldaTopicNums");
-                    List<Long> termNums = p.getAsList("ldaTermNums");
-
-                    for (long topic : topicNums) {
-                        for (long term : termNums) {
-                            String newParams = Utility.parametersToString(folderId, "tune", topic, term);
-                            processor.process(new TfFolder(newParams));
-                        }
-                    }
-
-                } else if (model.equals("qd")) {
-                    List<Double> qdDistanceMaxs = p.getAsList("qdDistanceMaxs");
-                    List<Double> qdWebsiteCountMins = p.getAsList("qdWebsiteCountMins");
-                    List<Double> qdItemRatios = p.getAsList("qdItemRatios");
-
-                    for (double dx : qdDistanceMaxs) {
-                        for (double wc : qdWebsiteCountMins) {
-                            for (double ir : qdItemRatios) {
-                                String newParams = Utility.parametersToString(folderId, "tune", dx, wc, ir);
-                                processor.process(new TfFolder(newParams));
-                            }
-                        }
-                    }
+                ParameterSettings settings = ParameterSettings.instance(p, model);
+                for (ModelParameters params : settings.getFacetParametersList()) {
+                    processor.process(new TfFolderParameters(folderId, "tune", params.toFilenameString()));
                 }
+                
+                processor.close();
             }
 
-            processor.close();
         }
 
     }
-
 }
