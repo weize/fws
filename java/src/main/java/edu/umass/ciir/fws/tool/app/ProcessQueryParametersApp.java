@@ -85,7 +85,7 @@ public abstract class ProcessQueryParametersApp extends AppFunction {
         stage.addInput("queryParameters", new TfQueryParameters.IdParametersOrder());
 
         stage.add(new InputStep("queryParameters"));
-        stage.add(new Step(getProcessClass(), parameters));
+        stage.add(new Step(getProcessClass(null), parameters));
         return stage;
     }
 
@@ -101,7 +101,8 @@ public abstract class ProcessQueryParametersApp extends AppFunction {
      * Subclass use this function to specify the process class that takes in a
      * queryParameter, and process.
      *
+     * @param p
      * @return
      */
-    protected abstract Class getProcessClass();
+    protected abstract Class getProcessClass(Parameters p);
 }

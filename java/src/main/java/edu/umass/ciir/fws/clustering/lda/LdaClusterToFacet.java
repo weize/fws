@@ -34,7 +34,7 @@ public class LdaClusterToFacet extends ProcessQueryParametersApp {
     }
 
     @Override
-    protected Class getProcessClass() {
+    protected Class getProcessClass(Parameters p) {
         return LdaClusterToFacetConverter.class;
     }
 

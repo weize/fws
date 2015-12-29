@@ -33,7 +33,7 @@ public class PlsaClusterToFacet extends ProcessQueryParametersApp {
     }
 
     @Override
-    protected Class getProcessClass() {
+    protected Class getProcessClass(Parameters p) {
         return PlsaClusterToFacetConverter.class;
     }
 

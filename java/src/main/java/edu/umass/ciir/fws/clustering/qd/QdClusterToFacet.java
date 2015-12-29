@@ -30,7 +30,7 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 public class QdClusterToFacet extends ProcessQueryParametersApp {
 
     @Override
-    protected Class getProcessClass() {
+    protected Class getProcessClass(Parameters p) {
         return QdClusterToFacetConverter.class;
     }
 

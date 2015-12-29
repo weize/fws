@@ -29,7 +29,7 @@ public class QdClusterCandidateLists extends ProcessQueryParametersApp {
     }
 
     @Override
-    protected Class getProcessClass() {
+    protected Class getProcessClass(Parameters p) {
         return QueryDimensionTFClusterer.class;
     }
 
