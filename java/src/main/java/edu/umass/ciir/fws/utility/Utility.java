@@ -185,7 +185,7 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         String name = String.format("%s.qd.%s.facet", qid, parametersToFileNameString(distanceMax, websiteCountMin, itemRatio));
         return getFileName(facetDir, qid, name);
     }
-    
+
     public static String getQdFacetFileName(String facetDir, String qid, String paramsFilename) {
         String name = String.format("%s.qd.%s.facet", qid, paramsFilename);
         return getFileName(facetDir, qid, name);
@@ -196,8 +196,18 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         return getFileName(clusterDir, qid, name);
     }
 
+    public static String getPlsaClusterFileName(String clusterDir, String qid, String paramsFilename) {
+        String name = String.format("%s.plsa.%s.cluster", qid, paramsFilename);
+        return getFileName(clusterDir, qid, name);
+    }
+
     public static String getPlsaFacetFileName(String facetDir, String qid, long plsaTopicNum, long plsaTermNum) {
         String name = String.format("%s.plsa.%s.facet", qid, parametersToFileNameString(plsaTopicNum, plsaTermNum));
+        return getFileName(facetDir, qid, name);
+    }
+
+    public static String getPlsaFacetFileName(String facetDir, String qid, String paramsFilename) {
+        String name = String.format("%s.plsa.%s.facet", qid, paramsFilename);
         return getFileName(facetDir, qid, name);
     }
 
@@ -206,8 +216,18 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         return getFileName(clusterDir, qid, name);
     }
 
+    public static String getLdaClusterFileName(String clusterDir, String qid, String paramsFilename) {
+        String name = String.format("%s.lda.%s.cluster", qid, paramsFilename);
+        return getFileName(clusterDir, qid, name);
+    }
+
     public static String getLdaFacetFileName(String facetDir, String qid, long plsaTopicNum, long plsaTermNum) {
         String name = String.format("%s.lda.%s.facet", qid, parametersToFileNameString(plsaTopicNum, plsaTermNum));
+        return getFileName(facetDir, qid, name);
+    }
+
+    public static String getLdaFacetFileName(String facetDir, String qid, String paramsFilename) {
+        String name = String.format("%s.lda.%s.facet", qid, paramsFilename);
         return getFileName(facetDir, qid, name);
     }
 

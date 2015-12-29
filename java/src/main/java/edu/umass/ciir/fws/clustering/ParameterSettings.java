@@ -5,6 +5,8 @@
  */
 package edu.umass.ciir.fws.clustering;
 
+import edu.umass.ciir.fws.clustering.lda.LdaParameterSettings;
+import edu.umass.ciir.fws.clustering.plsa.PlsaParameterSettings;
 import edu.umass.ciir.fws.clustering.qd.QdParameterSettings;
 import java.util.List;
 import org.lemurproject.galago.tupleflow.Parameters;
@@ -23,13 +25,15 @@ public abstract class ParameterSettings {
         switch (model) {
             case "qd":
                 return new QdParameterSettings(p);
+            case "lda":
+                return new LdaParameterSettings(p);
+            case "plsa":
+                return new PlsaParameterSettings(p);
         }
         return null;
     }
 
 }
-
-
 
 //            if (model.equals("plsa")) {
 //                List<Long> topicNums = p.getAsList("plsaTopicNums");

@@ -1,6 +1,8 @@
 package edu.umass.ciir.fws.clustering.plsa;
 
+import edu.umass.ciir.fws.clustering.ModelParameters;
 import edu.umass.ciir.fws.clustering.ScoredFacet;
+import edu.umass.ciir.fws.clustering.plsa.PlsaParameterSettings.PlsaFacetParameters;
 import edu.umass.ciir.fws.tool.app.ProcessQueryParametersApp;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.types.TfQueryParameters;
@@ -48,29 +50,24 @@ public class PlsaClusterToFacet extends ProcessQueryParametersApp {
     @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
     public static class GeneratePlsaFacetParameters extends StandardStep<TfQuery, TfQueryParameters> {
 
-        List<Long> plsaTopicNums;
-        List<Long> plsaTermNums;
+        PlsaParameterSettings plsaSettings;
         String facetDir;
 
         public GeneratePlsaFacetParameters(TupleFlowParameters parameters) {
             Parameters p = parameters.getJSON();
+            plsaSettings = new PlsaParameterSettings(p);
             String runDir = p.getString("plsaRunDir");
             facetDir = Utility.getFileName(runDir, "facet");
-            plsaTopicNums = p.getList("plsaTopicNums");
-            plsaTermNums = p.getList("plsaTermNums");
         }
 
         @Override
         public void process(TfQuery query) throws IOException {
-            for (long plsaTopicNum : plsaTopicNums) {
-                for (long plsaTermNum : plsaTermNums) {
-                    File facetFile = new File(Utility.getPlsaFacetFileName(facetDir, query.id, plsaTopicNum, plsaTermNum));
-                    if (facetFile.exists()) {
-                        Utility.infoFileExists(facetFile);
-                    } else {
-                        String parameters = edu.umass.ciir.fws.utility.Utility.parametersToString(plsaTopicNum, plsaTermNum);
-                        processor.process(new TfQueryParameters(query.id, query.text, parameters));
-                    }
+            for (ModelParameters params : plsaSettings.getFacetingSettings()) {
+                File facetFile = new File(Utility.getPlsaFacetFileName(facetDir, query.id, params.toFilenameString()));
+                if (facetFile.exists()) {
+                    Utility.infoFileExists(facetFile);
+                } else {
+                    processor.process(new TfQueryParameters(query.id, query.text, params.toString()));
                 }
             }
 
@@ -100,11 +97,11 @@ public class PlsaClusterToFacet extends ProcessQueryParametersApp {
         public void process(TfQueryParameters queryParameters) throws IOException {
             System.err.println(String.format("Processing qid:%s parameters:%s", queryParameters.id, queryParameters.parameters));
             String qid = queryParameters.id;
-            String[] fields = edu.umass.ciir.fws.utility.Utility.splitParameters(queryParameters.parameters);
-            long plsaTopicNum = Long.parseLong(fields[0]);
-            long plsaTermNum = Long.parseLong(fields[1]);
+            PlsaFacetParameters params = new PlsaFacetParameters(queryParameters.parameters);
+            long plsaTopicNum = (int) params.topicNum;
+            long plsaTermNum = (int) params.termNum;
 
-            File facetFile = new File(Utility.getPlsaFacetFileName(facetDir, qid, plsaTopicNum, plsaTermNum));
+            File facetFile = new File(Utility.getPlsaFacetFileName(facetDir, qid, params.toFilenameString()));
             if (facetFile.exists()) {
                 Utility.infoFileExists(facetFile);
                 return;

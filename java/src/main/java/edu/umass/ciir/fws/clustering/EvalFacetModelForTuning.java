@@ -6,7 +6,6 @@
 package edu.umass.ciir.fws.clustering;
 
 import edu.umass.ciir.fws.eval.CombinedFacetEvaluator;
-import edu.umass.ciir.fws.types.TfFolder;
 import edu.umass.ciir.fws.types.TfFolderParameters;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;

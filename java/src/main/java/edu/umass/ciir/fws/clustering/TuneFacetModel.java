@@ -231,6 +231,7 @@ public class TuneFacetModel extends AppFunction {
 
         Parameters p;
         BufferedWriter writer;
+        List<ModelParameters> params;
         String modelDir;
         String model;
         int facetTuneRank;
@@ -240,6 +241,7 @@ public class TuneFacetModel extends AppFunction {
             model = p.getString("facetModel");
             modelDir = Utility.getFileName(p.getString("facetDir"), model);
             facetTuneRank = new Long(p.getLong("facetTuneRank")).intValue();
+            params = ParameterSettings.instance(p, model).getFacetingSettings();
         }
 
         @Override
@@ -266,11 +268,8 @@ public class TuneFacetModel extends AppFunction {
         }
 
         private void findBestParamAndEmitRun(String folderId, int metricIndex) throws IOException {
-
             String folderDir = Utility.getFileName(modelDir, "tune", folderId);
             String evalDir = Utility.getFileName(folderDir, "eval");
-
-            List<ModelParameters> params = ParameterSettings.instance(p, model).getFacetingSettings();
 
             double maxScore = Double.NEGATIVE_INFINITY;
             ModelParameters maxScoreParams = null;
@@ -324,7 +323,7 @@ public class TuneFacetModel extends AppFunction {
                     processor.process(new TfFolderParameters(folderId, "tune", params.toFilenameString()));
                 }
             }
-            
+
             processor.close();
         }
 

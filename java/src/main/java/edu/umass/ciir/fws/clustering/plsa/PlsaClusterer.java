@@ -15,6 +15,7 @@ package edu.umass.ciir.fws.clustering.plsa;
 import edu.umass.ciir.fws.clist.CandidateList;
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.clustering.ScoredItem;
+import edu.umass.ciir.fws.clustering.plsa.PlsaParameterSettings.PlsaClusterParameters;
 import edu.umass.ciir.fws.types.TfQueryParameters;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
@@ -55,10 +56,11 @@ public class PlsaClusterer implements Processor<TfQueryParameters> {
         String qid = queryParameters.id;
         System.err.println(String.format("Processing qid:%s parameters:%s", qid, queryParameters.parameters));
 
-        int topicNum = Integer.parseInt(queryParameters.parameters);
+        PlsaClusterParameters params = new PlsaClusterParameters(queryParameters.parameters);
+        int topicNum = (int) params.topicNum;
 
         // output
-        File clusterFile = new File(Utility.getPlsaClusterFileName(clusterDir, qid, topicNum));
+        File clusterFile = new File(Utility.getPlsaClusterFileName(clusterDir, qid, params.toFilenameString()));
         if (clusterFile.exists()) {
             Utility.infoFileExists(clusterFile);
             return;

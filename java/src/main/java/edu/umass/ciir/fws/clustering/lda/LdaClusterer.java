@@ -22,6 +22,7 @@ import cc.mallet.types.InstanceList;
 import edu.umass.ciir.fws.clist.CandidateList;
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.clustering.ScoredItem;
+import edu.umass.ciir.fws.clustering.lda.LdaParameterSettings.LdaClusterParameters;
 import edu.umass.ciir.fws.types.TfQueryParameters;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
@@ -62,9 +63,10 @@ public class LdaClusterer implements Processor<TfQueryParameters> {
         String qid = queryParameters.id;
         System.err.println(String.format("Processing qid:%s parameters:%s", qid, queryParameters.parameters));
 
-        int topicNum = Integer.parseInt(queryParameters.parameters);
+        LdaClusterParameters params = new LdaClusterParameters(queryParameters.parameters);
+        int topicNum = (int) params.topicNum;
 
-        File clusterFile = new File(Utility.getLdaClusterFileName(clusterDir, qid, topicNum));
+        File clusterFile = new File(Utility.getLdaClusterFileName(clusterDir, qid, params.toFilenameString()));
         if (clusterFile.exists()) {
             Utility.infoFileExists(clusterFile);
             return;
@@ -78,7 +80,6 @@ public class LdaClusterer implements Processor<TfQueryParameters> {
         List<ScoredFacet> facets = lda.cluster(topicNum);
 
         // output
-        
         Utility.infoOpen(clusterFile);
         Utility.createDirectoryForFile(clusterFile);
         ScoredFacet.output(facets, clusterFile);
@@ -158,20 +159,19 @@ public class LdaClusterer implements Processor<TfQueryParameters> {
                     item.score /= weightSum;
                 }
                 Collections.sort(items);
-                items = items.subList(0, Math.min(items.size(), (int)topTermNum));
+                items = items.subList(0, Math.min(items.size(), (int) topTermNum));
 
                 // unnormalizated  P(a word from topic)
                 double score = weightSum;
 
                 facets.add(new ScoredFacet(items, score));
             }
-            
-            
+
             double allWeightSum = 0;
-            for(ScoredFacet f : facets) {
+            for (ScoredFacet f : facets) {
                 allWeightSum += f.score;
             }
-            for(ScoredFacet f : facets) {
+            for (ScoredFacet f : facets) {
                 f.score /= allWeightSum;
             }
             Collections.sort(facets);

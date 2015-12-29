@@ -1,6 +1,8 @@
 package edu.umass.ciir.fws.clustering.lda;
 
+import edu.umass.ciir.fws.clustering.ModelParameters;
 import edu.umass.ciir.fws.clustering.ScoredFacet;
+import edu.umass.ciir.fws.clustering.lda.LdaParameterSettings.LdaFacetParameters;
 import edu.umass.ciir.fws.tool.app.ProcessQueryParametersApp;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.types.TfQueryParameters;
@@ -49,30 +51,26 @@ public class LdaClusterToFacet extends ProcessQueryParametersApp {
     @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
     public static class GenerateLdaFacetParameters extends StandardStep<TfQuery, TfQueryParameters> {
 
-        List<Long> ldaTopicNums;
-        List<Long> ldaTermNums;
+        LdaParameterSettings ldaSettings;
         String facetDir;
 
         public GenerateLdaFacetParameters(TupleFlowParameters parameters) {
             Parameters p = parameters.getJSON();
+            ldaSettings = new LdaParameterSettings(p);
             String runDir = p.getString("ldaRunDir");
             facetDir = Utility.getFileName(runDir, "facet");
-            ldaTopicNums = p.getList("ldaTopicNums");
-            ldaTermNums = p.getList("ldaTermNums");
         }
 
         @Override
         public void process(TfQuery query) throws IOException {
-            for (long topicNum : ldaTopicNums) {
-                for (long termNum : ldaTermNums) {
-                    File facetFile = new File(Utility.getLdaFacetFileName(facetDir, query.id, topicNum, termNum));
-                    if (facetFile.exists()) {
-                        Utility.infoFileExists(facetFile);
-                    } else {
-                        String parameters = Utility.parametersToString(topicNum, termNum);
-                        processor.process(new TfQueryParameters(query.id, query.text, parameters));
-                    }
+            for (ModelParameters params : ldaSettings.getFacetingSettings()) {
+                File facetFile = new File(Utility.getLdaFacetFileName(facetDir, query.id, params.toFilenameString()));
+                if (facetFile.exists()) {
+                    Utility.infoFileExists(facetFile);
+                } else {
+                    processor.process(new TfQueryParameters(query.id, query.text, params.toString()));
                 }
+
             }
 
         }
@@ -101,11 +99,11 @@ public class LdaClusterToFacet extends ProcessQueryParametersApp {
         public void process(TfQueryParameters queryParameters) throws IOException {
             System.err.println(String.format("Processing qid:%s parameters:%s", queryParameters.id, queryParameters.parameters));
             String qid = queryParameters.id;
-            String[] fields = Utility.splitParameters(queryParameters.parameters);
-            long topicNum = Long.parseLong(fields[0]);
-            long termNum = Long.parseLong(fields[1]);
+            LdaFacetParameters params = new LdaFacetParameters(queryParameters.parameters);
+            long topicNum = params.topicNum;
+            long termNum = params.termNum;
 
-            File facetFile = new File(Utility.getLdaFacetFileName(facetDir, qid, topicNum, termNum));
+            File facetFile = new File(Utility.getLdaFacetFileName(facetDir, qid, params.toFilenameString()));
             if (facetFile.exists()) {
                 Utility.infoFileExists(facetFile);
                 return;

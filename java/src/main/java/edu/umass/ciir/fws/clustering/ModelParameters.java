@@ -5,7 +5,6 @@
  */
 package edu.umass.ciir.fws.clustering;
 
-import edu.umass.ciir.fws.clustering.qd.QdParameterSettings;
 import edu.umass.ciir.fws.utility.Utility;
 
 /**
@@ -37,16 +36,18 @@ public abstract class ModelParameters {
         }
         return params;
     }
-    
-    public static ModelParameters parseFacetParams(String paramString, String model) {
-        switch (model) {
-            case "qd":
-                return new QdParameterSettings.QdFacetParameters(paramString);
-        }
-        return null;
-    }
-}
 
+//    public static ModelParameters parseFacetParams(String paramString, String model) {
+//        switch (model) {
+//            case "qd":
+//                return new QdParameterSettings.QdFacetParameters(paramString);
+//
+//            case "lda":
+//                return new LdaParameterSettings.LdaFacetParameters(paramString);
+//        }
+//        return null;
+//    }
+}
 
 //        if (model.equals("plsa")) {
 //            long topicNum = Long.parseLong(params[2]);
