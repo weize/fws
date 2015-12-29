@@ -26,7 +26,7 @@ public class QdParameterSettings extends ParameterSettings {
         distanceMaxs = p.getList("qdDistanceMaxs");
         websiteCountMins = p.getList("qdWebsiteCountMins");
         itemRatios = p.getList("qdItemRatios");
-        itemThreshlds = p.getList("qdItemThreshlds");
+        itemThreshlds = p.getList("qdItemThresholds");
     }
 
     @Override
