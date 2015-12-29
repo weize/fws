@@ -26,7 +26,7 @@ public class GmiParameterSettings extends ParameterSettings {
     public GmiParameterSettings(Parameters p) {
         termProbThs = p.getAsList("gmiTermProbThesholds");
         pairProbThs = p.getAsList("gmiPairProbThesholds");
-        rankers = p.getAsList("rankers");
+        rankers = p.getAsList("gmRankers");
     }
 
     @Override
@@ -51,6 +51,35 @@ public class GmiParameterSettings extends ParameterSettings {
             }
         }
         return params;
+    }
+
+    @Override
+    public List<ModelParameters> getTuningSettings(List<Long> tuneMetricIndices) {
+        ArrayList<ModelParameters> paramList = new ArrayList<>();
+        for (String ranker : rankers) {
+            for (long idx : tuneMetricIndices) {
+                paramList.add(new GmiTuneParameters(ranker, idx));
+            }
+        }
+        return paramList;
+    }
+
+    public static class GmiTuneParameters extends ModelParameters {
+
+        String ranker;
+        long metricIndex;
+
+        public GmiTuneParameters(String ranker, long metricIndex) {
+            this.ranker = ranker;
+            this.metricIndex = metricIndex;
+            this.paramArray = packParamsAsArray(ranker, metricIndex);
+        }
+
+        public GmiTuneParameters(String paramsString) {
+            this(splitParameters(paramsString)[0],
+                    Long.parseLong(splitParameters(paramsString)[1]));
+        }
+
     }
 
     public List<ModelParameters> appendFacetSettings(GmiClusterParameters clusterParams) {

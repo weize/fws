@@ -3,9 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.umass.ciir.fws.clustering.gm;
+package edu.umass.ciir.fws.clustering.gm.gmj;
 
 import edu.umass.ciir.fws.clustering.ScoredFacet;
+import edu.umass.ciir.fws.clustering.gm.GmJointClusterer;
 import edu.umass.ciir.fws.types.TfQueryParameters;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
@@ -25,41 +26,33 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 @Verified
 @InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
 @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
-public class GmjClusterToFacetConverter extends StandardStep<TfQueryParameters, TfQueryParameters> {
+public class GmjClusterItems extends StandardStep<TfQueryParameters, TfQueryParameters> {
 
-    String facetDir;
     String clusterDir;
+    String predictDir;
 
-    public GmjClusterToFacetConverter(TupleFlowParameters parameters) {
+    public GmjClusterItems(TupleFlowParameters parameters) {
         Parameters p = parameters.getJSON();
-        facetDir = p.getString("gmjFacetDir");
         clusterDir = p.getString("gmjClusterDir");
+        String gmDir = p.getString("gmDir");
+        predictDir = Utility.getFileName(gmDir, "predict");
+        
     }
 
     @Override
     public void process(TfQueryParameters queryParams) throws IOException {
-        Utility.infoProcessing(queryParams);
-        String [] params = Utility.splitParameters(queryParams.parameters);
-        String ranker = params[params.length-1]; // last one should be ranker
-        
-        // loadClusters clusters
-        File clusterFile = new File(Utility.getGmjClusterFileName(clusterDir, queryParams.id));
-        List<ScoredFacet> clusters = ScoredFacet.loadClusters(clusterFile);
+        File termPredictFile = new File(Utility.getGmTermPredictFileName(predictDir, queryParams.id));
+        File termPairPredictFile = new File(Utility.getGmTermPairPredictFileName(predictDir, queryParams.id));
 
-        File facetFile = new File(Utility.getFacetFileName(facetDir, queryParams.id, "gmj", ranker));
-        
-        if (facetFile.exists()) {
-            Utility.infoFileExists(facetFile);
-            return;
-        }
-        
-        Utility.infoOpen(facetFile);
-        Utility.createDirectoryForFile(facetFile);
-        if (ranker.equals("avg")) {
-            ScoredFacet.avgScoreAndRank(clusters);
-        }
-        ScoredFacet.outputAsFacets(clusters, facetFile);
-        Utility.infoWritten(facetFile);
+        Utility.infoProcessing(queryParams);
+
+        File clusterFile = new File(Utility.getGmjClusterFileName(clusterDir, queryParams.id));
+        Utility.createDirectoryForFile(clusterFile);
+
+        GmJointClusterer gmj = new GmJointClusterer();
+        List<ScoredFacet> clusters = gmj.cluster(termPredictFile, termPairPredictFile);
+        ScoredFacet.output(clusters, clusterFile);
+        Utility.infoWritten(clusterFile);
         processor.process(queryParams);
     }
 }

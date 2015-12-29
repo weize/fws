@@ -6,6 +6,7 @@
 package edu.umass.ciir.fws.clustering.lda;
 
 import edu.umass.ciir.fws.clustering.ModelParameters;
+import static edu.umass.ciir.fws.clustering.ModelParameters.packParamsAsArray;
 import edu.umass.ciir.fws.clustering.ParameterSettings;
 import java.util.ArrayList;
 import java.util.List;
@@ -73,6 +74,30 @@ public class LdaParameterSettings extends ParameterSettings {
         }
 
         public LdaClusterParameters(String paramsString) {
+            this(Long.parseLong(paramsString));
+        }
+
+    }
+
+    @Override
+    public List<ModelParameters> getTuningSettings(List<Long> tuneMetricIndices) {
+        ArrayList<ModelParameters> paramList = new ArrayList<>();
+        for (long idx : tuneMetricIndices) {
+            paramList.add(new LdaTuneParameters(idx));
+        }
+        return paramList;
+    }
+
+    public static class LdaTuneParameters extends ModelParameters {
+
+        long metricIndex;
+
+        public LdaTuneParameters(long metricIndex) {
+            this.metricIndex = metricIndex;
+            this.paramArray = packParamsAsArray(metricIndex);
+        }
+
+        public LdaTuneParameters(String paramsString) {
             this(Long.parseLong(paramsString));
         }
 

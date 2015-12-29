@@ -5,6 +5,8 @@
  */
 package edu.umass.ciir.fws.clustering.gm;
 
+import edu.umass.ciir.fws.clustering.gm.gmj.GmjClusterItems;
+import edu.umass.ciir.fws.clustering.gm.gmj.GmjClusterToFacetConverter;
 import edu.emory.mathcs.backport.java.util.Arrays;
 import edu.umass.ciir.fws.query.QueryFileParser;
 import edu.umass.ciir.fws.types.TfFolder;

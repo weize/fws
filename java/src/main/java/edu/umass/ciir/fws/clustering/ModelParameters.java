@@ -37,6 +37,16 @@ public abstract class ModelParameters {
         return params;
     }
 
+    public static class EmptyParameters extends ModelParameters {
+
+        String params;
+
+        public EmptyParameters() {
+            params = "";
+            packParamsAsArray(params);
+        }
+    }
+
 //    public static ModelParameters parseFacetParams(String paramString, String model) {
 //        switch (model) {
 //            case "qd":

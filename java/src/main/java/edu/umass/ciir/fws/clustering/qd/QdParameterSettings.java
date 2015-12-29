@@ -6,6 +6,7 @@
 package edu.umass.ciir.fws.clustering.qd;
 
 import edu.umass.ciir.fws.clustering.ModelParameters;
+import static edu.umass.ciir.fws.clustering.ModelParameters.packParamsAsArray;
 import edu.umass.ciir.fws.clustering.ParameterSettings;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +54,30 @@ public class QdParameterSettings extends ParameterSettings {
             }
         }
         return paramList;
+    }
+
+    @Override
+    public List<ModelParameters> getTuningSettings(List<Long> tuneMetricIndices) {
+        ArrayList<ModelParameters> paramList = new ArrayList<>();
+        for (long idx : tuneMetricIndices) {
+            paramList.add(new QdTuneParameters(idx));
+        }
+        return paramList;
+    }
+
+    public static class QdTuneParameters extends ModelParameters {
+
+        long metricIndex;
+
+        public QdTuneParameters(long metricIndex) {
+            this.metricIndex = metricIndex;
+            this.paramArray = packParamsAsArray(metricIndex);
+        }
+
+        public QdTuneParameters(String paramsString) {
+            this(Long.parseLong(paramsString));
+        }
+
     }
 
     public static class QdClusterParameters extends ModelParameters {
