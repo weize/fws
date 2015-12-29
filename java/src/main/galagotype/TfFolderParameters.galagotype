@@ -1,0 +1,9 @@
+package edu.umass.ciir.fws.types;
+
+type TfFolderParameters {
+	String id;
+        String option;
+        String parameters;
+
+	order: +id +option +parameters;
+}
