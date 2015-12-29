@@ -1,13 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.umass.ciir.fws.clustering;
 
-import edu.umass.ciir.fws.clustering.lda.LdaClusterer;
-import edu.umass.ciir.fws.clustering.plsa.PlsaClusterer;
-import edu.umass.ciir.fws.clustering.qd.QueryDimensionTFClusterer;
+import edu.umass.ciir.fws.clustering.lda.LdaClusterToFacetConverter;
+import edu.umass.ciir.fws.clustering.plsa.*;
+import edu.umass.ciir.fws.clustering.qd.QdClusterToFacetConverter;
 import edu.umass.ciir.fws.tool.app.ProcessQueryParametersApp;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.types.TfQueryParameters;
@@ -23,21 +18,21 @@ import org.lemurproject.galago.tupleflow.TupleFlowParameters;
 import org.lemurproject.galago.tupleflow.execution.Verified;
 
 /**
- * A generic tuple flow app for clustering for facets, supporting pLSA, LDA and
- * QD
+ * A generic tuple flow app for converting clusters to facets
+ *
  *
  * @author wkong
  */
-public class ClusterForFacets extends ProcessQueryParametersApp {
+public class ClusterToFacet extends ProcessQueryParametersApp {
 
     @Override
     public String getName() {
-        return "cluster";
+        return "cluster-to-facet";
     }
-
+    
     @Override
     protected Class getQueryParametersGeneratorClass() {
-        return GenerateClusterParameters.class;
+        return GenerateFacetParameters.class;
     }
 
     @Override
@@ -45,47 +40,52 @@ public class ClusterForFacets extends ProcessQueryParametersApp {
         String model = p.getString("facetModel");
         switch (model) {
             case "qd":
-                return QueryDimensionTFClusterer.class;
+                return QdClusterToFacetConverter.class;
             case "plsa":
-                return PlsaClusterer.class;
+                return PlsaClusterToFacetConverter.class;
             case "lda":
-                return LdaClusterer.class;
+                return LdaClusterToFacetConverter.class;
         }
 
         return null;
     }
 
+    
+
+    /**
+     * generate parameters
+     */
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.TfQuery")
     @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
-    public static class GenerateClusterParameters extends StandardStep<TfQuery, TfQueryParameters> {
+    public static class GenerateFacetParameters extends StandardStep<TfQuery, TfQueryParameters> {
 
-        String model;
         List<ModelParameters> paramsList;
         boolean skipExisting;
-        String clusterDir;
+        String facetDir;
+        String model;
 
-        public GenerateClusterParameters(TupleFlowParameters parameters) {
+        public GenerateFacetParameters(TupleFlowParameters parameters) {
             Parameters p = parameters.getJSON();
             model = p.getString("facetModel");
-            String facetDir = p.getString("facetDir");
-            clusterDir = Utility.getFileName(facetDir, model, "run", "cluster");
+            String allFacetDir = p.getString("facetDir");
+            facetDir = Utility.getFileName(allFacetDir, model, "run", "cluster");
             skipExisting = p.get("skipExisting", false);
-            paramsList = ParameterSettings.instance(p, model).getClusteringSettings();
+            paramsList = ParameterSettings.instance(p, model).getFacetingSettings();
+
         }
 
         @Override
         public void process(TfQuery query) throws IOException {
             for (ModelParameters params : paramsList) {
-                File clusterFile = new File(Utility.getClusterFileName(clusterDir, query.id, model, params.toFilenameString()));
-                if (skipExisting && clusterFile.exists()) {
-                    Utility.infoSkipExisting(clusterFile);
+                File facetFile = new File(Utility.getFacetFileName(facetDir, query.id, model, params.toFilenameString()));
+                if (skipExisting && facetFile.exists()) {
+                    Utility.infoSkipExisting(facetFile);
                 } else {
                     processor.process(new TfQueryParameters(query.id, query.text, params.toString()));
                 }
-
             }
+
         }
     }
-
 }
