@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.umass.ciir.fws.clustering.gm;
+package edu.umass.ciir.fws.clustering.gm.gmi;
 
 import edu.umass.ciir.fws.clustering.ModelParameters;
 import static edu.umass.ciir.fws.clustering.ModelParameters.packParamsAsArray;
@@ -53,11 +53,19 @@ public class GmiParameterSettings extends ParameterSettings {
         return params;
     }
 
+    public List<ModelParameters> appendFacetSettings(GmiClusterParameters clusterParams) {
+        ArrayList<ModelParameters> facetParams = new ArrayList<>();
+        for (String ranker : rankers) {
+            facetParams.add(new GmiFacetParameters(clusterParams.termProbTh, clusterParams.pairProbTh, ranker));
+        }
+        return facetParams;
+    }
+
     public static class GmiFacetParameters extends ModelParameters {
 
-        double termProbTh;
-        double pairProbTh;
-        String ranker;
+        public double termProbTh;
+        public double pairProbTh;
+        public String ranker;
 
         public GmiFacetParameters(double termProbTh, double pairProbTh, String ranker) {
             this.termProbTh = termProbTh;

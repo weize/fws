@@ -5,6 +5,7 @@
  */
 package edu.umass.ciir.fws.clustering;
 
+import edu.umass.ciir.fws.clustering.gm.gmi.GmiParameterSettings;
 import edu.umass.ciir.fws.clustering.lda.LdaParameterSettings;
 import edu.umass.ciir.fws.clustering.plsa.PlsaParameterSettings;
 import edu.umass.ciir.fws.clustering.qd.QdParameterSettings;
@@ -29,6 +30,8 @@ public abstract class ParameterSettings {
                 return new LdaParameterSettings(p);
             case "plsa":
                 return new PlsaParameterSettings(p);
+            case "gmi":
+                return new GmiParameterSettings(p);
         }
         return null;
     }

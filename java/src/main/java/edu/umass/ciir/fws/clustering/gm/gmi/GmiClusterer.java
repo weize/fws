@@ -3,9 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.umass.ciir.fws.clustering.gm;
+package edu.umass.ciir.fws.clustering.gm.gmi;
 
 import edu.umass.ciir.fws.clustering.ScoredFacet;
+import edu.umass.ciir.fws.clustering.gm.GmIndependentClusterer;
+import edu.umass.ciir.fws.clustering.gm.gmi.GmiParameterSettings.GmiClusterParameters;
+import edu.umass.ciir.fws.clustering.gm.gmi.GmiParameterSettings.GmiFacetParameters;
 import edu.umass.ciir.fws.types.TfQueryParameters;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
@@ -42,11 +45,12 @@ public class GmiClusterer extends StandardStep<TfQueryParameters, TfQueryParamet
     @Override
     public void process(TfQueryParameters queryParams) throws IOException {
         Utility.infoProcessing(queryParams);
-        String[] params = Utility.splitParameters(queryParams.parameters);
-        String folderId = params[0];
-        String predictOrTune = params[1];
-        double termProbTh = Double.parseDouble(params[2]);
-        double pairProbTh = Double.parseDouble(params[3]);
+        String[] folderIdOptionOthers = Utility.splitParameters(queryParams.text);
+        String folderId = folderIdOptionOthers[0];
+        String predictOrTune = folderIdOptionOthers[1];
+        GmiClusterParameters params = new GmiClusterParameters(queryParams.parameters);
+        double termProbTh = params.termProbTh;
+        double pairProbTh = params.pairProbTh;
 
         File termPredictFile;
         File termPairPredictFile;
@@ -55,18 +59,22 @@ public class GmiClusterer extends StandardStep<TfQueryParameters, TfQueryParamet
         if (predictOrTune.equals("predict")) {
             termPredictFile = new File(Utility.getGmTermPredictFileName(predictDir, queryParams.id));
             termPairPredictFile = new File(Utility.getGmTermPairPredictFileName(predictDir, queryParams.id));
-            //param 4 is the ranker "avg" or "sum", parameter file is metric index.
-            String gmiParam = Utility.parametersToFileNameString(params[4], params[5]);
-            clusterFile = new File(Utility.getClusterFileName(gmiClusterDir, queryParams.id, "gmi", gmiParam));
+            //folderOptionRankerMetricIndex
+            String ranker = folderIdOptionOthers[2];
+            String metricIndex = folderIdOptionOthers[3];
+            String gmiParams = Utility.parametersToFileNameString(ranker, metricIndex);
+            clusterFile = new File(Utility.getClusterFileName(gmiClusterDir, queryParams.id, "gmi", gmiParams));
 
+            // move ranker to parameters
+            GmiFacetParameters facetParams = new GmiFacetParameters(params.termProbTh, params.pairProbTh, ranker);
+            queryParams.parameters = facetParams.toString();
             // do not skip for predicting, should overwrite for new tuning results.
             // if (clusterFile.exists()) { ...
         } else {
             String tuneDir = Utility.getFileName(trainDir, folderId, "tune");
             termPredictFile = new File(Utility.getGmTermPredictFileName(tuneDir, queryParams.id));
             termPairPredictFile = new File(Utility.getGmTermPairPredictFileName(tuneDir, queryParams.id));
-            String gmiParam = Utility.parametersToFileNameString(termProbTh, pairProbTh);
-            clusterFile = new File(Utility.getClusterFileName(tuneDir, queryParams.id, "gmi", gmiParam));
+            clusterFile = new File(Utility.getClusterFileName(tuneDir, queryParams.id, "gmi", params.toFilenameString()));
 
             // skip for tuning cases 
             if (clusterFile.exists()) {

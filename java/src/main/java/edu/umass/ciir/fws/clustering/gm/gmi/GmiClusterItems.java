@@ -3,14 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.umass.ciir.fws.clustering.gm;
+package edu.umass.ciir.fws.clustering.gm.gmi;
 
+import edu.umass.ciir.fws.clustering.ModelParameters;
+import edu.umass.ciir.fws.clustering.gm.AppendFacetRankerParameter;
 import edu.umass.ciir.fws.clustering.gm.GmLearn.DoNonethingForQueryParams;
 import edu.umass.ciir.fws.query.QueryFileParser;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.types.TfQueryParameters;
 import edu.umass.ciir.fws.utility.Utility;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -33,9 +34,9 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 import org.lemurproject.galago.tupleflow.types.FileName;
 
 /**
- * cluster gmi for cross-validation.
- * cluster items for train queries in each folders for different parameter combination.
- * Will be used for tuning.
+ * cluster gmi for cross-validation. cluster items for train queries in each
+ * folders for different parameter combination. Will be used for tuning.
+ *
  * @author wkong
  */
 public class GmiClusterItems extends AppFunction {
@@ -110,17 +111,13 @@ public class GmiClusterItems extends AppFunction {
     public static class SplitTuneRuns extends StandardStep<FileName, TfQueryParameters> {
 
         long numFolders;
-        List<Double> termProbThs;
-        List<Double> pairProbThs;
+        GmiParameterSettings gmiSettings;
         String trainDir;
-        String[] rankers = new String[]{"sum", "avg"};
 
         public SplitTuneRuns(TupleFlowParameters parameters) throws IOException {
             Parameters p = parameters.getJSON();
             numFolders = parameters.getJSON().getLong("cvFolderNum");
-            termProbThs = p.getAsList("gmiTermProbThesholds", Double.class);
-            pairProbThs = p.getAsList("gmiPairProbThesholds", Double.class);
-
+            gmiSettings = new GmiParameterSettings(p);
             String gmDir = p.getString("gmDir");
             trainDir = Utility.getFileName(gmDir, "train");
         }
@@ -131,15 +128,14 @@ public class GmiClusterItems extends AppFunction {
 
         @Override
         public void close() throws IOException {
+            List<ModelParameters> paramsList = gmiSettings.getClusteringSettings();
             for (int i = 1; i <= numFolders; i++) {
                 String folderId = String.valueOf(i);
                 String trainQuery = Utility.getFileName(trainDir, String.valueOf(i), "train.query");
                 for (TfQuery query : QueryFileParser.loadQueryList(trainQuery)) {
-                    for (double termTh : termProbThs) {
-                        for (double pairTh : pairProbThs) {
-                            String newParams = Utility.parametersToString(folderId, "tune", termTh, pairTh);
-                            processor.process(new TfQueryParameters(query.id, query.text, newParams));
-                        }
+                    for (ModelParameters params : paramsList) {
+                        String folderIdOption = Utility.parametersToString(folderId, "tune");
+                        processor.process(new TfQueryParameters(query.id, folderIdOption, params.toString()));
                     }
                 }
             }

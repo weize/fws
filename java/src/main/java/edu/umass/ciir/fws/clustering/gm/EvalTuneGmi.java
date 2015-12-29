@@ -5,8 +5,9 @@
  */
 package edu.umass.ciir.fws.clustering.gm;
 
+import edu.umass.ciir.fws.clustering.gm.gmi.GmiParameterSettings.GmiFacetParameters;
 import edu.umass.ciir.fws.eval.CombinedFacetEvaluator;
-import edu.umass.ciir.fws.types.TfFolder;
+import edu.umass.ciir.fws.types.TfFolderParameters;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
@@ -22,9 +23,9 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
  * @author wkong
  */
 @Verified
-@InputClass(className = "edu.umass.ciir.fws.types.TfFolder")
-@OutputClass(className = "edu.umass.ciir.fws.types.TfFolder")
-public class EvalTuneGmi extends StandardStep<TfFolder, TfFolder> {
+@InputClass(className = "edu.umass.ciir.fws.types.TfFolderParameters")
+@OutputClass(className = "edu.umass.ciir.fws.types.TfFolderParameters")
+public class EvalTuneGmi extends StandardStep<TfFolderParameters, TfFolderParameters> {
 
     //String predictDir;
     String trainDir;
@@ -43,14 +44,11 @@ public class EvalTuneGmi extends StandardStep<TfFolder, TfFolder> {
     }
 
     @Override
-    public void process(TfFolder folder) throws IOException {
+    public void process(TfFolderParameters folder) throws IOException {
         Utility.infoProcessing(folder);
-        String[] params = Utility.splitParameters(folder.id);
-        String folderId = params[0];
-        String predictOrTune = params[1];
-        double termProbTh = Double.parseDouble(params[2]);
-        double pairProbTh = Double.parseDouble(params[3]);
-        String ranker = params[4];
+        String folderId = folder.id;        
+        String predictOrTune = folder.option;
+        GmiFacetParameters params = new GmiFacetParameters(folder.parameters);
 
         String folderDir = Utility.getFileName(trainDir, folderId);
         
@@ -60,9 +58,9 @@ public class EvalTuneGmi extends StandardStep<TfFolder, TfFolder> {
         String tuneDir = Utility.getFileName(trainDir, folderId, "tune");
         String facetDir = tuneDir;
         
-        String gmiParam = Utility.parametersToFileNameString(termProbTh, pairProbTh, ranker);
+        String paramFilename = params.toFilenameString();
         
-        File evalFile = new File(Utility.getFacetEvalFileName(evalDir, model, gmiParam, facetTuneRank));
+        File evalFile = new File(Utility.getFacetEvalFileName(evalDir, model, paramFilename, facetTuneRank));
         
 //        if (evalFile.exists()) {
 //            Utility.infoFileExists(evalFile);
@@ -71,7 +69,7 @@ public class EvalTuneGmi extends StandardStep<TfFolder, TfFolder> {
 //        }
        
         Utility.infoOpen(evalFile);
-        evaluator.eval(trainQueryFile, facetDir, model, gmiParam, evalFile, facetTuneRank);
+        evaluator.eval(trainQueryFile, facetDir, model, paramFilename, evalFile, facetTuneRank);
         Utility.infoWritten(evalFile);
         processor.process(folder);
     }
