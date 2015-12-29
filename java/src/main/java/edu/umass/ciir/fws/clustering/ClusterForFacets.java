@@ -15,9 +15,12 @@ import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import org.lemurproject.galago.tupleflow.InputClass;
+import org.lemurproject.galago.tupleflow.OutputClass;
 import org.lemurproject.galago.tupleflow.Parameters;
 import org.lemurproject.galago.tupleflow.StandardStep;
 import org.lemurproject.galago.tupleflow.TupleFlowParameters;
+import org.lemurproject.galago.tupleflow.execution.Verified;
 
 /**
  * A generic tuple flow app for clustering for facets, supporting pLSA, LDA and
@@ -52,6 +55,9 @@ public class ClusterForFacets extends ProcessQueryParametersApp {
         return null;
     }
 
+    @Verified
+    @InputClass(className = "edu.umass.ciir.fws.types.TfQuery")
+    @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
     public static class GenerateClusterParameters extends StandardStep<TfQuery, TfQueryParameters> {
 
         List<ModelParameters> paramsList;
