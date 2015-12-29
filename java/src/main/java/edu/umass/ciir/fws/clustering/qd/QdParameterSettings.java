@@ -30,13 +30,13 @@ public class QdParameterSettings extends ParameterSettings {
     }
 
     @Override
-    public List<ModelParameters> getFacetParametersList() {
+    public List<ModelParameters> getFacetingSettings() {
         ArrayList<ModelParameters> paramList = new ArrayList<>();
         for (double distanceMax : distanceMaxs) {
             for (double websiteCountMin : websiteCountMins) {
                 for (double itemRatio : itemRatios) {
                     for (double itemThreshld : itemThreshlds) {
-                        paramList.add(new FacetParameters(distanceMax, websiteCountMin, itemRatio, itemThreshld));
+                        paramList.add(new QdFacetParameters(distanceMax, websiteCountMin, itemRatio, itemThreshld));
                     }
                 }
             }
@@ -45,43 +45,43 @@ public class QdParameterSettings extends ParameterSettings {
     }
 
     @Override
-    public List<ModelParameters> getClusterParametersList() {
+    public List<ModelParameters> getClusteringSettings() {
         ArrayList<ModelParameters> paramList = new ArrayList<>();
         for (double distanceMax : distanceMaxs) {
             for (double websiteCountMin : websiteCountMins) {
-                paramList.add(new ClusterParameters(distanceMax, websiteCountMin));
+                paramList.add(new QdClusterParameters(distanceMax, websiteCountMin));
             }
         }
         return paramList;
     }
 
-    public static class ClusterParameters extends ModelParameters {
+    public static class QdClusterParameters extends ModelParameters {
 
         public double distanceMax;
         public double websiteCountMin;
 
-        public ClusterParameters(double distanceMax, double websiteCountMin) {
+        public QdClusterParameters(double distanceMax, double websiteCountMin) {
             this.distanceMax = distanceMax;
             this.websiteCountMin = websiteCountMin;
             this.paramArray = packParamsAsArray(distanceMax, websiteCountMin);
         }
 
         // should have easier way to do this
-        public ClusterParameters(String paramsString) {
+        public QdClusterParameters(String paramsString) {
             this(Double.parseDouble(splitParameters(paramsString)[0]),
                     Double.parseDouble(splitParameters(paramsString)[1]));
         }
 
     }
 
-    public static class FacetParameters extends ModelParameters {
+    public static class QdFacetParameters extends ModelParameters {
 
         double distanceMax;
         double websiteCountMin;
         double itemRatio;
         double itemThreshld;
 
-        public FacetParameters(double distanceMax, double websiteCountMin, double itemRatio, double itemThreshld) {
+        public QdFacetParameters(double distanceMax, double websiteCountMin, double itemRatio, double itemThreshld) {
             this.distanceMax = distanceMax;
             this.websiteCountMin = websiteCountMin;
             this.itemRatio = itemRatio;
@@ -89,7 +89,7 @@ public class QdParameterSettings extends ParameterSettings {
             this.paramArray = packParamsAsArray(distanceMax, websiteCountMin, itemRatio, itemThreshld);
         }
 
-        public FacetParameters(String paramsString) {
+        public QdFacetParameters(String paramsString) {
             this(Double.parseDouble(splitParameters(paramsString)[0]),
                     Double.parseDouble(splitParameters(paramsString)[1]),
                     Double.parseDouble(splitParameters(paramsString)[2]),

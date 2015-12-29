@@ -41,7 +41,7 @@ public abstract class ModelParameters {
     public static ModelParameters parseFacetParams(String paramString, String model) {
         switch (model) {
             case "qd":
-                return new QdParameterSettings.FacetParameters(paramString);
+                return new QdParameterSettings.QdFacetParameters(paramString);
         }
         return null;
     }

@@ -270,7 +270,7 @@ public class TuneFacetModel extends AppFunction {
             String folderDir = Utility.getFileName(modelDir, "tune", folderId);
             String evalDir = Utility.getFileName(folderDir, "eval");
 
-            List<ModelParameters> params = ParameterSettings.instance(p, model).getFacetParametersList();
+            List<ModelParameters> params = ParameterSettings.instance(p, model).getFacetingSettings();
 
             double maxScore = Double.NEGATIVE_INFINITY;
             ModelParameters maxScoreParams = null;
@@ -320,7 +320,7 @@ public class TuneFacetModel extends AppFunction {
             for (int i = 1; i <= numFolders; i++) {
                 String folderId = String.valueOf(i);
                 ParameterSettings settings = ParameterSettings.instance(p, model);
-                for (ModelParameters params : settings.getFacetParametersList()) {
+                for (ModelParameters params : settings.getFacetingSettings()) {
                     processor.process(new TfFolderParameters(folderId, "tune", params.toFilenameString()));
                 }
             }

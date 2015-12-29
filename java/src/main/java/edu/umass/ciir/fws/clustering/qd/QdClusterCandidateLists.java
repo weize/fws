@@ -60,7 +60,7 @@ public class QdClusterCandidateLists extends ProcessQueryParametersApp {
 
         @Override
         public void process(TfQuery query) throws IOException {
-            for (ModelParameters params : qdParams.getClusterParametersList()) {
+            for (ModelParameters params : qdParams.getClusteringSettings()) {
                 File clusterFile = new File(Utility.getQdClusterFileName(clusterDir, query.id, params.toFilenameString()));
                 if (clusterFile.exists()) {
                     Utility.infoFileExists(clusterFile);

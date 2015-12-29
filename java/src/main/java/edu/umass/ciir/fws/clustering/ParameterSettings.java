@@ -6,7 +6,6 @@
 package edu.umass.ciir.fws.clustering;
 
 import edu.umass.ciir.fws.clustering.qd.QdParameterSettings;
-import edu.umass.ciir.fws.utility.Utility;
 import java.util.List;
 import org.lemurproject.galago.tupleflow.Parameters;
 
@@ -16,9 +15,9 @@ import org.lemurproject.galago.tupleflow.Parameters;
  */
 public abstract class ParameterSettings {
 
-    public abstract List<ModelParameters> getFacetParametersList();
+    public abstract List<ModelParameters> getFacetingSettings();
 
-    public abstract List<ModelParameters> getClusterParametersList();
+    public abstract List<ModelParameters> getClusteringSettings();
 
     public static ParameterSettings instance(Parameters p, String model) {
         switch (model) {

@@ -3,7 +3,7 @@ package edu.umass.ciir.fws.clustering.qd;
 import edu.umass.ciir.fws.clustering.ModelParameters;
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.clustering.ScoredItem;
-import edu.umass.ciir.fws.clustering.qd.QdParameterSettings.FacetParameters;
+import edu.umass.ciir.fws.clustering.qd.QdParameterSettings.QdFacetParameters;
 import edu.umass.ciir.fws.tool.app.ProcessQueryParametersApp;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.types.TfQueryParameters;
@@ -62,7 +62,7 @@ public class QdClusterToFacet extends ProcessQueryParametersApp {
 
         @Override
         public void process(TfQuery query) throws IOException {
-            for (ModelParameters params : qdSettings.getFacetParametersList()) {
+            for (ModelParameters params : qdSettings.getFacetingSettings()) {
                 File facetFile = new File(Utility.getQdFacetFileName(facetDir, query.id, params.toFilenameString()));
                 if (facetFile.exists()) {
                     Utility.infoFileExists(facetFile);
@@ -97,7 +97,7 @@ public class QdClusterToFacet extends ProcessQueryParametersApp {
         public void process(TfQueryParameters queryParameters) throws IOException {
             System.err.println(String.format("Processing qid:%s parameters:%s", queryParameters.id, queryParameters.parameters));
             String qid = queryParameters.id;
-            FacetParameters params = new FacetParameters(queryParameters.parameters);
+            QdFacetParameters params = new QdFacetParameters(queryParameters.parameters);
             double distanceMax = params.distanceMax;
             double websiteCountMin = params.websiteCountMin;
             double itemRatio = params.itemRatio;

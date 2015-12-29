@@ -4,7 +4,7 @@
  */
 package edu.umass.ciir.fws.clustering.qd;
 
-import edu.umass.ciir.fws.clustering.qd.QdParameterSettings.ClusterParameters;
+import edu.umass.ciir.fws.clustering.qd.QdParameterSettings.QdClusterParameters;
 import edu.umass.ciir.fws.types.TfQueryParameters;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
@@ -43,7 +43,7 @@ public class QueryDimensionTFClusterer extends QueryDimensionClusterer implement
 
         //setQueryParameters
         String qid = queryParameters.id;
-        ClusterParameters params = new ClusterParameters(queryParameters.parameters);
+        QdClusterParameters params = new QdClusterParameters(queryParameters.parameters);
         distanceMax = params.distanceMax;
         websiteCountMin = params.websiteCountMin;
 
