@@ -323,10 +323,9 @@ public class TuneFacetModel extends AppFunction {
                 for (ModelParameters params : settings.getFacetParametersList()) {
                     processor.process(new TfFolderParameters(folderId, "tune", params.toFilenameString()));
                 }
-                
-                processor.close();
             }
-
+            
+            processor.close();
         }
 
     }
