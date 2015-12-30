@@ -57,7 +57,6 @@ public class GmiClusterer extends StandardStep<TfQueryParameters, TfQueryParamet
         File clusterFile;
 
         if (predictOrTune.equals("predict")) {
-            Utility.info("in prediction");
             termPredictFile = new File(Utility.getGmTermPredictFileName(predictDir, queryParams.id));
             termPairPredictFile = new File(Utility.getGmTermPairPredictFileName(predictDir, queryParams.id));
             //folderOptionRankerMetricIndex

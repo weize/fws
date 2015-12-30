@@ -9,6 +9,7 @@ import edu.umass.ciir.fws.clustering.ModelParameters;
 import edu.umass.ciir.fws.clustering.gm.gmi.GmiParameterSettings;
 import edu.umass.ciir.fws.clustering.gm.gmi.GmiParameterSettings.GmiClusterParameters;
 import edu.umass.ciir.fws.types.TfQueryParameters;
+import edu.umass.ciir.fws.utility.Utility;
 import java.io.IOException;
 import org.lemurproject.galago.tupleflow.InputClass;
 import org.lemurproject.galago.tupleflow.OutputClass;
@@ -32,6 +33,7 @@ public  class AppendFacetRankerParameter extends StandardStep<TfQueryParameters,
 
     @Override
     public void process(TfQueryParameters queryParams) throws IOException {
+        Utility.infoProcessing(queryParams);
         GmiClusterParameters clusterParams = new GmiClusterParameters(queryParams.parameters);
         
         for (ModelParameters facetParams : gmiSettings.appendFacetSettings(clusterParams)) {
