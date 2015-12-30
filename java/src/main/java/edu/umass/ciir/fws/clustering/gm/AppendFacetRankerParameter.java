@@ -33,7 +33,6 @@ public  class AppendFacetRankerParameter extends StandardStep<TfQueryParameters,
 
     @Override
     public void process(TfQueryParameters queryParams) throws IOException {
-        Utility.infoProcessing(queryParams);
         GmiClusterParameters clusterParams = new GmiClusterParameters(queryParams.parameters);
         
         for (ModelParameters facetParams : gmiSettings.appendFacetSettings(clusterParams)) {
