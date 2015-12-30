@@ -7,7 +7,7 @@ package edu.umass.ciir.fws.clustering.gm.gmi;
 
 import edu.umass.ciir.fws.clustering.ModelParameters;
 import edu.umass.ciir.fws.clustering.gm.AppendFacetRankerParameter;
-import edu.umass.ciir.fws.clustering.gm.GmLearn.DoNonethingForQueryParams;
+import edu.umass.ciir.fws.clustering.gm.GmLearnOld.DoNonethingForQueryParams;
 import edu.umass.ciir.fws.query.QueryFileParser;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.types.TfQueryParameters;

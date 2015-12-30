@@ -25,9 +25,8 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 @Verified
 @InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
 @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
-public class PairPredictor extends StandardStep<TfQueryParameters, TfQueryParameters> {
+public abstract class PairPredictor extends StandardStep<TfQueryParameters, TfQueryParameters> {
 
-    String predictDir;
     String trainDir;
     List<Long> indices; // indices for selected features
     List<Double> termProbThs;
@@ -37,24 +36,35 @@ public class PairPredictor extends StandardStep<TfQueryParameters, TfQueryParame
 
         Parameters p = parameters.getJSON();
         String gmDir = p.getString("gmDir");
-        predictDir = Utility.getFileName(gmDir, "predict");
         trainDir = Utility.getFileName(gmDir, "train");
         indices = p.getAsList("pairFeatureIndices", Long.class);
     }
 
+    /**
+     *
+     * @param foldId first argument is qid, the second should be foldId if it is
+     * for tuning
+     * @return
+     */
+    public abstract String getPredictBaseDir(String foldId);
+
     @Override
     public void process(TfQueryParameters queryParams) throws IOException {
-        String[] params = Utility.splitParameters(queryParams.parameters);
-        String folderId = params[0];
-        String predictOrTune = params[1];
-        String tuneDir = Utility.getFileName(trainDir, folderId, "tune");
-        File dataFile = predictOrTune.equals("predict")
-                ? new File(Utility.getGmTermPairDataFileName(predictDir, queryParams.id))
-                : new File(Utility.getGmTermPairDataFileName(tuneDir, queryParams.id));
-        File predictFile = predictOrTune.equals("predict")
-                ? new File(Utility.getGmTermPairPredictFileName(predictDir, queryParams.id))
-                : new File(Utility.getGmTermPairPredictFileName(tuneDir, queryParams.id));
+        String folderId = queryParams.parameters;
+        String baseDir = getPredictBaseDir(folderId);
+        File dataFile = new File(Utility.getGmTermPairDataFileName(baseDir, queryParams.id));
+        File predictFile = new File(Utility.getGmTermPairPredictFileName(baseDir, queryParams.id));
 
+//        String[] params = Utility.splitParameters(queryParams.parameters);
+//        String folderId = params[0];
+//        String predictOrTune = params[1];
+//        String tuneDir = Utility.getFileName(trainDir, folderId, "tune");
+//        File dataFile = predictOrTune.equals("predict")
+//                ? new File(Utility.getGmTermPairDataFileName(predictDir, queryParams.id))
+//                : new File(Utility.getGmTermPairDataFileName(tuneDir, queryParams.id));
+//        File predictFile = predictOrTune.equals("predict")
+//                ? new File(Utility.getGmTermPairPredictFileName(predictDir, queryParams.id))
+//                : new File(Utility.getGmTermPairPredictFileName(tuneDir, queryParams.id));
         String folderDir = Utility.getFileName(trainDir, folderId);
         File modelFile = new File(Utility.getFileName(folderDir, "train.p.model"));
         File scalerFile = new File(Utility.getFileName(folderDir, "train.p.scaler"));

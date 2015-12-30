@@ -36,11 +36,12 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 import org.lemurproject.galago.tupleflow.types.FileName;
 
 /**
+ * Should be deleted
  * learn term and pair model
  *
  * @author wkong
  */
-public class GmLearn extends AppFunction {
+public class GmLearnOld extends AppFunction {
 
     @Override
     public String getName() {
@@ -84,11 +85,12 @@ public class GmLearn extends AppFunction {
             String folderDir = Utility.getFileName(trainDir, String.valueOf(i + 1));
             Utility.createDirectory(folderDir);
 
-//            String evalDir = Utility.getFileName(folderDir, "eval");
-//            Utility.createDirectory(evalDir);
-//
-//            String folderPredictDir = Utility.getFileName(folderDir, "tune");
-//            Utility.createDirectory(folderPredictDir);
+            String evalDir = Utility.getFileName(folderDir, "eval");
+            Utility.createDirectory(evalDir);
+
+            String folderPredictDir = Utility.getFileName(folderDir, "tune");
+            Utility.createDirectory(folderPredictDir);
+
             // test query
             String testQuery = Utility.getFileName(folderDir, "test.query");
             QueryFileParser.output(queryFolders.get(i), testQuery);
@@ -115,12 +117,16 @@ public class GmLearn extends AppFunction {
         job.add(getTrainStage(parameters));
         job.add(getSplitQueriesAfterTrainStage(parameters));
         job.add(getPredictStage(parameters));
+        job.add(getSplitQueriesForTuningStage(parameters));
+        job.add(getPredictForTuningStage(parameters));
 
         job.connect("splitQueries", "prepareEachQueryData", ConnectionAssignmentType.Each);
         job.connect("prepareEachQueryData", "splitFolders", ConnectionAssignmentType.Combined);
         job.connect("splitFolders", "train", ConnectionAssignmentType.Each);
         job.connect("train", "splitQueriesAfterTrain", ConnectionAssignmentType.Combined);
         job.connect("splitQueriesAfterTrain", "predict", ConnectionAssignmentType.Each);
+        job.connect("predict", "splitQueriesForTuning", ConnectionAssignmentType.Combined);
+        job.connect("splitQueriesForTuning", "predictForTuning", ConnectionAssignmentType.Each);
 
         return job;
     }
@@ -215,13 +221,71 @@ public class GmLearn extends AppFunction {
         Stage stage = new Stage("predict");
 
         stage.addInput("trainDirQueries", new TfQueryParameters.IdParametersOrder());
+        stage.addOutput("trainDirQueries2", new TfQueryParameters.IdParametersOrder());
 
         stage.add(new InputStep("trainDirQueries"));
-        stage.add(new Step(TermPredictorForPrediction.class, parameters));
-        stage.add(new Step(ExtractTermPairDataForPrediectedTermsForPrediction.class, parameters));
-        stage.add(new Step(PairPredictorForPrediction.class, parameters));
+        stage.add(new Step(TermPredictor.class, parameters));
+        stage.add(new Step(ExtractTermPairDataForPrediectedTerms.class, parameters));
+        stage.add(new Step(PairPredictor.class, parameters));
+        stage.add(new Step(GmjClusterItems.class, parameters));
+        stage.add(new Step(AppendFacetRankerParameter.class));
+        stage.add(new Step(GmjClusterToFacetConverter.class, parameters));
+        stage.add(Utility.getSorter(new TfQueryParameters.IdParametersOrder()));
+        stage.add(new OutputStep("trainDirQueries2"));
+        return stage;
+    }
+
+    private Stage getSplitQueriesForTuningStage(Parameters parameters) {
+        Stage stage = new Stage("splitQueriesForTuning");
+
+        stage.addInput("trainDirQueries2", new TfQueryParameters.IdParametersOrder());
+        stage.addOutput("tuneDirQueries", new TfQueryParameters.IdParametersOrder());
+
+        stage.add(new InputStep("trainDirQueries2"));
+        stage.add(new Step(SplitQueriesForTuning.class, parameters));
+        stage.add(Utility.getSorter(new TfQueryParameters.IdParametersOrder()));
+        stage.add(new OutputStep("tuneDirQueries"));
+        return stage;
+    }
+
+    private Stage getPredictForTuningStage(Parameters parameters) {
+        Stage stage = new Stage("predictForTuning");
+
+        stage.addInput("tuneDirQueries", new TfQueryParameters.IdParametersOrder());
+
+        stage.add(new InputStep("tuneDirQueries"));
+        stage.add(new Step(TermPredictor.class, parameters));
+        stage.add(new Step(ExtractTermPairDataForPrediectedTerms.class, parameters));
+        stage.add(new Step(PairPredictor.class, parameters));
         stage.add(new Step(DoNonethingForQueryParams.class));
         return stage;
+    }
+
+    @Verified
+    @InputClass(className = "edu.umass.ciir.fws.types.TfFolder")
+    @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
+    public static class SplitQueriesAfterTrain extends StandardStep<TfFolder, TfQueryParameters> {
+
+        String trainDir;
+
+        public SplitQueriesAfterTrain(TupleFlowParameters parameters) throws IOException {
+            Parameters p = parameters.getJSON();
+            String gmDir = p.getString("gmDir");
+            trainDir = Utility.getFileName(gmDir, "train");
+
+        }
+
+        @Override
+        public void process(TfFolder folder) throws IOException {
+            String folderDir = Utility.getFileName(trainDir, folder.id);
+            String testQuery = Utility.getFileName(folderDir, "test.query");
+            TfQuery[] queries = QueryFileParser.loadQueryList(testQuery);
+            for (TfQuery query : queries) {
+                // folder id into parameters
+                String params = Utility.parametersToString(folder.id, "predict");
+                processor.process(new TfQueryParameters(query.id, query.text, params));
+            }
+        }
     }
 
     @Verified
@@ -250,87 +314,38 @@ public class GmLearn extends AppFunction {
 
     }
 
-    @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.TfFolder")
-    @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
-    public static class SplitQueriesAfterTrain extends StandardStep<TfFolder, TfQueryParameters> {
 
+    @Verified
+    @InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
+    @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
+    public static class SplitQueriesForTuning extends StandardStep<TfQueryParameters, TfQueryParameters> {
+
+        long numFolders;
         String trainDir;
 
-        public SplitQueriesAfterTrain(TupleFlowParameters parameters) throws IOException {
+        public SplitQueriesForTuning(TupleFlowParameters parameters) throws IOException {
             Parameters p = parameters.getJSON();
             String gmDir = p.getString("gmDir");
             trainDir = Utility.getFileName(gmDir, "train");
-
+            numFolders = parameters.getJSON().getLong("cvFolderNum");
         }
 
         @Override
-        public void process(TfFolder folder) throws IOException {
-            String folderDir = Utility.getFileName(trainDir, folder.id);
-            String testQuery = Utility.getFileName(folderDir, "test.query");
-            TfQuery[] queries = QueryFileParser.loadQueryList(testQuery);
-            for (TfQuery query : queries) {
-                processor.process(new TfQueryParameters(query.id, query.text, folder.id));
+        public void process(TfQueryParameters queryParams) throws IOException {
+        }
+
+        @Override
+        public void close() throws IOException {
+            for (int i = 1; i <= numFolders; i++) {
+                String trainQuery = Utility.getFileName(trainDir, String.valueOf(i), "train.query");
+                for (TfQuery query : QueryFileParser.loadQueryList(trainQuery)) {
+                    String params = Utility.parametersToString(i, "tune");
+                    processor.process(new TfQueryParameters(query.id, query.text, params));
+                }
             }
-        }
-    }
-
-    @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
-    @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
-    public static class TermPredictorForPrediction extends TermPredictor {
-
-        String predictDir;
-
-        public TermPredictorForPrediction(TupleFlowParameters parameters) {
-            super(parameters);
-            String gmDir = parameters.getJSON().getString("gmDir");
-            predictDir = Utility.getFileName(gmDir, "predict");
+            processor.close();
         }
 
-        @Override
-        public String getPredictBaseDir(String foldId) {
-            return predictDir;
-        }
-    }
-
-    @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
-    @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
-    public static class ExtractTermPairDataForPrediectedTermsForPrediction extends ExtractTermPairDataForPrediectedTerms {
-
-        String predictDir;
-
-        public ExtractTermPairDataForPrediectedTermsForPrediction(TupleFlowParameters parameters) throws Exception {
-            super(parameters);
-            String gmDir = parameters.getJSON().getString("gmDir");
-            predictDir = Utility.getFileName(gmDir, "predict");
-        }
-
-        @Override
-        public String getPredictBaseDir(String foldId) {
-            return predictDir;
-        }
-
-    }
-
-    @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
-    @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
-    public static class PairPredictorForPrediction extends PairPredictor {
-
-        String predictDir;
-
-        public PairPredictorForPrediction(TupleFlowParameters parameters) throws Exception {
-            super(parameters);
-            String gmDir = parameters.getJSON().getString("gmDir");
-            predictDir = Utility.getFileName(gmDir, "predict");
-        }
-
-        @Override
-        public String getPredictBaseDir(String foldId) {
-            return predictDir;
-        }
     }
 
     @Verified

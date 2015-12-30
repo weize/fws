@@ -6,7 +6,7 @@
 package edu.umass.ciir.fws.srank;
 
 import edu.emory.mathcs.backport.java.util.Arrays;
-import edu.umass.ciir.fws.clustering.gm.GmLearn;
+import edu.umass.ciir.fws.clustering.gm.GmLearnOld;
 import edu.umass.ciir.fws.eval.QueryMetrics;
 import edu.umass.ciir.fws.eval.TrecEvaluator;
 import edu.umass.ciir.fws.ffeedback.RunOracleCandidateExpasions;
@@ -234,7 +234,7 @@ public class TunePRM extends AppFunction {
 
         stage.add(new InputStep("queryParams"));
         stage.add(new Step(Run.class, parameters));
-        stage.add(new Step(GmLearn.DoNonethingForQueryParams.class));
+        stage.add(new Step(GmLearnOld.DoNonethingForQueryParams.class));
         return stage;
     }
 
