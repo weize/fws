@@ -6,7 +6,6 @@
 package edu.umass.ciir.fws.clustering.gm.gmi;
 
 import edu.umass.ciir.fws.clustering.ModelParameters;
-import static edu.umass.ciir.fws.clustering.ModelParameters.packParamsAsArray;
 import static edu.umass.ciir.fws.clustering.ModelParameters.splitParameters;
 import edu.umass.ciir.fws.clustering.ParameterSettings;
 import java.util.ArrayList;
@@ -72,7 +71,7 @@ public class GmiParameterSettings extends ParameterSettings {
         public GmiTuneParameters(String ranker, long metricIndex) {
             this.ranker = ranker;
             this.metricIndex = metricIndex;
-            this.paramArray = packParamsAsArray(ranker, metricIndex);
+            packParamsAsArray(ranker, metricIndex);
         }
 
         public GmiTuneParameters(String paramsString) {

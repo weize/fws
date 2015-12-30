@@ -28,13 +28,13 @@ public abstract class ModelParameters {
         return Utility.splitParameters(paramsString);
     }
 
-    public final static Object[] packParamsAsArray(Object... parameters) {
-        Object[] params = new Object[parameters.length];
+    public final Object[] packParamsAsArray(Object... parameters) {
+        paramArray = new Object[parameters.length];
         int i = 0;
         for (Object param : parameters) {
-            params[i++] = param;
+            paramArray[i++] = param;
         }
-        return params;
+        return paramArray;
     }
 
     public static class EmptyParameters extends ModelParameters {

@@ -6,8 +6,6 @@
 package edu.umass.ciir.fws.clustering.gm.gmj;
 
 import edu.umass.ciir.fws.clustering.ModelParameters;
-import static edu.umass.ciir.fws.clustering.ModelParameters.packParamsAsArray;
-import static edu.umass.ciir.fws.clustering.ModelParameters.splitParameters;
 import edu.umass.ciir.fws.clustering.ParameterSettings;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +48,7 @@ public class GmjParameterSettings extends ParameterSettings {
 
         public GmjTuneParameters(String ranker) {
             this.ranker = ranker;
-            this.paramArray = packParamsAsArray(ranker);
+            packParamsAsArray(ranker);
         }
     }
 

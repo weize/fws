@@ -6,7 +6,6 @@
 package edu.umass.ciir.fws.clustering.lda;
 
 import edu.umass.ciir.fws.clustering.ModelParameters;
-import static edu.umass.ciir.fws.clustering.ModelParameters.packParamsAsArray;
 import edu.umass.ciir.fws.clustering.ParameterSettings;
 import java.util.ArrayList;
 import java.util.List;
@@ -94,7 +93,7 @@ public class LdaParameterSettings extends ParameterSettings {
 
         public LdaTuneParameters(long metricIndex) {
             this.metricIndex = metricIndex;
-            this.paramArray = packParamsAsArray(metricIndex);
+            packParamsAsArray(metricIndex);
         }
 
         public LdaTuneParameters(String paramsString) {

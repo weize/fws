@@ -6,7 +6,6 @@
 package edu.umass.ciir.fws.clustering.qd;
 
 import edu.umass.ciir.fws.clustering.ModelParameters;
-import static edu.umass.ciir.fws.clustering.ModelParameters.packParamsAsArray;
 import edu.umass.ciir.fws.clustering.ParameterSettings;
 import java.util.ArrayList;
 import java.util.List;
@@ -71,7 +70,7 @@ public class QdParameterSettings extends ParameterSettings {
 
         public QdTuneParameters(long metricIndex) {
             this.metricIndex = metricIndex;
-            this.paramArray = packParamsAsArray(metricIndex);
+            packParamsAsArray(metricIndex);
         }
 
         public QdTuneParameters(String paramsString) {
@@ -111,7 +110,7 @@ public class QdParameterSettings extends ParameterSettings {
             this.websiteCountMin = websiteCountMin;
             this.itemRatio = itemRatio;
             this.itemThreshld = itemThreshld;
-            this.paramArray = packParamsAsArray(distanceMax, websiteCountMin, itemRatio, itemThreshld);
+            packParamsAsArray(distanceMax, websiteCountMin, itemRatio, itemThreshld);
         }
 
         public QdFacetParameters(String paramsString) {

@@ -6,7 +6,6 @@
 package edu.umass.ciir.fws.clustering.plsa;
 
 import edu.umass.ciir.fws.clustering.ModelParameters;
-import static edu.umass.ciir.fws.clustering.ModelParameters.packParamsAsArray;
 import edu.umass.ciir.fws.clustering.ParameterSettings;
 import java.util.ArrayList;
 import java.util.List;
@@ -61,7 +60,7 @@ public class PlsaParameterSettings extends ParameterSettings {
 
         public PlsaTuneParameters(long metricIndex) {
             this.metricIndex = metricIndex;
-            this.paramArray = packParamsAsArray(metricIndex);
+            packParamsAsArray(metricIndex);
         }
 
         public PlsaTuneParameters(String paramsString) {
@@ -78,7 +77,7 @@ public class PlsaParameterSettings extends ParameterSettings {
         public PlsaFacetParameters(long topicNum, long termNum) {
             this.topicNum = topicNum;
             this.termNum = termNum;
-            this.paramArray = packParamsAsArray(topicNum, termNum);
+            packParamsAsArray(topicNum, termNum);
         }
 
         public PlsaFacetParameters(String paramsString) {
@@ -94,7 +93,7 @@ public class PlsaParameterSettings extends ParameterSettings {
 
         public PlsaClusterParameters(long topicNum) {
             this.topicNum = topicNum;
-            this.paramArray = packParamsAsArray(topicNum);
+            packParamsAsArray(topicNum);
         }
 
         public PlsaClusterParameters(String paramsString) {
