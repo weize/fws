@@ -41,7 +41,7 @@ import org.lemurproject.galago.tupleflow.types.FileName;
  *
  * @author wkong
  */
-public class GmLearnOld extends AppFunction {
+public class ToDelGmLearnOld extends AppFunction {
 
     @Override
     public String getName() {

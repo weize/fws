@@ -64,12 +64,13 @@ public class ClusterForFacets extends ProcessQueryParametersApp {
         List<ModelParameters> paramsList;
         boolean skipExisting;
         String clusterDir;
+        String facetRun;
 
         public GenerateClusterParameters(TupleFlowParameters parameters) {
             Parameters p = parameters.getJSON();
             model = p.getString("facetModel");
-            String facetDir = p.getString("facetDir");
-            clusterDir = Utility.getFileName(facetDir, model, "run", "cluster");
+            facetRun = p.getString("facetRunDir");
+            clusterDir = Utility.getFileName(facetRun, model, "cluster");
             skipExisting = p.get("skipExisting", false);
             paramsList = ParameterSettings.instance(p, model).getClusteringSettings();
         }

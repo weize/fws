@@ -44,7 +44,7 @@ public class QdFacetFeaturesTFExtractor extends QdFacetFeatureExtractor implemen
     public QdFacetFeaturesTFExtractor(TupleFlowParameters parameters) throws Exception {
         Parameters p = parameters.getJSON();
         clistDir = p.getString("clistDir");
-        qdFeatureDir = p.getString("qdFeatureDir");
+         = Utility.getFileName(p.getString("qdRunDir"), "feature");
         String clueDfFile = p.getString("clueDfFile");
         clueCdf = p.getLong("clueCdf");
         topNum = p.getLong("topNum");

@@ -6,14 +6,19 @@
 package edu.umass.ciir.fws.tool.app;
 
 import edu.umass.ciir.fws.query.QueryFileParser;
+import edu.umass.ciir.fws.types.TfFolder;
 import edu.umass.ciir.fws.types.TfQuery;
+import edu.umass.ciir.fws.types.TfQueryParameters;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import org.lemurproject.galago.core.tools.AppFunction;
 import org.lemurproject.galago.tupleflow.FileSource;
+import org.lemurproject.galago.tupleflow.InputClass;
 import org.lemurproject.galago.tupleflow.Parameters;
+import org.lemurproject.galago.tupleflow.Processor;
 import org.lemurproject.galago.tupleflow.Utility;
 import org.lemurproject.galago.tupleflow.execution.ConnectionAssignmentType;
 import org.lemurproject.galago.tupleflow.execution.InputStep;
@@ -21,6 +26,7 @@ import org.lemurproject.galago.tupleflow.execution.Job;
 import org.lemurproject.galago.tupleflow.execution.OutputStep;
 import org.lemurproject.galago.tupleflow.execution.Stage;
 import org.lemurproject.galago.tupleflow.execution.Step;
+import org.lemurproject.galago.tupleflow.execution.Verified;
 import org.lemurproject.galago.tupleflow.types.FileName;
 
 /**
@@ -94,4 +100,43 @@ public abstract class ProcessQueryApp extends AppFunction {
      * @return
      */
     protected abstract Class getProcessClass();
+
+    @Verified
+    @InputClass(className = "edu.umass.ciir.fws.types.TfQuery")
+    public static class DoNonething implements Processor<TfQuery> {
+
+        @Override
+        public void close() throws IOException {
+        }
+
+        @Override
+        public void process(TfQuery object) throws IOException {
+        }
+    }
+
+    @Verified
+    @InputClass(className = "edu.umass.ciir.fws.types.TfFolder")
+    public static class DoNonethingForFolder implements Processor<TfFolder> {
+
+        @Override
+        public void close() throws IOException {
+        }
+
+        @Override
+        public void process(TfFolder object) throws IOException {
+        }
+    }
+
+    @Verified
+    @InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
+    public static class DoNonethingForQueryParams implements Processor<TfQueryParameters> {
+
+        @Override
+        public void close() throws IOException {
+        }
+
+        @Override
+        public void process(TfQueryParameters object) throws IOException {
+        }
+    }
 }

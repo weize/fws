@@ -5,10 +5,9 @@
  */
 package edu.umass.ciir.fws.clustering.gm;
 
-import edu.umass.ciir.fws.clustering.gm.gmj.GmjClusterItems;
-import edu.umass.ciir.fws.clustering.gm.gmj.GmjClusterToFacetConverter;
 import edu.emory.mathcs.backport.java.util.Arrays;
 import edu.umass.ciir.fws.query.QueryFileParser;
+import edu.umass.ciir.fws.tool.app.ProcessQueryApp;
 import edu.umass.ciir.fws.types.TfFolder;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.types.TfQueryParameters;
@@ -23,7 +22,6 @@ import org.lemurproject.galago.tupleflow.FileSource;
 import org.lemurproject.galago.tupleflow.InputClass;
 import org.lemurproject.galago.tupleflow.OutputClass;
 import org.lemurproject.galago.tupleflow.Parameters;
-import org.lemurproject.galago.tupleflow.Processor;
 import org.lemurproject.galago.tupleflow.StandardStep;
 import org.lemurproject.galago.tupleflow.TupleFlowParameters;
 import org.lemurproject.galago.tupleflow.execution.ConnectionAssignmentType;
@@ -220,7 +218,7 @@ public class GmLearn extends AppFunction {
         stage.add(new Step(TermPredictorForPrediction.class, parameters));
         stage.add(new Step(ExtractTermPairDataForPrediectedTermsForPrediction.class, parameters));
         stage.add(new Step(PairPredictorForPrediction.class, parameters));
-        stage.add(new Step(DoNonethingForQueryParams.class));
+        stage.add(new Step(ProcessQueryApp.DoNonethingForQueryParams.class));
         return stage;
     }
 
@@ -330,45 +328,6 @@ public class GmLearn extends AppFunction {
         @Override
         public String getPredictBaseDir(String foldId) {
             return predictDir;
-        }
-    }
-
-    @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.TfQuery")
-    public static class DoNonething implements Processor<TfQuery> {
-
-        @Override
-        public void close() throws IOException {
-        }
-
-        @Override
-        public void process(TfQuery object) throws IOException {
-        }
-    }
-
-    @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.TfFolder")
-    public static class DoNonethingForFolder implements Processor<TfFolder> {
-
-        @Override
-        public void close() throws IOException {
-        }
-
-        @Override
-        public void process(TfFolder object) throws IOException {
-        }
-    }
-
-    @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
-    public static class DoNonethingForQueryParams implements Processor<TfQueryParameters> {
-
-        @Override
-        public void close() throws IOException {
-        }
-
-        @Override
-        public void process(TfQueryParameters object) throws IOException {
         }
     }
 
