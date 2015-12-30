@@ -23,9 +23,9 @@ public class GmiParameterSettings extends ParameterSettings {
     List<String> rankers;
 
     public GmiParameterSettings(Parameters p) {
-        termProbThs = p.getAsList("gmiTermProbThesholds");
-        pairProbThs = p.getAsList("gmiPairProbThesholds");
-        rankers = p.getAsList("gmRankers");
+        termProbThs = p.getList("gmiTermProbThesholds");
+        pairProbThs = p.getList("gmiPairProbThesholds");
+        rankers = p.getList("gmRankers");
     }
 
     @Override

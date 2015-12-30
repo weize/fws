@@ -42,9 +42,9 @@ public class GmiClusterToFacetConverter extends StandardStep<TfQueryParameters, 
 
     @Override
     public void process(TfQueryParameters queryParams) throws IOException {
-        Utility.infoProcessingQuery(queryParams.id);
+        Utility.infoProcessing(queryParams);
 
-        String[] folderIdOptionOthers = Utility.splitParameters(queryParams.parameters);
+        String[] folderIdOptionOthers = Utility.splitParameters(queryParams.text);
         String folderId = folderIdOptionOthers[0];
         String predictOrTune = folderIdOptionOthers[1];
         GmiFacetParameters params = new GmiFacetParameters(queryParams.parameters);
