@@ -39,7 +39,7 @@
 	"ldaIterNum" : 1000,
 	"facetAnnotationText" : "../exp/annotation/facet-annotation.text",
 	"gmDir":"../exp/facet/gm",
-	"gmRanker" : ["sum", "avg"],
+	"gmRankers" : ["sum", "avg"],
 	"gmjClusterDir" : "../exp/facet/gmj/cluster",
 	"gmjFacetDir" : "../exp/facet/gmj/facet",
 	"gmiClusterDir" : "../exp/facet/gmi/cluster",
@@ -56,4 +56,5 @@
 	"topFacetNum" : 10,
 	"facetModelsToEval" : ["gmi", "gmj", "plsa", "lda", "qd"],
 	"facetEvaluators" : ["edu.umass.ciir.fws.eval.PrfEvaluator", "edu.umass.ciir.fws.eval.RpndcgEvaluator", "edu.umass.ciir.fws.eval.ClusteringEvaluator", "edu.umass.ciir.fws.eval.PrfNewEvaluator", "edu.umass.ciir.fws.eval.FacetSizeEvaluator"], 
+	"skipExisting" : true,
 }
