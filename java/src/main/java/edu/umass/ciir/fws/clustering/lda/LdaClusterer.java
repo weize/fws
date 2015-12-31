@@ -52,7 +52,7 @@ public class LdaClusterer implements Processor<TfQueryParameters> {
 
     public LdaClusterer(TupleFlowParameters parameters) {
         Parameters p = parameters.getJSON();
-        String facetRunDir = p.getString("facetRun");
+        String facetRunDir = p.getString("facetRunDir");
         clusterDir = DirectoryUtility.getCluterDir(facetRunDir, modelName);
         iterNum = p.getLong("ldaIterNum");
         clistDir = p.getString("clistDir");

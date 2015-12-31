@@ -7,9 +7,9 @@ package edu.umass.ciir.fws.clustering.gm.gmi;
 
 import edu.umass.ciir.fws.clustering.gm.AppendFacetRankerParameter;
 import edu.umass.ciir.fws.clustering.gm.EvalTuneGmi;
-import edu.umass.ciir.fws.clustering.gm.ToDelGmLearnOld;
 import edu.umass.ciir.fws.eval.QueryMetrics;
 import edu.umass.ciir.fws.query.QueryFileParser;
+import edu.umass.ciir.fws.tool.app.ProcessQueryApp;
 import edu.umass.ciir.fws.types.TfFolder;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.types.TfQueryParameters;
@@ -164,7 +164,7 @@ public class GmiTuneFacetOld extends AppFunction {
         stage.add(new InputStep("selectedParams"));
         stage.add(new Step(GmiClusterer.class, parameters));
         stage.add(new Step(GmiClusterToFacetConverter.class, parameters));
-        stage.add(new Step(ToDelGmLearnOld.DoNonethingForQueryParams.class));
+        stage.add(new Step(ProcessQueryApp.DoNonethingForQueryParams.class));
 
         return stage;
     }

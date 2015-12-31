@@ -51,6 +51,8 @@ public class ClusterForFacets extends ProcessQueryParametersApp {
                 return PlsaClusterer.class;
             case "lda":
                 return LdaClusterer.class;
+            case "gmj":
+                return null;
         }
 
         return null;

@@ -33,7 +33,7 @@ public class QueryDimensionTFClusterer extends QueryDimensionClusterer implement
     public QueryDimensionTFClusterer(TupleFlowParameters parameters) {
         Parameters p = parameters.getJSON();
         debug = p.get("debug", false);
-        String facetRunDir = p.getString("facetRun");
+        String facetRunDir = p.getString("facetRunDir");
         featureDir = DirectoryUtility.getFeatureDir(facetRunDir, modelName);
         clusterDir = DirectoryUtility.getCluterDir(facetRunDir, modelName);
     }

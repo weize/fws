@@ -13,8 +13,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.lemurproject.galago.tupleflow.InputClass;
+import org.lemurproject.galago.tupleflow.OutputClass;
 import org.lemurproject.galago.tupleflow.Parameters;
-import org.lemurproject.galago.tupleflow.Processor;
+import org.lemurproject.galago.tupleflow.StandardStep;
 import org.lemurproject.galago.tupleflow.TupleFlowParameters;
 import org.lemurproject.galago.tupleflow.execution.Verified;
 
@@ -24,12 +25,13 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
  */
 @Verified
 @InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
-public class GmjClusterItems implements Processor<TfQueryParameters> {
+@OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
+public class GmjClusterItemsOld extends StandardStep<TfQueryParameters, TfQueryParameters> {
 
     String clusterDir;
     String predictDir;
 
-    public GmjClusterItems(TupleFlowParameters parameters) {
+    public GmjClusterItemsOld(TupleFlowParameters parameters) {
         Parameters p = parameters.getJSON();
         clusterDir = p.getString("gmjClusterDir");
         String gmDir = p.getString("gmDir");
@@ -51,9 +53,6 @@ public class GmjClusterItems implements Processor<TfQueryParameters> {
         List<ScoredFacet> clusters = gmj.cluster(termPredictFile, termPairPredictFile);
         ScoredFacet.output(clusters, clusterFile);
         Utility.infoWritten(clusterFile);
-    }
-
-    @Override
-    public void close() throws IOException {
+        processor.process(queryParams);
     }
 }

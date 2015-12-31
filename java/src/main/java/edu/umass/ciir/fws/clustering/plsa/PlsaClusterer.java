@@ -44,7 +44,7 @@ public class PlsaClusterer implements Processor<TfQueryParameters> {
 
     public PlsaClusterer(TupleFlowParameters parameters) {
         Parameters p = parameters.getJSON();
-        String facetRunDir = p.getString("facetRun");
+        String facetRunDir = p.getString("facetRunDir");
         clusterDir = DirectoryUtility.getCluterDir(facetRunDir, modelName);
         iterNum = p.getLong("plsaIterNum");
         clistDir = p.getString("clistDir");
