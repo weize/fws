@@ -51,14 +51,18 @@ public class TuneFacetModel extends AppFunction {
 
     @Override
     public String getHelpString() {
-        return "fws tune-facet --facetModel=<plsa|lda|qd>\n";
+        return "fws tune-facet --facetModel=<plsa|lda|qd|gmi>\n";
     }
 
     @Override
     public void run(Parameters p, PrintStream output) throws Exception {
-        prepareDir(p);
-        Job job = createJob(p);
-        AppFunction.runTupleFlowJob(job, p, output);
+        if (p.getString("facetModel").equals("gmi")) {
+            handleGmi(p);
+        } else {
+            prepareDir(p);
+            Job job = createJob(p);
+            AppFunction.runTupleFlowJob(job, p, output);
+        }
 
     }
 
@@ -178,6 +182,21 @@ public class TuneFacetModel extends AppFunction {
         return stage;
     }
 
+    /**
+     * Do not require tuning. Directly create a symlink to facet dir in
+     * facet-run dir
+     *
+     * @param p
+     */
+    private void handleGmi(Parameters p) throws IOException {
+        String model = "gmj";
+        String facetRunDir = Utility.getFileName(p.getString("facetRunDir"), model, "facet");
+        String facetTuneDir = Utility.getFileName(p.getString("facetTuneDir"), model, "facet");
+
+        Utility.createDirectoryForFile(facetTuneDir);
+        CopyRun.makesLink(new File(facetRunDir), new File(facetTuneDir));
+    }
+
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
     @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
@@ -212,7 +231,7 @@ public class TuneFacetModel extends AppFunction {
 
         }
 
-        private void makesLink(File runFacetFile, File facetFile) throws IOException {
+        public static void makesLink(File runFacetFile, File facetFile) throws IOException {
             System.err.println(runFacetFile.getAbsoluteFile());
             System.err.println(facetFile.getAbsoluteFile());
             if (facetFile.exists()) {
