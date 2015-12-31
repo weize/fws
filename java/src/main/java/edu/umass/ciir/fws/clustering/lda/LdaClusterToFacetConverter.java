@@ -8,6 +8,7 @@ package edu.umass.ciir.fws.clustering.lda;
 
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.types.TfQueryParameters;
+import edu.umass.ciir.fws.utility.DirectoryUtility;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
@@ -30,9 +31,9 @@ public class LdaClusterToFacetConverter implements Processor<TfQueryParameters> 
 
     public LdaClusterToFacetConverter(TupleFlowParameters parameters) {
         Parameters p = parameters.getJSON();
-        String runDir = p.getString("ldaRunDir");
-        facetDir = Utility.getFileName(runDir, "facet");
-        clusterDir = Utility.getFileName(runDir, "cluster");
+        String facetRunDir = p.getString("facetRunDir");
+        facetDir = DirectoryUtility.getFacetDir(facetRunDir, LdaClusterer.modelName);
+        clusterDir = DirectoryUtility.getCluterDir(facetRunDir, LdaClusterer.modelName);
     }
 
     @Override

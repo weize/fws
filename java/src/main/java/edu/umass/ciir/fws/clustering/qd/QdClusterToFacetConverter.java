@@ -3,12 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package edu.umass.ciir.fws.clustering.qd;
 
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.clustering.ScoredItem;
 import edu.umass.ciir.fws.types.TfQueryParameters;
+import edu.umass.ciir.fws.utility.DirectoryUtility;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
 import java.io.File;
@@ -21,21 +21,22 @@ import org.lemurproject.galago.tupleflow.TupleFlowParameters;
 import org.lemurproject.galago.tupleflow.execution.Verified;
 
 /**
- * Terms are selected if it pass the condition (score > NumSite *
- * itemRatio). See paper "Finding dimensions for queries".
+ * Terms are selected if it pass the condition (score > NumSite * itemRatio).
+ * See paper "Finding dimensions for queries".
  */
 @Verified
 @InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
 public class QdClusterToFacetConverter implements Processor<TfQueryParameters> {
+
     String facetDir;
     String clusterDir;
-    String runDir;
 
     public QdClusterToFacetConverter(TupleFlowParameters parameters) {
         Parameters p = parameters.getJSON();
-        runDir = p.getString("qdRunDir");
-        facetDir = Utility.getFileName(runDir, "facet");
-        clusterDir = Utility.getFileName(runDir, "cluster");
+
+        String facetRunDir = p.getString("facetRunDir");
+        facetDir = DirectoryUtility.getFacetDir(facetRunDir, QueryDimensionClusterer.modelName);
+        clusterDir = DirectoryUtility.getCluterDir(facetRunDir, QueryDimensionClusterer.modelName);
     }
 
     @Override
@@ -48,11 +49,12 @@ public class QdClusterToFacetConverter implements Processor<TfQueryParameters> {
         double itemRatio = params.itemRatio;
         double itemThreshold = params.itemThreshld;
         File facetFile = new File(Utility.getQdFacetFileName(facetDir, qid, params.toFilenameString()));
-        // should not exists because we filtered them out in generating params process
-        if (facetFile.exists()) {
-            Utility.infoFileExists(facetFile);
-            return;
-        }
+//        // should not exists because we filtered them out in generating params process
+//        if (facetFile.exists()) {
+//            Utility.infoFileExists(facetFile);
+//            return;
+//        }
+        
         // loadClusters clusters
         String clusterFileName = Utility.getQdClusterFileName(clusterDir, qid, distanceMax, websiteCountMin);
         BufferedReader reader = Utility.getReader(clusterFileName);
@@ -84,5 +86,5 @@ public class QdClusterToFacetConverter implements Processor<TfQueryParameters> {
     @Override
     public void close() throws IOException {
     }
-    
+
 }

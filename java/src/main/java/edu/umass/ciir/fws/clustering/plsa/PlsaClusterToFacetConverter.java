@@ -8,6 +8,7 @@ package edu.umass.ciir.fws.clustering.plsa;
 
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.types.TfQueryParameters;
+import edu.umass.ciir.fws.utility.DirectoryUtility;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
@@ -29,10 +30,11 @@ public class PlsaClusterToFacetConverter implements Processor<TfQueryParameters>
     String clusterDir;
 
     public PlsaClusterToFacetConverter(TupleFlowParameters parameters) {
+        
         Parameters p = parameters.getJSON();
-        String runDir = p.getString("plsaRunDir");
-        facetDir = Utility.getFileName(runDir, "facet");
-        clusterDir = Utility.getFileName(runDir, "cluster");
+        String facetRunDir = p.getString("facetRunDir");
+        facetDir = DirectoryUtility.getFacetDir(facetRunDir, PlsaClusterer.modelName);
+        clusterDir = DirectoryUtility.getCluterDir(facetRunDir, PlsaClusterer.modelName);
     }
 
     @Override

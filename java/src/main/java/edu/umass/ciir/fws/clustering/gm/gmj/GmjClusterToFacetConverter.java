@@ -7,6 +7,7 @@ package edu.umass.ciir.fws.clustering.gm.gmj;
 
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.types.TfQueryParameters;
+import edu.umass.ciir.fws.utility.DirectoryUtility;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
@@ -32,8 +33,9 @@ public class GmjClusterToFacetConverter implements Processor<TfQueryParameters> 
 
     public GmjClusterToFacetConverter(TupleFlowParameters parameters) {
         Parameters p = parameters.getJSON();
-        facetDir = p.getString("gmjFacetDir");
-        clusterDir = p.getString("gmjClusterDir");
+        String facetRunDir = p.getString("facetRunDir");
+        facetDir = DirectoryUtility.getFacetDir(facetRunDir, GmjClusterer.modelName);
+        clusterDir = DirectoryUtility.getCluterDir(facetRunDir, GmjClusterer.modelName);
     }
 
     @Override
