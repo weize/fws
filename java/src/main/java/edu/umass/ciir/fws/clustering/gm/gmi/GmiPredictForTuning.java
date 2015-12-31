@@ -89,7 +89,7 @@ public class GmiPredictForTuning extends AppFunction {
         stage.add(new Step(FileSource.class, p));
         stage.add(new Step(SplitTuneRuns.class, parameter));
         stage.add(Utility.getSorter(new TfQueryParameters.IdParametersOrder()));
-        stage.add(new OutputStep("clusters"));
+        stage.add(new OutputStep("queryParams"));
 
         return stage;
     }
