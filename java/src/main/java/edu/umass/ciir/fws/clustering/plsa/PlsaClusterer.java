@@ -17,6 +17,7 @@ import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.clustering.ScoredItem;
 import edu.umass.ciir.fws.clustering.plsa.PlsaParameterSettings.PlsaClusterParameters;
 import edu.umass.ciir.fws.types.TfQueryParameters;
+import edu.umass.ciir.fws.utility.DirectoryUtility;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
@@ -34,6 +35,7 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 @InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
 public class PlsaClusterer implements Processor<TfQueryParameters> {
 
+    public final static String modelName = "plsa";
     String clusterDir;
     String clistDir;
     long topNum;
@@ -42,8 +44,8 @@ public class PlsaClusterer implements Processor<TfQueryParameters> {
 
     public PlsaClusterer(TupleFlowParameters parameters) {
         Parameters p = parameters.getJSON();
-        String runDir = p.getString("plsaRunDir");
-        clusterDir = Utility.getFileName(runDir, "cluster");
+        String facetRunDir = p.getString("facetRun");
+        clusterDir = DirectoryUtility.getCluterDir(facetRunDir, modelName);
         iterNum = p.getLong("plsaIterNum");
         clistDir = p.getString("clistDir");
         topNum = p.getLong("topNum");
@@ -53,18 +55,19 @@ public class PlsaClusterer implements Processor<TfQueryParameters> {
 
     @Override
     public void process(TfQueryParameters queryParameters) throws IOException {
+        Utility.infoProcessing(queryParameters);
         String qid = queryParameters.id;
-        System.err.println(String.format("Processing qid:%s parameters:%s", qid, queryParameters.parameters));
 
         PlsaClusterParameters params = new PlsaClusterParameters(queryParameters.parameters);
         int topicNum = (int) params.topicNum;
 
         // output
-        File clusterFile = new File(Utility.getPlsaClusterFileName(clusterDir, qid, params.toFilenameString()));
-        if (clusterFile.exists()) {
-            Utility.infoFileExists(clusterFile);
-            return;
-        }
+        File clusterFile = new File(DirectoryUtility.getClusterFilename(clusterDir, qid, modelName, params.toFilenameString()));
+//        should be checked in parameter genearting stage
+//        if (clusterFile.exists()) {
+//            Utility.infoFileExists(clusterFile);
+//            return;
+//        }
 
         // loadClusters candidate lists
         File clistFile = new File(Utility.getCandidateListCleanFileName(clistDir, qid));
@@ -194,7 +197,7 @@ public class PlsaClusterer implements Processor<TfQueryParameters> {
                     items.add(new ScoredItem(dict[w], Pw_z[z][w]));
                 }
                 Collections.sort(items);
-                ScoredFacet facet = new ScoredFacet(items.subList(0, Math.min(items.size(), (int)topTermNum)), Pz[z]);
+                ScoredFacet facet = new ScoredFacet(items.subList(0, Math.min(items.size(), (int) topTermNum)), Pz[z]);
                 facets.add(facet);
             }
             Collections.sort(facets);

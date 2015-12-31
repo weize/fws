@@ -10,6 +10,7 @@ import edu.umass.ciir.fws.clustering.gm.GmIndependentClusterer;
 import edu.umass.ciir.fws.clustering.gm.gmi.GmiParameterSettings.GmiClusterParameters;
 import edu.umass.ciir.fws.clustering.gm.gmi.GmiParameterSettings.GmiFacetParameters;
 import edu.umass.ciir.fws.types.TfQueryParameters;
+import edu.umass.ciir.fws.utility.DirectoryUtility;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
@@ -63,7 +64,7 @@ public class GmiClusterer extends StandardStep<TfQueryParameters, TfQueryParamet
             String ranker = folderIdOptionOthers[2];
             String metricIndex = folderIdOptionOthers[3];
             String gmiParams = Utility.parametersToFileNameString(ranker, metricIndex);
-            clusterFile = new File(Utility.getClusterFileName(gmiClusterDir, queryParams.id, "gmi", gmiParams));
+            clusterFile = new File(DirectoryUtility.getClusterFilename(gmiClusterDir, queryParams.id, "gmi", gmiParams));
 
             // move ranker to parameters
             GmiFacetParameters facetParams = new GmiFacetParameters(params.termProbTh, params.pairProbTh, ranker);
@@ -74,7 +75,7 @@ public class GmiClusterer extends StandardStep<TfQueryParameters, TfQueryParamet
             String tuneDir = Utility.getFileName(trainDir, folderId, "tune");
             termPredictFile = new File(Utility.getGmTermPredictFileName(tuneDir, queryParams.id));
             termPairPredictFile = new File(Utility.getGmTermPairPredictFileName(tuneDir, queryParams.id));
-            clusterFile = new File(Utility.getClusterFileName(tuneDir, queryParams.id, "gmi", params.toFilenameString()));
+            clusterFile = new File(DirectoryUtility.getClusterFilename(tuneDir, queryParams.id, "gmi", params.toFilenameString()));
 
             // skip for tuning cases 
             if (clusterFile.exists()) {

@@ -11,6 +11,7 @@ import edu.umass.ciir.fws.clustering.qd.QueryDimensionTFClusterer;
 import edu.umass.ciir.fws.tool.app.ProcessQueryParametersApp;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.types.TfQueryParameters;
+import edu.umass.ciir.fws.utility.DirectoryUtility;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
@@ -70,7 +71,7 @@ public class ClusterForFacets extends ProcessQueryParametersApp {
             Parameters p = parameters.getJSON();
             model = p.getString("facetModel");
             facetRun = p.getString("facetRunDir");
-            clusterDir = Utility.getFileName(facetRun, model, "cluster");
+            clusterDir = DirectoryUtility.getCluterDir(facetRun, model);
             skipExisting = p.get("skipExisting", false);
             paramsList = ParameterSettings.instance(p, model).getClusteringSettings();
         }
@@ -78,7 +79,7 @@ public class ClusterForFacets extends ProcessQueryParametersApp {
         @Override
         public void process(TfQuery query) throws IOException {
             for (ModelParameters params : paramsList) {
-                File clusterFile = new File(Utility.getClusterFileName(clusterDir, query.id, model, params.toFilenameString()));
+                File clusterFile = new File(DirectoryUtility.getClusterFilename(clusterDir, query.id, model, params.toFilenameString()));
                 if (skipExisting && clusterFile.exists()) {
                     Utility.infoSkipExisting(clusterFile);
                 } else {

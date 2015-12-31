@@ -8,6 +8,7 @@ package edu.umass.ciir.fws.clustering.gm.gmi;
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.clustering.gm.gmi.GmiParameterSettings.GmiFacetParameters;
 import edu.umass.ciir.fws.types.TfQueryParameters;
+import edu.umass.ciir.fws.utility.DirectoryUtility;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
@@ -62,7 +63,7 @@ public class GmiClusterToFacetConverter extends StandardStep<TfQueryParameters, 
             //String ranker = folderIdOptionOthers[2];
             String metricIndex = folderIdOptionOthers[3];
             String gmiParams = Utility.parametersToFileNameString(ranker, metricIndex);
-            clusterFile = new File(Utility.getClusterFileName(gmiClusterDir, queryParams.id, "gmi", gmiParams));
+            clusterFile = new File(DirectoryUtility.getClusterFilename(gmiClusterDir, queryParams.id, "gmi", gmiParams));
             facetFile = new File(Utility.getFacetFileName(gmiFacetDir, queryParams.id, "gmi", gmiParams));
             // overwrite for new tuning results
             // if (facetFile.exists()) { ...

@@ -181,10 +181,6 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         return getFileName(clusterDir, qid, name);
     }
 
-    public static String getClusterFilename(String clusterDir, String model, String qid, String paramsFilename) {
-        String name = String.format("%s.%s.%s.cluster", qid, model, paramsFilename);
-        return getFileName(clusterDir, qid, name);
-    }
 
     public static String getQdFacetFileName(String facetDir, String qid, double distanceMax, double websiteCountMin, double itemRatio) {
         String name = String.format("%s.qd.%s.facet", qid, parametersToFileNameString(distanceMax, websiteCountMin, itemRatio));
@@ -397,13 +393,6 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         String name = paramFileNameStr.isEmpty() ? String.format("%s.%s.facet", qid, model)
                 : String.format("%s.%s.%s.facet", qid, model, paramFileNameStr);
         return Utility.getFileName(facetDir, qid, name);
-
-    }
-
-    public static String getClusterFileName(String clusterDir, String qid, String model, String paramStr) {
-        String name = paramStr.isEmpty() ? String.format("%s.%s.cluster", qid, model)
-                : String.format("%s.%s.%s.cluster", qid, model, paramStr);
-        return Utility.getFileName(clusterDir, qid, name);
 
     }
 

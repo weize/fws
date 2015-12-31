@@ -24,6 +24,7 @@ import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.clustering.ScoredItem;
 import edu.umass.ciir.fws.clustering.lda.LdaParameterSettings.LdaClusterParameters;
 import edu.umass.ciir.fws.types.TfQueryParameters;
+import edu.umass.ciir.fws.utility.DirectoryUtility;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
@@ -42,6 +43,7 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 @InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
 public class LdaClusterer implements Processor<TfQueryParameters> {
 
+    public final static String modelName = "lda";
     String clusterDir;
     String clistDir;
     long topNum; // top num of docs
@@ -50,8 +52,8 @@ public class LdaClusterer implements Processor<TfQueryParameters> {
 
     public LdaClusterer(TupleFlowParameters parameters) {
         Parameters p = parameters.getJSON();
-        String runDir = p.getString("ldaRunDir");
-        clusterDir = Utility.getFileName(runDir, "cluster");
+        String facetRunDir = p.getString("facetRun");
+        clusterDir = DirectoryUtility.getCluterDir(facetRunDir, modelName);
         iterNum = p.getLong("ldaIterNum");
         clistDir = p.getString("clistDir");
         topNum = p.getLong("topNum");
@@ -66,11 +68,11 @@ public class LdaClusterer implements Processor<TfQueryParameters> {
         LdaClusterParameters params = new LdaClusterParameters(queryParameters.parameters);
         int topicNum = (int) params.topicNum;
 
-        File clusterFile = new File(Utility.getLdaClusterFileName(clusterDir, qid, params.toFilenameString()));
-        if (clusterFile.exists()) {
-            Utility.infoFileExists(clusterFile);
-            return;
-        }
+        File clusterFile = new File(DirectoryUtility.getClusterFilename(clusterDir, qid, modelName, params.toFilenameString()));
+//        if (clusterFile.exists()) {
+//            Utility.infoFileExists(clusterFile);
+//            return;
+//        }
         // loadClusters candidate lists
         File clistFile = new File(Utility.getCandidateListCleanFileName(clistDir, qid));
         List<CandidateList> clist = CandidateList.loadCandidateLists(clistFile, topNum);

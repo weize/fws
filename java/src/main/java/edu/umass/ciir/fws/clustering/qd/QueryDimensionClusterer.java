@@ -23,7 +23,7 @@ import org.lemurproject.galago.tupleflow.Parameters;
  * @author wkong
  */
 public class QueryDimensionClusterer {
-
+    final static public String modelName = "qd";
     boolean debug = false;
     final static int maxListNum = 5000; // only use top maxListNum lists for clustering b/c memory issue
     double distanceMax; // Dia_max in the paper. The threshold for including the list into the cluster. 
