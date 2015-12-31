@@ -7,7 +7,9 @@ package edu.umass.ciir.fws.clustering.gm.gmj;
 
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.clustering.gm.GmJointClusterer;
+import static edu.umass.ciir.fws.clustering.lda.LdaClusterer.modelName;
 import edu.umass.ciir.fws.types.TfQueryParameters;
+import edu.umass.ciir.fws.utility.DirectoryUtility;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
@@ -24,27 +26,28 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
  */
 @Verified
 @InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
-public class GmjClusterItems implements Processor<TfQueryParameters> {
+public class GmjClusterer implements Processor<TfQueryParameters> {
 
+    public final static String modelName = "gmj";
     String clusterDir;
     String predictDir;
 
-    public GmjClusterItems(TupleFlowParameters parameters) {
+    public GmjClusterer(TupleFlowParameters parameters) {
         Parameters p = parameters.getJSON();
-        clusterDir = p.getString("gmjClusterDir");
+        String facetRunDir = p.getString("facetRunDir");
+        clusterDir = DirectoryUtility.getCluterDir(facetRunDir, modelName);
         String gmDir = p.getString("gmDir");
-        predictDir = Utility.getFileName(gmDir, "predict");
-        
+        predictDir = DirectoryUtility.getGmPredictDir(gmDir);
     }
 
     @Override
     public void process(TfQueryParameters queryParams) throws IOException {
-        File termPredictFile = new File(Utility.getGmTermPredictFileName(predictDir, queryParams.id));
-        File termPairPredictFile = new File(Utility.getGmTermPairPredictFileName(predictDir, queryParams.id));
+        File termPredictFile = new File(DirectoryUtility.getGmTermPredictFileName(predictDir, queryParams.id));
+        File termPairPredictFile = new File(DirectoryUtility.getGmTermPairPredictFileName(predictDir, queryParams.id));
 
         Utility.infoProcessing(queryParams);
 
-        File clusterFile = new File(Utility.getGmjClusterFileName(clusterDir, queryParams.id));
+        File clusterFile = new File(DirectoryUtility.getClusterFilename(clusterDir, queryParams.id, modelName, ""));
         Utility.createDirectoryForFile(clusterFile);
 
         GmJointClusterer gmj = new GmJointClusterer();

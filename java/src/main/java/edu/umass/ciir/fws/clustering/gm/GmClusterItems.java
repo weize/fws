@@ -11,6 +11,7 @@ import edu.umass.ciir.fws.clustering.gm.lr.LinearRegressionModel;
 import edu.umass.ciir.fws.tool.app.ProcessQueryParametersMultiStepApp;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.types.TfQueryParameters;
+import edu.umass.ciir.fws.utility.DirectoryUtility;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
@@ -150,8 +151,8 @@ public class GmClusterItems extends ProcessQueryParametersMultiStepApp {
 
         @Override
         public void process(TfQueryParameters queryParams) throws IOException {
-            File termPredictFile = new File(Utility.getGmTermPredictFileName(clusterDir, queryParams.id));
-            File termPairPredictFile = new File(Utility.getGmTermPairPredictFileName(clusterDir, queryParams.id));
+            File termPredictFile = new File(DirectoryUtility.getGmTermPredictFileName(clusterDir, queryParams.id));
+            File termPairPredictFile = new File(DirectoryUtility.getGmTermPairPredictFileName(clusterDir, queryParams.id));
             
             Utility.infoProcessingQuery(queryParams.id);
             
@@ -180,8 +181,8 @@ public class GmClusterItems extends ProcessQueryParametersMultiStepApp {
 
         @Override
         public void process(TfQueryParameters queryParams) throws IOException {
-            File termPredictFile = new File(Utility.getGmTermPredictFileName(clusterDir, queryParams.id));
-            File termPairPredictFile = new File(Utility.getGmTermPairPredictFileName(clusterDir, queryParams.id));
+            File termPredictFile = new File(DirectoryUtility.getGmTermPredictFileName(clusterDir, queryParams.id));
+            File termPairPredictFile = new File(DirectoryUtility.getGmTermPairPredictFileName(clusterDir, queryParams.id));
             String[] params = Utility.splitParameters(queryParams.parameters);
 
             Utility.infoProcessingQuery(queryParams.id);
@@ -239,7 +240,7 @@ public class GmClusterItems extends ProcessQueryParametersMultiStepApp {
         @Override
         public void process(TfQueryParameters queryParams) throws IOException {
             File dataFile = new File(Utility.getGmTermDataFileName(clusterDir, queryParams.id));
-            File predictFile = new File(Utility.getGmTermPredictFileName(clusterDir, queryParams.id));
+            File predictFile = new File(DirectoryUtility.getGmTermPredictFileName(clusterDir, queryParams.id));
             Utility.infoProcessing(dataFile);
             Utility.createDirectoryForFile(predictFile);
             String[] params = Utility.splitParameters(queryParams.parameters);
@@ -276,7 +277,7 @@ public class GmClusterItems extends ProcessQueryParametersMultiStepApp {
         @Override
         public void process(TfQueryParameters queryParams) throws IOException {
             File dataFile = new File(Utility.getGmTermPairDataFileName(clusterDir, queryParams.id));
-            File predictFile = new File(Utility.getGmTermPairPredictFileName(clusterDir, queryParams.id));
+            File predictFile = new File(DirectoryUtility.getGmTermPairPredictFileName(clusterDir, queryParams.id));
             Utility.infoProcessing(dataFile);
             Utility.createDirectoryForFile(predictFile);
             String[] params = Utility.splitParameters(queryParams.parameters);

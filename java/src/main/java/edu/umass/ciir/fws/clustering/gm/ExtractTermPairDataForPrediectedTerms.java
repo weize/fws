@@ -8,6 +8,7 @@ package edu.umass.ciir.fws.clustering.gm;
 import edu.umass.ciir.fws.anntation.FacetAnnotation;
 import edu.umass.ciir.fws.feature.TermPairFeatureExtractor;
 import edu.umass.ciir.fws.types.TfQueryParameters;
+import edu.umass.ciir.fws.utility.DirectoryUtility;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
@@ -61,7 +62,7 @@ public abstract class ExtractTermPairDataForPrediectedTerms extends StandardStep
 //        File predictFile = predictOrTune.equals("predict")
 //                ? new File(Utility.getGmTermPredictFileName(predictDir, queryParams.id))
 //                : new File(Utility.getGmTermPredictFileName(tuneDir, queryParams.id));
-        File predictFile = new File(Utility.getGmTermPredictFileName(baseDir, queryParams.id));
+        File predictFile = new File(DirectoryUtility.getGmTermPredictFileName(baseDir, queryParams.id));
         File dataFile = new File(Utility.getGmTermPairDataFileName(baseDir, queryParams.id));
 
         // output file

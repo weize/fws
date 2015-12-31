@@ -5,6 +5,7 @@
  */
 package edu.umass.ciir.fws.clustering;
 
+import edu.umass.ciir.fws.clustering.gm.gmj.GmjClusterer;
 import edu.umass.ciir.fws.clustering.lda.LdaClusterer;
 import edu.umass.ciir.fws.clustering.plsa.PlsaClusterer;
 import edu.umass.ciir.fws.clustering.qd.QueryDimensionTFClusterer;
@@ -52,7 +53,7 @@ public class ClusterForFacets extends ProcessQueryParametersApp {
             case "lda":
                 return LdaClusterer.class;
             case "gmj":
-                return null;
+                return GmjClusterer.class;
         }
 
         return null;

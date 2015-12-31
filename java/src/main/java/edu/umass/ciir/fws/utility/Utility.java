@@ -159,14 +159,6 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
         return getFileNameWithSuffix(clusterDir, qid, qid, "p.pt.data.gz");
     }
 
-    public static String getGmTermPredictFileName(String clusterDir, String qid) {
-        return getFileNameWithSuffix(clusterDir, qid, qid, "t.predict");
-    }
-
-    public static String getGmTermPairPredictFileName(String clusterDir, String qid) {
-        return getFileNameWithSuffix(clusterDir, qid, qid, "p.predict.gz");
-    }
-
     public static String getQdFacetFeatureFileName(String qdFeatureDir, String qid) {
         return getFileNameWithSuffix(qdFeatureDir, qid, "f.feature");
     }

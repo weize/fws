@@ -26,6 +26,18 @@ public class DirectoryUtility {
         return Utility.getFileName(clusterDir, qid, name);
     }
 
+    public static String getGmPredictDir(String gmDir) {
+        return Utility.getFileName(gmDir, "predict");
+    }
+
+    public static String getGmTermPredictFileName(String predictDir, String qid) {
+        return Utility.getFileNameWithSuffix(predictDir, qid, qid, "t.predict");
+    }
+
+    public static String getGmTermPairPredictFileName(String predictDir, String qid) {
+        return Utility.getFileNameWithSuffix(predictDir, qid, qid, "p.predict.gz");
+    }
+
     
     
 }

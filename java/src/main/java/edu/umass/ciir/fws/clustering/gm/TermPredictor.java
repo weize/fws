@@ -7,6 +7,7 @@ package edu.umass.ciir.fws.clustering.gm;
 
 import edu.umass.ciir.fws.clustering.gm.lr.LinearRegressionModel;
 import edu.umass.ciir.fws.types.TfQueryParameters;
+import edu.umass.ciir.fws.utility.DirectoryUtility;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
@@ -54,7 +55,7 @@ public abstract class TermPredictor extends StandardStep<TfQueryParameters, TfQu
         String folderId = queryParams.parameters;
         File dataFile = new File(Utility.getGmTermDataFileName(dataDir, queryParams.id));
         String baseDir = getPredictBaseDir(folderId);
-        File predictFile = new File(Utility.getGmTermPredictFileName(baseDir, queryParams.id));
+        File predictFile = new File(DirectoryUtility.getGmTermPredictFileName(baseDir, queryParams.id));
 
 // String tuneDir = Utility.getFileName(trainDir, folderId, "tune");
 //                predictOrTune.equals("predict") ?

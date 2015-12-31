@@ -58,8 +58,8 @@ public class GmiClusterer extends StandardStep<TfQueryParameters, TfQueryParamet
         File clusterFile;
 
         if (predictOrTune.equals("predict")) {
-            termPredictFile = new File(Utility.getGmTermPredictFileName(predictDir, queryParams.id));
-            termPairPredictFile = new File(Utility.getGmTermPairPredictFileName(predictDir, queryParams.id));
+            termPredictFile = new File(DirectoryUtility.getGmTermPredictFileName(predictDir, queryParams.id));
+            termPairPredictFile = new File(DirectoryUtility.getGmTermPairPredictFileName(predictDir, queryParams.id));
             //folderOptionRankerMetricIndex
             String ranker = folderIdOptionOthers[2];
             String metricIndex = folderIdOptionOthers[3];
@@ -73,8 +73,8 @@ public class GmiClusterer extends StandardStep<TfQueryParameters, TfQueryParamet
             // if (clusterFile.exists()) { ...
         } else {
             String tuneDir = Utility.getFileName(trainDir, folderId, "tune");
-            termPredictFile = new File(Utility.getGmTermPredictFileName(tuneDir, queryParams.id));
-            termPairPredictFile = new File(Utility.getGmTermPairPredictFileName(tuneDir, queryParams.id));
+            termPredictFile = new File(DirectoryUtility.getGmTermPredictFileName(tuneDir, queryParams.id));
+            termPairPredictFile = new File(DirectoryUtility.getGmTermPairPredictFileName(tuneDir, queryParams.id));
             clusterFile = new File(DirectoryUtility.getClusterFilename(tuneDir, queryParams.id, "gmi", params.toFilenameString()));
 
             // skip for tuning cases 

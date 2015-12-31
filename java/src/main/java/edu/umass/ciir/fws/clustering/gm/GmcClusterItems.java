@@ -7,6 +7,7 @@ package edu.umass.ciir.fws.clustering.gm;
 
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.types.TfQueryParameters;
+import edu.umass.ciir.fws.utility.DirectoryUtility;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
@@ -40,8 +41,8 @@ public class GmcClusterItems extends StandardStep<TfQueryParameters, TfQueryPara
 
     @Override
     public void process(TfQueryParameters queryParams) throws IOException {
-        File termPredictFile = new File(Utility.getGmTermPredictFileName(predictDir, queryParams.id));
-        File termPairPredictFile = new File(Utility.getGmTermPairPredictFileName(predictDir, queryParams.id));
+        File termPredictFile = new File(DirectoryUtility.getGmTermPredictFileName(predictDir, queryParams.id));
+        File termPairPredictFile = new File(DirectoryUtility.getGmTermPairPredictFileName(predictDir, queryParams.id));
 
         Utility.infoProcessing(queryParams);
 

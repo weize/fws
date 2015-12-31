@@ -11,6 +11,7 @@ import edu.umass.ciir.fws.retrieval.RankedDocument;
 import edu.umass.ciir.fws.retrieval.QuerySetResults;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.types.TfQueryParameters;
+import edu.umass.ciir.fws.utility.DirectoryUtility;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
@@ -197,7 +198,7 @@ public class TermPairDataExtractor extends StandardStep<TfQueryParameters, TfQue
     }
 
     private void loadItemsFromPredictFile() throws IOException {
-        File predictFile = new File(Utility.getGmTermPredictFileName(clusterDir, query.id));
+        File predictFile = new File(DirectoryUtility.getGmTermPredictFileName(clusterDir, query.id));
         BufferedReader reader = Utility.getReader(predictFile);
         String line;
         ArrayList<ScoredItem> allItems = new ArrayList<>();

@@ -7,6 +7,7 @@ package edu.umass.ciir.fws.clustering.gm;
 
 import edu.umass.ciir.fws.clustering.gm.lr.LinearRegressionModel;
 import edu.umass.ciir.fws.types.TfQueryParameters;
+import edu.umass.ciir.fws.utility.DirectoryUtility;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
@@ -53,7 +54,7 @@ public abstract class PairPredictor extends StandardStep<TfQueryParameters, TfQu
         String folderId = queryParams.parameters;
         String baseDir = getPredictBaseDir(folderId);
         File dataFile = new File(Utility.getGmTermPairDataFileName(baseDir, queryParams.id));
-        File predictFile = new File(Utility.getGmTermPairPredictFileName(baseDir, queryParams.id));
+        File predictFile = new File(DirectoryUtility.getGmTermPairPredictFileName(baseDir, queryParams.id));
 
 //        String[] params = Utility.splitParameters(queryParams.parameters);
 //        String folderId = params[0];
