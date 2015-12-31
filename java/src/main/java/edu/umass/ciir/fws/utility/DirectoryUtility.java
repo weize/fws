@@ -33,6 +33,10 @@ public class DirectoryUtility {
     public static String getGmiFoldClusterFilename(String gmiRunDir, String folderId, String qid, String paramStr) {
         return getClusterFilename(Utility.getFileName(gmiRunDir, folderId, "cluster"), qid, "gmi", paramStr);
     }
+    
+    public static String getGmiFoldFacetFilename(String gmiRunDir, String folderId, String qid, String paramStr) {
+        return getClusterFilename(Utility.getFileName(gmiRunDir, folderId, "facet"), qid, "gmi", paramStr);  
+    }
 
     public static String getGmPredictDir(String gmDir) {
         return Utility.getFileName(gmDir, "predict");
@@ -53,6 +57,8 @@ public class DirectoryUtility {
     public static String getModelRunDir(String facetRun, String model) {
         return Utility.getFileName(facetRun, model);
     }
+
+    
 
     
 

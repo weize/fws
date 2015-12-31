@@ -6,6 +6,7 @@
 package edu.umass.ciir.fws.clustering.gm.gmi;
 
 import edu.umass.ciir.fws.clustering.ScoredFacet;
+import edu.umass.ciir.fws.clustering.gm.gmi.GmiParameterSettings.GmiClusterParameters;
 import edu.umass.ciir.fws.clustering.gm.gmi.GmiParameterSettings.GmiFacetParameters;
 import edu.umass.ciir.fws.types.TfQueryParameters;
 import edu.umass.ciir.fws.utility.DirectoryUtility;
@@ -14,9 +15,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.lemurproject.galago.tupleflow.InputClass;
-import org.lemurproject.galago.tupleflow.OutputClass;
 import org.lemurproject.galago.tupleflow.Parameters;
-import org.lemurproject.galago.tupleflow.StandardStep;
+import org.lemurproject.galago.tupleflow.Processor;
 import org.lemurproject.galago.tupleflow.TupleFlowParameters;
 import org.lemurproject.galago.tupleflow.execution.Verified;
 
@@ -26,19 +26,18 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
  */
 @Verified
 @InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
-@OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
-public class GmiClusterToFacetConverter extends StandardStep<TfQueryParameters, TfQueryParameters> {
+public class GmiClusterToFacetConverter implements Processor<TfQueryParameters> {
 
     String gmiClusterDir;
     String gmiFacetDir;
-    String trainDir;
+    String gmiRunDir;
 
     public GmiClusterToFacetConverter(TupleFlowParameters parameters) {
         Parameters p = parameters.getJSON();
-        String gmDir = p.getString("gmDir");
+        gmiRunDir = DirectoryUtility.getModelRunDir(p.getString("facetRunDir"), "gmi");
+
         gmiClusterDir = p.getString("gmiClusterDir");
         gmiFacetDir = p.getString("gmiFacetDir");
-        trainDir = Utility.getFileName(gmDir, "train");
     }
 
     @Override
@@ -53,12 +52,10 @@ public class GmiClusterToFacetConverter extends StandardStep<TfQueryParameters, 
         double pairProbTh = params.pairProbTh;
         String ranker = params.ranker;
 
-        String tuneDir = Utility.getFileName(trainDir, folderId, "tune");
-
         File clusterFile;
         File facetFile;
 
-        if (predictOrTune.equals("predict")) {            
+        if (predictOrTune.equals("predict")) {
             //folderOptionRankerMetricIndex
             //String ranker = folderIdOptionOthers[2];
             String metricIndex = folderIdOptionOthers[3];
@@ -68,16 +65,16 @@ public class GmiClusterToFacetConverter extends StandardStep<TfQueryParameters, 
             // overwrite for new tuning results
             // if (facetFile.exists()) { ...
         } else {
-            clusterFile = new File(Utility.getGmiClusterFileName(tuneDir, queryParams.id, termProbTh, pairProbTh));
-            facetFile = new File(Utility.getFacetFileName(tuneDir, queryParams.id, "gmi", params.toFilenameString()));
+            clusterFile = new File(DirectoryUtility.getGmiFoldClusterFilename(gmiRunDir, folderId, queryParams.id,
+                    new GmiClusterParameters(params.termProbTh, params.pairProbTh).toFilenameString()));
+            facetFile = new File(DirectoryUtility.getGmiFoldFacetFilename(gmiRunDir, folderId, queryParams.id, params.toFilenameString()));
 
             // skip for tunning cases because
             // if the file name match, the results are always the same
-            if (facetFile.exists()) {
-                Utility.infoFileExists(facetFile);
-                processor.process(queryParams);
-                return;
-            }
+//            if (facetFile.exists()) {
+//                Utility.infoFileExists(facetFile);
+//                return;
+//            }
         }
 
         Utility.infoOpen(facetFile);
@@ -88,6 +85,9 @@ public class GmiClusterToFacetConverter extends StandardStep<TfQueryParameters, 
         }
         ScoredFacet.outputAsFacets(clusters, facetFile);
         Utility.infoWritten(facetFile);
-        processor.process(queryParams);
+    }
+
+    @Override
+    public void close() throws IOException {
     }
 }
