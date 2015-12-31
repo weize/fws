@@ -64,7 +64,7 @@ public class TuneFacetModel extends AppFunction {
 
     private void prepareDir(Parameters p) throws IOException {
         String model = p.getString("facetModel");
-        String facetDir = p.getString("facetDir");
+        String facetDir = p.getString("facetTuneDir");
         long folderNum = p.getLong("cvFolderNum");
 
         String querySplitDir = p.getString("querySplitDir");
@@ -193,8 +193,8 @@ public class TuneFacetModel extends AppFunction {
         public CopyRun(TupleFlowParameters parameters) throws IOException {
             p = parameters.getJSON();
             model = p.getString("facetModel");
-            modelDir = Utility.getFileName(p.getString("facetDir"), model);
-            runFacetDir = Utility.getFileName(modelDir, "run", "facet");
+            modelDir = Utility.getFileName(p.getString("facetTuneDir"), model);
+            runFacetDir = Utility.getFileName(p.getString("facetRunDir"), model, "facet");
             facetDir = Utility.getFileName(modelDir, "facet");
         }
 
@@ -238,7 +238,7 @@ public class TuneFacetModel extends AppFunction {
         public SelectBestParam(TupleFlowParameters parameters) throws IOException {
             p = parameters.getJSON();
             model = p.getString("facetModel");
-            modelDir = Utility.getFileName(p.getString("facetDir"), model);
+            modelDir = Utility.getFileName(p.getString("facetTuneDir"), model);
             facetTuneRank = new Long(p.getLong("facetTuneRank")).intValue();
             params = ParameterSettings.instance(p, model).getFacetingSettings();
         }
@@ -302,8 +302,20 @@ public class TuneFacetModel extends AppFunction {
 
         Parameters p;
 
+        List<ModelParameters> paramsList;
+        String model;
+        String facetTuneDir;
+        int facetTuneRank;
+        boolean skipExisting;
+
         public SplitFoldersForTuneEval(TupleFlowParameters parameters) throws IOException {
             p = parameters.getJSON();
+            model = p.getString("facetModel");
+            paramsList = ParameterSettings.instance(p, model).getFacetingSettings();
+            facetTuneRank = new Long(p.getLong("facetTuneRank")).intValue();
+            facetTuneDir = Utility.getFileName(p.getString("facetTuneDir"), model, "tune");
+            skipExisting = p.get("skipExisting", false);
+
         }
 
         @Override
@@ -312,13 +324,14 @@ public class TuneFacetModel extends AppFunction {
 
         @Override
         public void close() throws IOException {
-            String model = p.getString("facetModel");
+
             long numFolders = p.getLong("cvFolderNum");
 
             for (int i = 1; i <= numFolders; i++) {
                 String folderId = String.valueOf(i);
-                ParameterSettings settings = ParameterSettings.instance(p, model);
-                for (ModelParameters params : settings.getFacetingSettings()) {
+                for (ModelParameters params : paramsList) {
+                    //String evalDir = Utility.getFileName(facetTuneDir, folderId, "eval");
+                    //File evalFile = new File(Utility.getFacetEvalFileName(evalDir, model, params.toFilenameString(), facetTuneRank));
                     processor.process(new TfFolderParameters(folderId, "tune", params.toFilenameString()));
                 }
             }

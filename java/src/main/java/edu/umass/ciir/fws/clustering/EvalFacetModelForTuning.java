@@ -7,6 +7,7 @@ package edu.umass.ciir.fws.clustering;
 
 import edu.umass.ciir.fws.eval.CombinedFacetEvaluator;
 import edu.umass.ciir.fws.types.TfFolderParameters;
+import edu.umass.ciir.fws.utility.DirectoryUtility;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
@@ -31,15 +32,17 @@ public class EvalFacetModelForTuning extends StandardStep<TfFolderParameters, Tf
     CombinedFacetEvaluator evaluator;
     String model;
     int facetTuneRank;
+    boolean skipExisting;
 
     public EvalFacetModelForTuning(TupleFlowParameters parameters) throws IOException {
         Parameters p = parameters.getJSON();
         model = p.getString("facetModel");
-        String modelDir = Utility.getFileName(p.getString("facetDir"), model);
+        String modelDir = Utility.getFileName(p.getString("facetTuneDir"), model);
         tuneDir = Utility.getFileName(modelDir, "tune");
-        runFacetDir = Utility.getFileName(modelDir, "run", "facet");
+        runFacetDir = DirectoryUtility.getFacetDir(p.getString("facetRunDir"), model);
         facetTuneRank = new Long(p.getLong("facetTuneRank")).intValue();
         evaluator = new CombinedFacetEvaluator(p);
+        skipExisting = p.get("skipExisting", false);
     }
 
     @Override
@@ -54,15 +57,13 @@ public class EvalFacetModelForTuning extends StandardStep<TfFolderParameters, Tf
         File trainQueryFile = new File(Utility.getFileName(folderDir, "train.query"));
         File evalFile = new File(Utility.getFacetEvalFileName(evalDir, model, paramsFilename, facetTuneRank));
 
-//        if (evalFile.exists()) {
-//            Utility.infoFileExists(evalFile);
-//            processor.process(folder);
-//            return;
-//        }
-
-        Utility.infoOpen(evalFile);
-        evaluator.eval(trainQueryFile, runFacetDir, model, paramsFilename, evalFile, facetTuneRank);
-        Utility.infoWritten(evalFile);
+        if (skipExisting && evalFile.exists()) {
+            Utility.infoSkipExisting(evalFile);
+        } else {
+            Utility.infoOpen(evalFile);
+            evaluator.eval(trainQueryFile, runFacetDir, model, paramsFilename, evalFile, facetTuneRank);
+            Utility.infoWritten(evalFile);
+        }
         processor.process(folder);
     }
 }

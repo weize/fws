@@ -147,6 +147,7 @@ public class TuneSdm extends AppFunction {
         stage.addOutput("folderParams2", new TfFolder.IdOrder());
 
         stage.add(new InputStep("folderParams"));
+        /// EvalFacetModelForTuning is chaged, need to re-write code for this app
         stage.add(new Step(EvalFacetModelForTuning.class, parameter));
         stage.add(Utility.getSorter(new TfFolder.IdOrder()));
         stage.add(new OutputStep("folderParams2"));
