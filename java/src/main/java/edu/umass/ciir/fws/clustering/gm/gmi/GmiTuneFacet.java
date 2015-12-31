@@ -188,7 +188,7 @@ public class GmiTuneFacet extends AppFunction {
             gmTrainDir = Utility.getFileName(p.getString("gmDir"), "train");
             gmiTuneDir = Utility.getFileName(p.getString("facetTuneDir"), "gmi", "tune");
             String paramFilename = Utility.getFileName(p.getString("facetTuneDir"), "gmi", "params");
-            writer = Utility.getWriter(p.getString(paramFilename));
+            writer = Utility.getWriter(paramFilename);
 
         }
 
