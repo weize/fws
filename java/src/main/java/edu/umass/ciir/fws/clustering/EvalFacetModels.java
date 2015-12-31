@@ -105,7 +105,7 @@ public class EvalFacetModels extends AppFunction {
 
         public EvalFacetModel(TupleFlowParameters parameters) throws IOException {
             Parameters p = parameters.getJSON();
-            allFacetDir = p.getString("facetDir");
+            allFacetDir = p.getString("facetTuneDir");
             evaluator = new CombinedFacetEvaluator(p);
             queryFile = new File(p.getString("queryFile"));
         }
@@ -149,7 +149,7 @@ public class EvalFacetModels extends AppFunction {
         public void close() throws IOException {
             List<String> models = p.getAsList("facetModelsToEval");
             List<Long> facetTuneMetricIndices = p.getAsList("facetTuneMetricIndices");
-            String allFacetDir = p.getString("facetDir");
+            String allFacetDir = p.getString("facetTuneDir");
             int topFacetNum = (int) p.getLong("topFacetNum");
             for (String model : models) {
                 String evalDir = Utility.getFileName(allFacetDir, model, "eval");
