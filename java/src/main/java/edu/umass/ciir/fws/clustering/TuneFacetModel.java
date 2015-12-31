@@ -56,8 +56,8 @@ public class TuneFacetModel extends AppFunction {
 
     @Override
     public void run(Parameters p, PrintStream output) throws Exception {
-        if (p.getString("facetModel").equals("gmi")) {
-            handleGmi(p);
+        if (p.getString("facetModel").equals("gmj")) {
+            handleGmj(p);
         } else {
             prepareDir(p);
             Job job = createJob(p);
@@ -188,7 +188,7 @@ public class TuneFacetModel extends AppFunction {
      *
      * @param p
      */
-    private void handleGmi(Parameters p) throws IOException {
+    private void handleGmj(Parameters p) throws IOException {
         String model = "gmj";
         String facetRunDir = Utility.getFileName(p.getString("facetRunDir"), model, "facet");
         String facetTuneDir = Utility.getFileName(p.getString("facetTuneDir"), model, "facet");
