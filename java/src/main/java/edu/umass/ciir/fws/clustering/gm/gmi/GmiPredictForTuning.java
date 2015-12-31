@@ -150,7 +150,7 @@ public class GmiPredictForTuning extends AppFunction {
 
         public TermPredictorForTuning(TupleFlowParameters parameters) {
             super(parameters);
-            String facetRunDir = parameters.getJSON().getString("gmDir");
+            String facetRunDir = parameters.getJSON().getString("facetRunDir");
             gmiRunDir = DirectoryUtility.getModelRunDir(facetRunDir, "gmi");
         }
 
@@ -169,7 +169,7 @@ public class GmiPredictForTuning extends AppFunction {
 
         public ExtractTermPairDataForPrediectedTermsForTuning(TupleFlowParameters parameters) throws Exception {
             super(parameters);
-            String facetRunDir = parameters.getJSON().getString("gmDir");
+            String facetRunDir = parameters.getJSON().getString("facetRunDir");
             gmiRunDir = DirectoryUtility.getModelRunDir(facetRunDir, "gmi");
         }
 
@@ -189,7 +189,7 @@ public class GmiPredictForTuning extends AppFunction {
 
         public PairPredictorForTuning(TupleFlowParameters parameters) {
             super(parameters);
-            String facetRunDir = parameters.getJSON().getString("gmDir");
+            String facetRunDir = parameters.getJSON().getString("facetRunDir");
             gmiRunDir = DirectoryUtility.getModelRunDir(facetRunDir, "gmi");
         }
 
