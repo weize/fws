@@ -109,7 +109,7 @@ public class GmiPredictForTuning extends AppFunction {
     }
 
     @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
+    @InputClass(className = "edu.umass.ciir.fws.types.FileName")
     @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
     public static class SplitTuneRuns extends StandardStep<FileName, TfQueryParameters> {
 
