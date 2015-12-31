@@ -50,11 +50,6 @@ public class GmjClusterToFacetConverter implements Processor<TfQueryParameters> 
 
         File facetFile = new File(Utility.getFacetFileName(facetDir, queryParams.id, "gmj", ranker));
 
-        if (facetFile.exists()) {
-            Utility.infoFileExists(facetFile);
-            return;
-        }
-
         Utility.infoOpen(facetFile);
         Utility.createDirectoryForFile(facetFile);
         if (ranker.equals("avg")) {

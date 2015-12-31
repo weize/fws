@@ -49,11 +49,6 @@ public class QdClusterToFacetConverter implements Processor<TfQueryParameters> {
         double itemRatio = params.itemRatio;
         double itemThreshold = params.itemThreshld;
         File facetFile = new File(Utility.getQdFacetFileName(facetDir, qid, params.toFilenameString()));
-//        // should not exists because we filtered them out in generating params process
-//        if (facetFile.exists()) {
-//            Utility.infoFileExists(facetFile);
-//            return;
-//        }
         
         // loadClusters clusters
         String clusterFileName = Utility.getQdClusterFileName(clusterDir, qid, distanceMax, websiteCountMin);

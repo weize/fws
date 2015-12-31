@@ -45,10 +45,7 @@ public class PlsaClusterToFacetConverter implements Processor<TfQueryParameters>
         long plsaTopicNum = (int) params.topicNum;
         long plsaTermNum = (int) params.termNum;
         File facetFile = new File(Utility.getPlsaFacetFileName(facetDir, qid, params.toFilenameString()));
-        if (facetFile.exists()) {
-            Utility.infoFileExists(facetFile);
-            return;
-        }
+        
         // loadClusters clusters
         File clusterFile = new File(Utility.getPlsaClusterFileName(clusterDir, qid, plsaTopicNum));
         List<ScoredFacet> clusters = ScoredFacet.loadClusters(clusterFile);

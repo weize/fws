@@ -44,10 +44,7 @@ public class LdaClusterToFacetConverter implements Processor<TfQueryParameters> 
         long topicNum = params.topicNum;
         long termNum = params.termNum;
         File facetFile = new File(Utility.getLdaFacetFileName(facetDir, qid, params.toFilenameString()));
-        if (facetFile.exists()) {
-            Utility.infoFileExists(facetFile);
-            return;
-        }
+        
         // loadClusters clusters
         File clusterFile = new File(Utility.getLdaClusterFileName(clusterDir, qid, topicNum));
         List<ScoredFacet> clusters = ScoredFacet.loadClusters(clusterFile);
