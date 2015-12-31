@@ -54,6 +54,7 @@ public class ClusterForFacets extends ProcessQueryParametersApp {
                 return LdaClusterer.class;
             case "gmj":
                 return GmjClusterer.class;
+            // gmi is not supported here, because it needs tuning based on trained models
         }
 
         return null;
@@ -88,7 +89,6 @@ public class ClusterForFacets extends ProcessQueryParametersApp {
                 } else {
                     processor.process(new TfQueryParameters(query.id, query.text, params.toString()));
                 }
-
             }
         }
     }

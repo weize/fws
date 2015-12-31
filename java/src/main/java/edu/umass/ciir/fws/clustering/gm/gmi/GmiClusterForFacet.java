@@ -11,6 +11,7 @@ import edu.umass.ciir.fws.query.QueryFileParser;
 import edu.umass.ciir.fws.tool.app.ProcessQueryApp;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.types.TfQueryParameters;
+import edu.umass.ciir.fws.utility.DirectoryUtility;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
@@ -39,7 +40,7 @@ import org.lemurproject.galago.tupleflow.types.FileName;
  *
  * @author wkong
  */
-public class GmiClusterItems extends AppFunction {
+public class GmiClusterForFacet extends AppFunction {
 
     @Override
     public String getName() {
@@ -98,8 +99,8 @@ public class GmiClusterItems extends AppFunction {
 
         stage.add(new InputStep("clusters"));
         stage.add(new Step(GmiClusterer.class, parameters));
-        stage.add(new Step(AppendFacetRankerParameter.class, parameters));
-        stage.add(new Step(GmiClusterToFacetConverter.class, parameters));
+//        stage.add(new Step(AppendFacetRankerParameter.class, parameters));
+//        stage.add(new Step(GmiClusterToFacetConverter.class, parameters));
         stage.add(new Step(ProcessQueryApp.DoNonethingForQueryParams.class));
 
         return stage;
@@ -113,13 +114,17 @@ public class GmiClusterItems extends AppFunction {
         long numFolders;
         GmiParameterSettings gmiSettings;
         String trainDir;
+        String gmiRunDir;
+        boolean skipExisting;
 
         public SplitTuneRuns(TupleFlowParameters parameters) throws IOException {
             Parameters p = parameters.getJSON();
             numFolders = parameters.getJSON().getLong("cvFolderNum");
             gmiSettings = new GmiParameterSettings(p);
             String gmDir = p.getString("gmDir");
-            trainDir = Utility.getFileName(gmDir, "train");
+            trainDir = DirectoryUtility.getTrainDir(gmDir);
+            skipExisting = p.get("skipExisting", false);
+            gmiRunDir = DirectoryUtility.getModelRunDir(gmDir, "gmi");
         }
 
         @Override
@@ -128,14 +133,20 @@ public class GmiClusterItems extends AppFunction {
 
         @Override
         public void close() throws IOException {
+
             List<ModelParameters> paramsList = gmiSettings.getClusteringSettings();
             for (int i = 1; i <= numFolders; i++) {
                 String folderId = String.valueOf(i);
                 String trainQuery = Utility.getFileName(trainDir, String.valueOf(i), "train.query");
                 for (TfQuery query : QueryFileParser.loadQueryList(trainQuery)) {
                     for (ModelParameters params : paramsList) {
-                        String folderIdOption = Utility.parametersToString(folderId, "tune");
-                        processor.process(new TfQueryParameters(query.id, folderIdOption, params.toString()));
+                        File clusterFile = new File(DirectoryUtility.getGmiFoldClusterFilename(gmiRunDir, folderId, query.id, params.toFilenameString()));
+                        if (skipExisting && clusterFile.exists()) {
+                            Utility.infoSkipExisting(clusterFile);
+                        } else {
+                            String folderIdOption = Utility.parametersToString(folderId, "tune");
+                            processor.process(new TfQueryParameters(query.id, folderIdOption, params.toString()));
+                        }
                     }
                 }
             }

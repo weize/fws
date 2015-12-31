@@ -11,6 +11,7 @@ import edu.umass.ciir.fws.tool.app.ProcessQueryApp;
 import edu.umass.ciir.fws.types.TfFolder;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.types.TfQueryParameters;
+import edu.umass.ciir.fws.utility.DirectoryUtility;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
@@ -283,7 +284,7 @@ public class GmLearn extends AppFunction {
         public TermPredictorForPrediction(TupleFlowParameters parameters) {
             super(parameters);
             String gmDir = parameters.getJSON().getString("gmDir");
-            predictDir = Utility.getFileName(gmDir, "predict");
+            predictDir = DirectoryUtility.getGmPredictDir(gmDir);;
         }
 
         @Override

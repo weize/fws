@@ -15,10 +15,10 @@ public class DirectoryUtility {
         //facet-run/qd/cluster
         return Utility.getFileName(facetRunDir, model, "cluster");
     }
-    
+
     public static String getFeatureDir(String facetRunDir, String model) {
         //facet-run/qd/feature
-        return Utility.getFileName(facetRunDir, model, "feature");        
+        return Utility.getFileName(facetRunDir, model, "feature");
     }
 
     public static String getClusterFilename(String clusterDir, String qid, String model, String paramStr) {
@@ -26,8 +26,16 @@ public class DirectoryUtility {
         return Utility.getFileName(clusterDir, qid, name);
     }
 
+    public static String getGmiFoldClusterFilename(String gmiRunDir, String folderId, String qid, String paramStr) {
+        return getClusterFilename(Utility.getFileName(gmiRunDir, folderId, "cluster"), qid, "gmi", paramStr);
+    }
+
     public static String getGmPredictDir(String gmDir) {
         return Utility.getFileName(gmDir, "predict");
+    }
+
+    public static String getTrainDir(String gmDir) {
+        return Utility.getFileName(gmDir, "train");
     }
 
     public static String getGmTermPredictFileName(String predictDir, String qid) {
@@ -38,6 +46,8 @@ public class DirectoryUtility {
         return Utility.getFileNameWithSuffix(predictDir, qid, qid, "p.predict.gz");
     }
 
-    
-    
+    public static String getModelRunDir(String facetRun, String model) {
+        return Utility.getFileName(facetRun, "model");
+    }
+
 }
