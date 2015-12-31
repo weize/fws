@@ -125,7 +125,6 @@ public class GmiTuneFacet extends AppFunction {
         stage.add(new InputStep("selectedParams"));
         stage.add(new Step(GmiClusterer.class, parameters));
         stage.add(new Step(GmiClusterToFacetConverter.class, parameters));
-        stage.add(new Step(ProcessQueryApp.DoNonethingForQueryParams.class));
 
         return stage;
     }
