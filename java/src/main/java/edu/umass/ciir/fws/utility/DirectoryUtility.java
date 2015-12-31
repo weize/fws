@@ -47,7 +47,7 @@ public class DirectoryUtility {
     }
 
     public static String getModelRunDir(String facetRun, String model) {
-        return Utility.getFileName(facetRun, "model");
+        return Utility.getFileName(facetRun, model);
     }
 
 }
