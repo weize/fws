@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.umass.ciir.fws.experiment;
+package edu.umass.ciir.fws.study;
 
 import edu.umass.ciir.fws.anntation.AnnotatedFacet;
 import edu.umass.ciir.fws.anntation.FacetAnnotation;

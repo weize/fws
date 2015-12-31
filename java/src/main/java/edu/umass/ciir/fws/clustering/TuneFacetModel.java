@@ -19,7 +19,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import static java.nio.file.Paths.get;
 import java.util.ArrayList;
 import java.util.List;
 import org.lemurproject.galago.core.tools.AppFunction;
@@ -234,11 +237,14 @@ public class TuneFacetModel extends AppFunction {
         public static void makesLink(File runFacetFile, File facetFile) throws IOException {
             System.err.println(runFacetFile.getAbsoluteFile());
             System.err.println(facetFile.getAbsoluteFile());
-            if (facetFile.exists()) {
+
+            Path runPath = Paths.get(runFacetFile.toURI());
+            Path tunedPath = Paths.get(facetFile.toURI());
+            if (Files.exists(tunedPath, LinkOption.NOFOLLOW_LINKS)) {
                 System.err.println("delete existing link");
-                facetFile.delete();
+                Files.delete(tunedPath);
             }
-            Files.createSymbolicLink(Paths.get(facetFile.toURI()), Paths.get(runFacetFile.toURI()));
+            Files.createSymbolicLink(tunedPath, runPath);
         }
     }
 
