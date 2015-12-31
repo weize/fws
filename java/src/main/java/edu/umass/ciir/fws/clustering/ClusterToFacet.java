@@ -1,11 +1,13 @@
 package edu.umass.ciir.fws.clustering;
 
+import edu.umass.ciir.fws.clustering.gm.gmj.GmjClusterToFacetConverter;
 import edu.umass.ciir.fws.clustering.lda.LdaClusterToFacetConverter;
 import edu.umass.ciir.fws.clustering.plsa.*;
 import edu.umass.ciir.fws.clustering.qd.QdClusterToFacetConverter;
 import edu.umass.ciir.fws.tool.app.ProcessQueryParametersApp;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.types.TfQueryParameters;
+import edu.umass.ciir.fws.utility.DirectoryUtility;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
@@ -45,6 +47,8 @@ public class ClusterToFacet extends ProcessQueryParametersApp {
                 return PlsaClusterToFacetConverter.class;
             case "lda":
                 return LdaClusterToFacetConverter.class;
+            case "gmj":
+                return GmjClusterToFacetConverter.class;
         }
 
         return null;
@@ -64,12 +68,13 @@ public class ClusterToFacet extends ProcessQueryParametersApp {
         boolean skipExisting;
         String facetDir;
         String model;
+        
 
         public GenerateFacetParameters(TupleFlowParameters parameters) {
             Parameters p = parameters.getJSON();
             model = p.getString("facetModel");
-            String allFacetDir = p.getString("facetDir");
-            facetDir = Utility.getFileName(allFacetDir, model, "run", "cluster");
+            String facetRun = p.getString("facetRunDir");
+            facetDir = DirectoryUtility.getFacetDir(facetRun, model);
             skipExisting = p.get("skipExisting", false);
             paramsList = ParameterSettings.instance(p, model).getFacetingSettings();
 

@@ -25,7 +25,11 @@ public class GmjParameterSettings extends ParameterSettings {
 
     @Override
     public List<ModelParameters> getFacetingSettings() {
-        return getEmptySettings();
+        ArrayList<ModelParameters> paramsList = new ArrayList<>();
+        for(String ranker : rankers) {
+            paramsList.add(new GmjFacetParameters(ranker));
+        }
+        return paramsList;
     }
 
     @Override
@@ -42,6 +46,16 @@ public class GmjParameterSettings extends ParameterSettings {
         return paramList;
     }
 
+    public static class GmjFacetParameters extends ModelParameters {
+
+        String ranker;
+
+        public GmjFacetParameters(String ranker) {
+            this.ranker = ranker;
+            packParamsAsArray(ranker);
+        }
+    }
+    
     public static class GmjTuneParameters extends ModelParameters {
 
         String ranker;

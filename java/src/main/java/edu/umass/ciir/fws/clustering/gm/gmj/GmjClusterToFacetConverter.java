@@ -14,7 +14,7 @@ import java.util.List;
 import org.lemurproject.galago.tupleflow.InputClass;
 import org.lemurproject.galago.tupleflow.OutputClass;
 import org.lemurproject.galago.tupleflow.Parameters;
-import org.lemurproject.galago.tupleflow.StandardStep;
+import org.lemurproject.galago.tupleflow.Processor;
 import org.lemurproject.galago.tupleflow.TupleFlowParameters;
 import org.lemurproject.galago.tupleflow.execution.Verified;
 
@@ -25,7 +25,7 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 @Verified
 @InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
 @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
-public class GmjClusterToFacetConverter extends StandardStep<TfQueryParameters, TfQueryParameters> {
+public class GmjClusterToFacetConverter implements Processor<TfQueryParameters> {
 
     String facetDir;
     String clusterDir;
@@ -39,20 +39,20 @@ public class GmjClusterToFacetConverter extends StandardStep<TfQueryParameters, 
     @Override
     public void process(TfQueryParameters queryParams) throws IOException {
         Utility.infoProcessing(queryParams);
-        String [] params = Utility.splitParameters(queryParams.parameters);
-        String ranker = params[params.length-1]; // last one should be ranker
-        
+        String[] params = Utility.splitParameters(queryParams.parameters);
+        String ranker = params[params.length - 1]; // last one should be ranker
+
         // loadClusters clusters
         File clusterFile = new File(Utility.getGmjClusterFileName(clusterDir, queryParams.id));
         List<ScoredFacet> clusters = ScoredFacet.loadClusters(clusterFile);
 
         File facetFile = new File(Utility.getFacetFileName(facetDir, queryParams.id, "gmj", ranker));
-        
+
         if (facetFile.exists()) {
             Utility.infoFileExists(facetFile);
             return;
         }
-        
+
         Utility.infoOpen(facetFile);
         Utility.createDirectoryForFile(facetFile);
         if (ranker.equals("avg")) {
@@ -60,6 +60,9 @@ public class GmjClusterToFacetConverter extends StandardStep<TfQueryParameters, 
         }
         ScoredFacet.outputAsFacets(clusters, facetFile);
         Utility.infoWritten(facetFile);
-        processor.process(queryParams);
+    }
+
+    @Override
+    public void close() throws IOException {
     }
 }

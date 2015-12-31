@@ -16,6 +16,10 @@ public class DirectoryUtility {
         return Utility.getFileName(facetRunDir, model, "cluster");
     }
 
+    public static String getFacetDir(String facetRunDir, String model) {
+        return Utility.getFileName(facetRunDir, model, "facet");
+    }
+    
     public static String getFeatureDir(String facetRunDir, String model) {
         //facet-run/qd/feature
         return Utility.getFileName(facetRunDir, model, "feature");
@@ -49,5 +53,7 @@ public class DirectoryUtility {
     public static String getModelRunDir(String facetRun, String model) {
         return Utility.getFileName(facetRun, model);
     }
+
+    
 
 }
