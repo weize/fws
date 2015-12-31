@@ -3,11 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.umass.ciir.fws.clustering.gm;
+package edu.umass.ciir.fws.clustering.gm.gmi;
 
 import edu.umass.ciir.fws.clustering.gm.gmi.GmiParameterSettings.GmiFacetParameters;
 import edu.umass.ciir.fws.eval.CombinedFacetEvaluator;
 import edu.umass.ciir.fws.types.TfFolderParameters;
+import edu.umass.ciir.fws.utility.DirectoryUtility;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.File;
 import java.io.IOException;
@@ -27,17 +28,25 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 @OutputClass(className = "edu.umass.ciir.fws.types.TfFolderParameters")
 public class EvalTuneGmi extends StandardStep<TfFolderParameters, TfFolderParameters> {
 
+    public final static String model = "gmi";
+
     //String predictDir;
-    String trainDir;
+    String gmTrainDir;
     CombinedFacetEvaluator evaluator;
-    final static String model = "gmi";
     int facetTuneRank;
+    String gmiRunDir;
+    String gmiTuneDir;
+    boolean skipExisting;
 
     public EvalTuneGmi(TupleFlowParameters parameters) throws IOException {
         Parameters p = parameters.getJSON();
         String gmDir = p.getString("gmDir");
         //predictDir = Utility.getFileName(gmDir, "predict");
-        trainDir = Utility.getFileName(gmDir, "train");
+        gmTrainDir = Utility.getFileName(gmDir, "train");
+        gmiRunDir = DirectoryUtility.getModelRunDir(p.getString("facetRunDir"), model);
+        gmiTuneDir = Utility.getFileName(p.getString("facetTuneDir"), model, "tune");
+        skipExisting = p.get("skipExisting", false);
+
         //File facetJsonFile = new File(p.getString("facetAnnotationJson"));
         facetTuneRank = new Long(p.getLong("facetTuneRank")).intValue();
         evaluator = new CombinedFacetEvaluator(p);
@@ -46,31 +55,27 @@ public class EvalTuneGmi extends StandardStep<TfFolderParameters, TfFolderParame
     @Override
     public void process(TfFolderParameters folder) throws IOException {
         Utility.infoProcessing(folder);
-        String folderId = folder.id;        
+        String folderId = folder.id;
         String predictOrTune = folder.option;
         GmiFacetParameters params = new GmiFacetParameters(folder.parameters);
 
-        String folderDir = Utility.getFileName(trainDir, folderId);
-        
-        String evalDir = Utility.getFileName(folderDir, "eval");
-        File trainQueryFile = new File(Utility.getFileName(folderDir, "train.query"));
+        File trainQueryFile = new File(Utility.getFileName(gmTrainDir, folderId, "train.query"));
 
-        String tuneDir = Utility.getFileName(trainDir, folderId, "tune");
-        String facetDir = tuneDir;
-        
+        String evalDir = Utility.getFileName(gmiTuneDir, folderId, "eval");
+        String facetDir = Utility.getFileName(gmiRunDir, folderId, "facet");
+
         String paramFilename = params.toFilenameString();
-        
+
         File evalFile = new File(Utility.getFacetEvalFileName(evalDir, model, paramFilename, facetTuneRank));
+
+        if (skipExisting && evalFile.exists()) {
+            Utility.infoSkipExisting(evalFile);
+        } else {
+            Utility.infoOpen(evalFile);
+            evaluator.eval(trainQueryFile, facetDir, model, paramFilename, evalFile, facetTuneRank);
+            Utility.infoWritten(evalFile);
+        }
         
-//        if (evalFile.exists()) {
-//            Utility.infoFileExists(evalFile);
-//            processor.process(folder);
-//            return;
-//        }
-       
-        Utility.infoOpen(evalFile);
-        evaluator.eval(trainQueryFile, facetDir, model, paramFilename, evalFile, facetTuneRank);
-        Utility.infoWritten(evalFile);
         processor.process(folder);
     }
 }

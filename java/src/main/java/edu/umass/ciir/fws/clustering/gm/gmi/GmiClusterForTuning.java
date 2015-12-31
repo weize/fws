@@ -99,6 +99,7 @@ public class GmiClusterForTuning extends AppFunction {
 
         stage.add(new InputStep("clusters"));
         stage.add(new Step(GmiClusterer.class, parameters));
+        stage.add(new Step(ProcessQueryApp.DoNonethingForQueryParams.class));
 //        stage.add(new Step(AppendFacetRankerParameter.class, parameters));
 //        stage.add(new Step(GmiClusterToFacetConverter.class, parameters));
 

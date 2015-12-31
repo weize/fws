@@ -37,8 +37,7 @@ public class EvalFacetModelForTuning extends StandardStep<TfFolderParameters, Tf
     public EvalFacetModelForTuning(TupleFlowParameters parameters) throws IOException {
         Parameters p = parameters.getJSON();
         model = p.getString("facetModel");
-        String modelDir = Utility.getFileName(p.getString("facetTuneDir"), model);
-        tuneDir = Utility.getFileName(modelDir, "tune");
+        tuneDir = Utility.getFileName(p.getString("facetTuneDir"), model, "tune");
         runFacetDir = DirectoryUtility.getFacetDir(p.getString("facetRunDir"), model);
         facetTuneRank = new Long(p.getLong("facetTuneRank")).intValue();
         evaluator = new CombinedFacetEvaluator(p);

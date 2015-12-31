@@ -18,7 +18,7 @@ import java.util.List;
 import org.lemurproject.galago.tupleflow.InputClass;
 import org.lemurproject.galago.tupleflow.OutputClass;
 import org.lemurproject.galago.tupleflow.Parameters;
-import org.lemurproject.galago.tupleflow.Processor;
+import org.lemurproject.galago.tupleflow.StandardStep;
 import org.lemurproject.galago.tupleflow.TupleFlowParameters;
 import org.lemurproject.galago.tupleflow.execution.Verified;
 
@@ -29,21 +29,21 @@ import org.lemurproject.galago.tupleflow.execution.Verified;
 @Verified
 @InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
 @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
-public class GmiClusterer implements Processor<TfQueryParameters> {
+public class GmiClusterer extends StandardStep<TfQueryParameters, TfQueryParameters> {
 
-    String predictDir;
+    String gmPredictDir;
     String gmiClusterDir;
     String gmiRunDir;
+    String gmiTuneDir;
+    boolean skipExisting;
 
     public GmiClusterer(TupleFlowParameters parameters) {
         Parameters p = parameters.getJSON();
         String gmDir = p.getString("gmDir");
         gmiRunDir = DirectoryUtility.getModelRunDir(p.getString("facetRunDir"), "gmi");
-        
-        
-        predictDir = DirectoryUtility.getGmPredictDir(gmDir);
-        gmiClusterDir = p.getString("gmiClusterDir");
-        
+        gmiClusterDir = Utility.getFileName(p.getString("facetTuneDir"), "gmi", "cluster");
+        gmPredictDir = DirectoryUtility.getGmPredictDir(gmDir);
+        skipExisting = p.get("skipExisting", false);
     }
 
     @Override
@@ -61,8 +61,8 @@ public class GmiClusterer implements Processor<TfQueryParameters> {
         File clusterFile;
 
         if (predictOrTune.equals("predict")) {
-            termPredictFile = new File(DirectoryUtility.getGmTermPredictFileName(predictDir, queryParams.id));
-            termPairPredictFile = new File(DirectoryUtility.getGmTermPairPredictFileName(predictDir, queryParams.id));
+            termPredictFile = new File(DirectoryUtility.getGmTermPredictFileName(gmPredictDir, queryParams.id));
+            termPairPredictFile = new File(DirectoryUtility.getGmTermPairPredictFileName(gmPredictDir, queryParams.id));
             //folderOptionRankerMetricIndex
             String ranker = folderIdOptionOthers[2];
             String metricIndex = folderIdOptionOthers[3];
@@ -79,6 +79,12 @@ public class GmiClusterer implements Processor<TfQueryParameters> {
             termPredictFile = new File(DirectoryUtility.getGmTermPredictFileName(gmiRunFoldPredictDir, queryParams.id));
             termPairPredictFile = new File(DirectoryUtility.getGmTermPairPredictFileName(gmiRunFoldPredictDir, queryParams.id));
             clusterFile = new File(DirectoryUtility.getGmiFoldClusterFilename(gmiRunDir, folderId, queryParams.id, params.toFilenameString()));
+            if (skipExisting && clusterFile.exists()) {
+                Utility.infoSkipExisting(clusterFile);
+            } else {
+                processor.process(queryParams);
+                return;
+            }
         }
 
         Utility.infoOpen(clusterFile);
@@ -87,9 +93,6 @@ public class GmiClusterer implements Processor<TfQueryParameters> {
         List<ScoredFacet> clusters = gmi.cluster(termPredictFile, termPairPredictFile);
         ScoredFacet.output(clusters, clusterFile);
         Utility.infoWritten(clusterFile);
-    }
-
-    @Override
-    public void close() throws IOException {
+        processor.process(queryParams);
     }
 }

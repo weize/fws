@@ -31,13 +31,14 @@ public class GmiClusterToFacetConverter implements Processor<TfQueryParameters> 
     String gmiClusterDir;
     String gmiFacetDir;
     String gmiRunDir;
+    boolean skipExisting;
 
     public GmiClusterToFacetConverter(TupleFlowParameters parameters) {
         Parameters p = parameters.getJSON();
         gmiRunDir = DirectoryUtility.getModelRunDir(p.getString("facetRunDir"), "gmi");
-
-        gmiClusterDir = p.getString("gmiClusterDir");
-        gmiFacetDir = p.getString("gmiFacetDir");
+        gmiClusterDir = Utility.getFileName(p.getString("facetTuneDir"), "gmi", "cluster");
+        gmiFacetDir = Utility.getFileName(p.getString("facetTuneDir"), "gmi", "facet");
+        skipExisting = p.get("skipExisting", false);
     }
 
     @Override
@@ -48,8 +49,6 @@ public class GmiClusterToFacetConverter implements Processor<TfQueryParameters> 
         String folderId = folderIdOptionOthers[0];
         String predictOrTune = folderIdOptionOthers[1];
         GmiFacetParameters params = new GmiFacetParameters(queryParams.parameters);
-        double termProbTh = params.termProbTh;
-        double pairProbTh = params.pairProbTh;
         String ranker = params.ranker;
 
         File clusterFile;
@@ -65,16 +64,15 @@ public class GmiClusterToFacetConverter implements Processor<TfQueryParameters> 
             // overwrite for new tuning results
             // if (facetFile.exists()) { ...
         } else {
-            clusterFile = new File(DirectoryUtility.getGmiFoldClusterFilename(gmiRunDir, folderId, queryParams.id,
-                    new GmiClusterParameters(params.termProbTh, params.pairProbTh).toFilenameString()));
             facetFile = new File(DirectoryUtility.getGmiFoldFacetFilename(gmiRunDir, folderId, queryParams.id, params.toFilenameString()));
+            if (skipExisting && facetFile.exists()) {
+                Utility.infoSkipExisting(facetFile);
+                return;
+            } else {
+                clusterFile = new File(DirectoryUtility.getGmiFoldClusterFilename(gmiRunDir, folderId, queryParams.id,
+                        new GmiClusterParameters(params.termProbTh, params.pairProbTh).toFilenameString()));
 
-            // skip for tunning cases because
-            // if the file name match, the results are always the same
-//            if (facetFile.exists()) {
-//                Utility.infoFileExists(facetFile);
-//                return;
-//            }
+            }
         }
 
         Utility.infoOpen(facetFile);

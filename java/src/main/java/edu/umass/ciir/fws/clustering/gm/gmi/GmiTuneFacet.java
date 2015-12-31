@@ -6,7 +6,6 @@
 package edu.umass.ciir.fws.clustering.gm.gmi;
 
 import edu.umass.ciir.fws.clustering.ModelParameters;
-import edu.umass.ciir.fws.clustering.gm.EvalTuneGmi;
 import edu.umass.ciir.fws.clustering.gm.gmi.GmiParameterSettings.GmiClusterParameters;
 import edu.umass.ciir.fws.clustering.gm.gmi.GmiParameterSettings.GmiFacetParameters;
 import edu.umass.ciir.fws.eval.QueryMetrics;
@@ -49,7 +48,7 @@ public class GmiTuneFacet extends AppFunction {
 
     @Override
     public String getName() {
-        return "tune-facet-gmi";
+        return "gmi-tune-facet";
     }
 
     @Override
@@ -172,11 +171,12 @@ public class GmiTuneFacet extends AppFunction {
     public static class SelectBestParam extends StandardStep<TfFolderParameters, TfQueryParameters> {
 
         long numFolders;
-        String trainDir;
         GmiParameterSettings gmiSettings;
         List<ModelParameters> paramsList;
         List<Long> metricIndices;
         int facetTuneRank;
+        String gmTrainDir;
+        String gmiTuneDir;
         BufferedWriter writer;
 
         public SelectBestParam(TupleFlowParameters parameters) throws IOException {
@@ -185,10 +185,12 @@ public class GmiTuneFacet extends AppFunction {
             gmiSettings = new GmiParameterSettings(p);
             paramsList = gmiSettings.getClusteringSettings();
             facetTuneRank = new Long(p.getLong("facetTuneRank")).intValue();
-            String gmDir = p.getString("gmDir");
-            trainDir = Utility.getFileName(gmDir, "train");
             metricIndices = p.getAsList("facetTuneMetricIndices", Long.class);
-            writer = Utility.getWriter(p.getString("gmiTunedParamFile"));
+            gmTrainDir = Utility.getFileName(p.getString("gmDir"), "train");
+            gmiTuneDir = Utility.getFileName(p.getString("facetTuneDir"), "gmi", "tune");
+            String paramFilename = Utility.getFileName(p.getString("facetTuneDir"), "gmi", "params");
+            writer = Utility.getWriter(p.getString(paramFilename));
+
         }
 
         @Override
@@ -211,8 +213,7 @@ public class GmiTuneFacet extends AppFunction {
         }
 
         private void findBestParamAndEmitRun(String folderId, String ranker, int metricIndex) throws IOException {
-            String folderDir = Utility.getFileName(trainDir, folderId);
-            String evalDir = Utility.getFileName(folderDir, "eval");
+            String evalDir = Utility.getFileName(gmiTuneDir, folderId, "eval");
 
             double maxScore = Double.NEGATIVE_INFINITY;
             ModelParameters maxParams = null;
@@ -230,10 +231,10 @@ public class GmiTuneFacet extends AppFunction {
             writer.write(String.format("gmi\t%s\t%s\t%d\t%s\n", folderId, ranker,
                     metricIndex, TextProcessing.join(maxParams.paramArray, "\t")));
 
-            String testQueryFileName = Utility.getFileName(folderDir, "test.query");
+            String testQueryFileName = Utility.getFileName(gmTrainDir, folderId, "test.query");
             TfQuery[] queries = QueryFileParser.loadQueryList(testQueryFileName);
             for (TfQuery q : queries) {
-                String folderOptionRankerMetricIndex = Utility.parametersToString(folderDir, "predict", ranker, metricIndex);
+                String folderOptionRankerMetricIndex = Utility.parametersToString(folderId, "predict", ranker, metricIndex);
                 processor.process(new TfQueryParameters(q.id, folderOptionRankerMetricIndex, maxParams.toString()));
             }
 

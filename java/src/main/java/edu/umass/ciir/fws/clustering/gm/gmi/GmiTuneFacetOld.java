@@ -6,7 +6,6 @@
 package edu.umass.ciir.fws.clustering.gm.gmi;
 
 import edu.umass.ciir.fws.clustering.gm.AppendFacetRankerParameter;
-import edu.umass.ciir.fws.clustering.gm.EvalTuneGmi;
 import edu.umass.ciir.fws.eval.QueryMetrics;
 import edu.umass.ciir.fws.query.QueryFileParser;
 import edu.umass.ciir.fws.tool.app.ProcessQueryApp;
