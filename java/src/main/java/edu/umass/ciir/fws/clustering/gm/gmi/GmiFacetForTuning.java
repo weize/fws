@@ -135,9 +135,9 @@ public class GmiFacetForTuning extends AppFunction {
                 String trainQuery = Utility.getFileName(trainDir, String.valueOf(i), "train.query");
                 for (TfQuery query : QueryFileParser.loadQueryList(trainQuery)) {
                     for (ModelParameters params : paramsList) {
-                        File clusterFile = new File(DirectoryUtility.getGmiFoldFacetFilename(gmiRunDir, folderId, query.id, params.toFilenameString()));
-                        if (skipExisting && clusterFile.exists()) {
-                            Utility.infoSkipExisting(clusterFile);
+                        File FacetFile = new File(DirectoryUtility.getGmiFoldFacetFilename(gmiRunDir, folderId, query.id, params.toFilenameString()));
+                        if (skipExisting && FacetFile.exists()) {
+                            Utility.infoSkipExisting(FacetFile);
                         } else {
                             String folderIdOption = Utility.parametersToString(folderId, "tune");
                             processor.process(new TfQueryParameters(query.id, folderIdOption, params.toString()));

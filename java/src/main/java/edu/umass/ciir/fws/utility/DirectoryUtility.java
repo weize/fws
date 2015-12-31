@@ -29,13 +29,18 @@ public class DirectoryUtility {
         String name = paramStr.isEmpty() ? String.format("%s.%s.cluster", qid, model) : String.format("%s.%s.%s.cluster", qid, model, paramStr);
         return Utility.getFileName(clusterDir, qid, name);
     }
+    
+    public static String getFacetFilename(String facetDir, String qid, String model, String paramStr) {
+        String name = paramStr.isEmpty() ? String.format("%s.%s.facet", qid, model) : String.format("%s.%s.%s.facet", qid, model, paramStr);
+        return Utility.getFileName(facetDir, qid, name);
+    }
 
     public static String getGmiFoldClusterFilename(String gmiRunDir, String folderId, String qid, String paramStr) {
         return getClusterFilename(Utility.getFileName(gmiRunDir, folderId, "cluster"), qid, "gmi", paramStr);
     }
     
     public static String getGmiFoldFacetFilename(String gmiRunDir, String folderId, String qid, String paramStr) {
-        return getClusterFilename(Utility.getFileName(gmiRunDir, folderId, "facet"), qid, "gmi", paramStr);  
+        return getFacetFilename(Utility.getFileName(gmiRunDir, folderId, "facet"), qid, "gmi", paramStr);  
     }
 
     public static String getGmPredictDir(String gmDir) {
