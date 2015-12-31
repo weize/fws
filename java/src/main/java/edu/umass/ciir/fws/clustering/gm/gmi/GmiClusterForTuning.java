@@ -40,11 +40,11 @@ import org.lemurproject.galago.tupleflow.types.FileName;
  *
  * @author wkong
  */
-public class GmiClusterForFacet extends AppFunction {
+public class GmiClusterForTuning extends AppFunction {
 
     @Override
     public String getName() {
-        return "cluster-gmi-tune";
+        return "gmi-cluster-for-tuning";
     }
 
     @Override
@@ -101,7 +101,6 @@ public class GmiClusterForFacet extends AppFunction {
         stage.add(new Step(GmiClusterer.class, parameters));
 //        stage.add(new Step(AppendFacetRankerParameter.class, parameters));
 //        stage.add(new Step(GmiClusterToFacetConverter.class, parameters));
-        stage.add(new Step(ProcessQueryApp.DoNonethingForQueryParams.class));
 
         return stage;
     }
@@ -121,10 +120,9 @@ public class GmiClusterForFacet extends AppFunction {
             Parameters p = parameters.getJSON();
             numFolders = parameters.getJSON().getLong("cvFolderNum");
             gmiSettings = new GmiParameterSettings(p);
-            String gmDir = p.getString("gmDir");
-            trainDir = DirectoryUtility.getTrainDir(gmDir);
+            trainDir = DirectoryUtility.getTrainDir(p.getString("gmDir"));
             skipExisting = p.get("skipExisting", false);
-            gmiRunDir = DirectoryUtility.getModelRunDir(gmDir, "gmi");
+            gmiRunDir = DirectoryUtility.getModelRunDir(p.getString("facetRunDir"), "gmi");
         }
 
         @Override

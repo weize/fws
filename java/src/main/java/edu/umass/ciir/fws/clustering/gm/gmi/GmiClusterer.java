@@ -39,10 +39,12 @@ public class GmiClusterer implements Processor<TfQueryParameters> {
     public GmiClusterer(TupleFlowParameters parameters) {
         Parameters p = parameters.getJSON();
         String gmDir = p.getString("gmDir");
-        gmiRunDir = DirectoryUtility.getModelRunDir(gmDir, "gmi");
+        gmiRunDir = DirectoryUtility.getModelRunDir(p.getString("facetRunDir"), "gmi");
+        gmiRunPredictDir = DirectoryUtility.getGmPredictDir(gmiRunDir);
+        
         predictDir = DirectoryUtility.getGmPredictDir(gmDir);
         gmiClusterDir = p.getString("gmiClusterDir");
-        gmiRunPredictDir = DirectoryUtility.getGmPredictDir(gmiRunDir);
+        
     }
 
     @Override
