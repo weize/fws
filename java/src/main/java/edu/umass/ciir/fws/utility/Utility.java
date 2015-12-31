@@ -321,7 +321,7 @@ public class Utility extends org.lemurproject.galago.tupleflow.Utility {
     }
 
     public static void info(String message) {
-        Logger.getLogger("runtime").log(Level.INFO, message);
+        System.err.println(message);
     }
 
     public static int compare(double one, double two) {
