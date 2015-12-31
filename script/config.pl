@@ -23,6 +23,18 @@ sub openWriter {
 	return $out;
 }
 
+sub loadQueryIDs {
+	my $filename = shift;
+	open my $file, $filename or die "cannot open $filename";
+	my @queries = (); 
+	while (my $line = <$file>) {
+		chomp $line;
+		my ($qid, $query) = split /\t/, $line;
+		push @queries, $qid;
+	}   
+	return @queries;
+}
+
 sub loadSqrel {
 	my $file = shift;
 	my $in = openReader($file);
@@ -64,7 +76,12 @@ sub infoWritten {
 sub call {
 	my ($cmd) = @_;
 	print STDERR $cmd."\n";
-	system($cmd);
+	return system($cmd) == 0;
 }
 
+sub callPrint {
+	my ($cmd) = @_;
+	print STDERR $cmd."\n";
+	return 1;
+}
 1;
