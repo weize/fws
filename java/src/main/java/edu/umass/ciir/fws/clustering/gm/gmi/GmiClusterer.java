@@ -34,13 +34,12 @@ public class GmiClusterer implements Processor<TfQueryParameters> {
     String predictDir;
     String gmiClusterDir;
     String gmiRunDir;
-    String gmiRunPredictDir;
 
     public GmiClusterer(TupleFlowParameters parameters) {
         Parameters p = parameters.getJSON();
         String gmDir = p.getString("gmDir");
         gmiRunDir = DirectoryUtility.getModelRunDir(p.getString("facetRunDir"), "gmi");
-        gmiRunPredictDir = DirectoryUtility.getGmPredictDir(gmiRunDir);
+        
         
         predictDir = DirectoryUtility.getGmPredictDir(gmDir);
         gmiClusterDir = p.getString("gmiClusterDir");
@@ -76,8 +75,9 @@ public class GmiClusterer implements Processor<TfQueryParameters> {
             // do not skip for predicting, should overwrite for new tuning results.
             // if (clusterFile.exists()) { ...
         } else {
-            termPredictFile = new File(DirectoryUtility.getGmTermPredictFileName(gmiRunPredictDir, queryParams.id));
-            termPairPredictFile = new File(DirectoryUtility.getGmTermPairPredictFileName(gmiRunPredictDir, queryParams.id));
+            String gmiRunFoldPredictDir = Utility.getFileName(gmiRunDir, folderId, "predict");
+            termPredictFile = new File(DirectoryUtility.getGmTermPredictFileName(gmiRunFoldPredictDir, queryParams.id));
+            termPairPredictFile = new File(DirectoryUtility.getGmTermPairPredictFileName(gmiRunFoldPredictDir, queryParams.id));
             clusterFile = new File(DirectoryUtility.getGmiFoldClusterFilename(gmiRunDir, folderId, queryParams.id, params.toFilenameString()));
         }
 
