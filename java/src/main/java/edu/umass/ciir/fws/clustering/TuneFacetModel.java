@@ -18,13 +18,13 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.nio.file.CopyOption;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import static java.nio.file.Paths.get;
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 import org.lemurproject.galago.core.tools.AppFunction;
@@ -195,12 +195,48 @@ public class TuneFacetModel extends AppFunction {
      */
     private void handleGmj(Parameters p) throws IOException {
         String model = "gmj";
-        String facetRunDir = Utility.getFileName(p.getString("facetRunDir"), model, "facet");
-        String facetTuneDir = Utility.getFileName(p.getString("facetTuneDir"), model, "facet");
+        File facetRunDir = new File(Utility.getFileName(p.getString("facetRunDir"), model, "facet"));
+        File facetTuneDir = new File(Utility.getFileName(p.getString("facetTuneDir"), model, "facet"));
 
         Utility.createDirectoryForFile(facetTuneDir);
-        
-        //CopyRun.makesLink(new File(facetRunDir), new File(facetTuneDir));
+        Path sourcePath = Paths.get(facetRunDir.toURI());
+        Path targetPath = Paths.get(facetTuneDir.toURI());
+        if (Files.exists(targetPath, LinkOption.NOFOLLOW_LINKS)) {
+            System.err.println("delete existing file: " + facetTuneDir.getAbsolutePath());
+            Files.delete(targetPath);
+        }
+        Utility.info("copy " + facetRunDir.getAbsolutePath() + " to " + facetTuneDir.getAbsolutePath());
+        Files.walkFileTree(sourcePath, new CopyFileVisitor(targetPath));
+    }
+
+    public class CopyFileVisitor extends SimpleFileVisitor<Path> {
+
+        private final Path targetPath;
+        private Path sourcePath = null;
+
+        public CopyFileVisitor(Path targetPath) {
+            this.targetPath = targetPath;
+        }
+
+        @Override
+        public FileVisitResult preVisitDirectory(final Path dir,
+                final BasicFileAttributes attrs) throws IOException {
+            if (sourcePath == null) {
+                sourcePath = dir;
+            } else {
+                Files.createDirectories(targetPath.resolve(sourcePath
+                        .relativize(dir)));
+            }
+            return FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public FileVisitResult visitFile(final Path file,
+                final BasicFileAttributes attrs) throws IOException {
+            Files.copy(file,
+                    targetPath.resolve(sourcePath.relativize(file)));
+            return FileVisitResult.CONTINUE;
+        }
     }
 
     @Verified
