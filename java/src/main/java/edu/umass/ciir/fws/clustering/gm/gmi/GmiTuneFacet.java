@@ -6,11 +6,11 @@
 package edu.umass.ciir.fws.clustering.gm.gmi;
 
 import edu.umass.ciir.fws.clustering.ModelParameters;
+import edu.umass.ciir.fws.clustering.TuneFacetModel;
 import edu.umass.ciir.fws.clustering.gm.gmi.GmiParameterSettings.GmiClusterParameters;
 import edu.umass.ciir.fws.clustering.gm.gmi.GmiParameterSettings.GmiFacetParameters;
 import edu.umass.ciir.fws.eval.QueryMetrics;
 import edu.umass.ciir.fws.query.QueryFileParser;
-import edu.umass.ciir.fws.tool.app.ProcessQueryApp;
 import edu.umass.ciir.fws.types.TfFolderParameters;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.types.TfQueryParameters;
@@ -20,6 +20,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.lemurproject.galago.core.tools.AppFunction;
 import org.lemurproject.galago.tupleflow.ExNihiloSource;
@@ -69,12 +71,18 @@ public class GmiTuneFacet extends AppFunction {
 
         job.add(getSplitEvalStage(parameters));
         job.add(getEvalStage(parameters));
+        job.add(getSplitFoldStage(parameters));
         job.add(getSelectStage(parameters));
+        job.add(getSplitFoldQueriesStage(parameters)); //splitFoldQueries
         job.add(getProcessStage(parameters));
+        job.add(getWriteStage(parameters));
 
-        job.connect("splitEval", "eval", ConnectionAssignmentType.Each);
-        job.connect("eval", "select", ConnectionAssignmentType.Combined);
-        job.connect("select", "process", ConnectionAssignmentType.Each);
+        job.connect("split", "eval", ConnectionAssignmentType.Each);
+        job.connect("eval", "splitFold", ConnectionAssignmentType.Combined);
+        job.connect("splitFold", "select", ConnectionAssignmentType.Each);
+        job.connect("select", "splitFoldQueries", ConnectionAssignmentType.Each);
+        job.connect("splitFoldQueries", "process", ConnectionAssignmentType.Each);
+        job.connect("select", "write", ConnectionAssignmentType.Combined);
 
         return job;
     }
@@ -104,28 +112,67 @@ public class GmiTuneFacet extends AppFunction {
         return stage;
     }
 
-    private Stage getSelectStage(Parameters parameters) {
-        Stage stage = new Stage("select");
+    private Stage getSplitFoldStage(Parameters parameter) {
+        Stage stage = new Stage("splitFold");
 
         stage.addInput("folderParams2", new TfFolderParameters.IdOptionParametersOrder());
-        stage.addOutput("selectedParams", new TfQueryParameters.IdParametersOrder());
+        stage.addOutput("folderMetrics", new TfFolderParameters.IdOptionParametersOrder());
 
         stage.add(new InputStep("folderParams2"));
-        stage.add(new Step(SelectBestParam.class, parameters));
+        stage.add(new Step(TuneFacetModel.SplitFoldMetrics.class, parameter));
+        stage.add(new Step(SplitFoldMetricsAddRanker.class, parameter));
+        stage.add(Utility.getSorter(new TfFolderParameters.IdOptionParametersOrder()));
+        stage.add(new OutputStep("folderMetrics"));
+
+        return stage;
+    }
+
+    private Stage getSelectStage(Parameters parameter) {
+        Stage stage = new Stage("select");
+
+        stage.addInput("folderMetrics", new TfFolderParameters.IdOptionParametersOrder());
+        stage.addOutput("folderBestParams", new TfFolderParameters.IdOptionParametersOrder());
+
+        stage.add(new InputStep("folderMetrics"));
+        stage.add(new Step(SelectBestParam.class, parameter));
+        stage.add(Utility.getSorter(new TfFolderParameters.IdOptionParametersOrder()));
+        stage.add(new OutputStep("folderBestParams"));
+
+        return stage;
+    }
+
+    private Stage getSplitFoldQueriesStage(Parameters parameters) {
+        Stage stage = new Stage("splitFoldQueries");
+
+        stage.addInput("folderBestParams", new TfFolderParameters.IdOptionParametersOrder());
+        stage.addOutput("selectedQueryParams", new TfQueryParameters.IdParametersOrder());
+
+        stage.add(new InputStep("folderBestParams"));
+        stage.add(new Step(SplitFoldQueries.class, parameters));
         stage.add(Utility.getSorter(new TfQueryParameters.IdParametersOrder()));
-        stage.add(new OutputStep("selectedParams"));
+        stage.add(new OutputStep("selectedQueryParams"));
         return stage;
     }
 
     private Stage getProcessStage(Parameters parameters) {
         Stage stage = new Stage("process");
 
-        stage.addInput("selectedParams", new TfQueryParameters.IdParametersOrder());
+        stage.addInput("selectedQueryParams", new TfQueryParameters.IdParametersOrder());
 
-        stage.add(new InputStep("selectedParams"));
+        stage.add(new InputStep("selectedQueryParams"));
         stage.add(new Step(GmiClusterer.class, parameters));
         stage.add(new Step(GmiClusterToFacetConverter.class, parameters));
 
+        return stage;
+    }
+
+    private Stage getWriteStage(Parameters parameters) {
+        Stage stage = new Stage("write");
+
+        stage.addInput("folderBestParams", new TfFolderParameters.IdOptionParametersOrder());
+
+        stage.add(new InputStep("folderBestParams"));
+        stage.add(new Step(WriteParams.class, parameters));
         return stage;
     }
 
@@ -166,52 +213,46 @@ public class GmiTuneFacet extends AppFunction {
 
     @Verified
     @InputClass(className = "edu.umass.ciir.fws.types.TfFolderParameters")
-    @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
-    public static class SelectBestParam extends StandardStep<TfFolderParameters, TfQueryParameters> {
+    @OutputClass(className = "edu.umass.ciir.fws.types.TfFolderParameters")
+    public static class SplitFoldMetricsAddRanker extends StandardStep<TfFolderParameters, TfFolderParameters> {
 
-        long numFolders;
-        GmiParameterSettings gmiSettings;
+        List<String> rankers;
+
+        public SplitFoldMetricsAddRanker(TupleFlowParameters parameters) throws IOException {
+            Parameters p = parameters.getJSON();
+            rankers = new GmiParameterSettings(p).rankers;
+        }
+
+        @Override
+        public void process(TfFolderParameters fold) throws IOException {
+            for (String ranker : rankers) {
+                processor.process(new TfFolderParameters(fold.id, fold.option, ranker));
+            }
+        }
+    }
+
+    @Verified
+    @InputClass(className = "edu.umass.ciir.fws.types.TfFolderParameters")
+    @OutputClass(className = "edu.umass.ciir.fws.types.TfFolderParameters")
+    public static class SelectBestParam extends StandardStep<TfFolderParameters, TfFolderParameters> {
+
         List<ModelParameters> paramsList;
-        List<Long> metricIndices;
         int facetTuneRank;
-        String gmTrainDir;
         String gmiTuneDir;
-        BufferedWriter writer;
 
         public SelectBestParam(TupleFlowParameters parameters) throws IOException {
             Parameters p = parameters.getJSON();
-            numFolders = parameters.getJSON().getLong("cvFolderNum");
-            gmiSettings = new GmiParameterSettings(p);
-            paramsList = gmiSettings.getClusteringSettings();
+            paramsList = new GmiParameterSettings(p).getClusteringSettings();
             facetTuneRank = new Long(p.getLong("facetTuneRank")).intValue();
-            metricIndices = p.getAsList("facetTuneMetricIndices", Long.class);
-            gmTrainDir = Utility.getFileName(p.getString("gmDir"), "train");
             gmiTuneDir = Utility.getFileName(p.getString("facetTuneDir"), "gmi", "tune");
-            String paramFilename = Utility.getFileName(p.getString("facetTuneDir"), "gmi", "params");
-            writer = Utility.getWriter(paramFilename);
-
         }
 
         @Override
-        public void process(TfFolderParameters object) throws IOException {
-        }
+        public void process(TfFolderParameters foldMetric) throws IOException {
+            String folderId = foldMetric.id;
+            int metricIndex = Integer.parseInt(foldMetric.option);
+            String ranker = foldMetric.parameters;
 
-        @Override
-        public void close() throws IOException {
-
-            for (Long metricIdx : metricIndices) {
-                for (int i = 1; i <= numFolders; i++) {
-                    for (String ranker : gmiSettings.rankers) {
-                        findBestParamAndEmitRun(String.valueOf(i), ranker, metricIdx.intValue());
-                    }
-                }
-            }
-
-            processor.close();
-            writer.close();
-        }
-
-        private void findBestParamAndEmitRun(String folderId, String ranker, int metricIndex) throws IOException {
             String evalDir = Utility.getFileName(gmiTuneDir, folderId, "eval");
 
             double maxScore = Double.NEGATIVE_INFINITY;
@@ -227,17 +268,101 @@ public class GmiTuneFacet extends AppFunction {
                 }
             }
 
-            writer.write(String.format("gmi\t%s\t%s\t%d\t%s\n", folderId, ranker,
-                    metricIndex, TextProcessing.join(maxParams.paramArray, "\t")));
+            foldMetric.parameters = maxParams.toString();
+            processor.process(foldMetric);
+
+        }
+    }
+
+    @Verified
+    @InputClass(className = "edu.umass.ciir.fws.types.TfFolderParameters")
+    @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
+    public static class SplitFoldQueries extends StandardStep<TfFolderParameters, TfQueryParameters> {
+
+        String gmTrainDir;
+
+        public SplitFoldQueries(TupleFlowParameters parameters) throws IOException {
+            Parameters p = parameters.getJSON();
+            gmTrainDir = Utility.getFileName(p.getString("gmDir"), "train");
+        }
+
+        @Override
+        public void process(TfFolderParameters folderParams) throws IOException {
+            String folderId = folderParams.id;
+            int metricIndex = Integer.parseInt(folderParams.option);
+            GmiFacetParameters maxParams = new GmiFacetParameters(folderParams.parameters);
+            String ranker = maxParams.ranker;
 
             String testQueryFileName = Utility.getFileName(gmTrainDir, folderId, "test.query");
             TfQuery[] queries = QueryFileParser.loadQueryList(testQueryFileName);
             for (TfQuery q : queries) {
                 String folderOptionRankerMetricIndex = Utility.parametersToString(folderId, "predict", ranker, metricIndex);
-                processor.process(new TfQueryParameters(q.id, folderOptionRankerMetricIndex, maxParams.toString()));
+                processor.process(new TfQueryParameters(q.id, folderOptionRankerMetricIndex,
+                        new GmiClusterParameters(maxParams.termProbTh, maxParams.pairProbTh).toString()));
+            }
+        }
+    }
+
+    @Verified
+    @InputClass(className = "edu.umass.ciir.fws.types.TfFolderParameters")
+    public static class WriteParams implements Processor<TfFolderParameters> {
+
+        String model = "gmi";
+        File bestParamFile;
+        ArrayList<Selection> selections;
+
+        public WriteParams(TupleFlowParameters parameters) throws IOException {
+            Parameters p = parameters.getJSON();
+            bestParamFile = new File(Utility.getFileName(p.getString("facetTuneDir"), model, "params"));
+            selections = new ArrayList<>();
+        }
+
+        @Override
+        public void process(TfFolderParameters foldParams) throws IOException {
+            String folderId = foldParams.id;
+            String metricIndex = foldParams.option;
+            GmiFacetParameters facetParams = new GmiFacetParameters(foldParams.parameters);
+            GmiClusterParameters clusterParams = new GmiClusterParameters(facetParams.termProbTh, facetParams.pairProbTh);
+            selections.add(new Selection(folderId, metricIndex, facetParams.ranker, TextProcessing.join(clusterParams.paramArray, "\t")));
+        }
+
+        @Override
+        public void close() throws IOException {
+            Collections.sort(selections);
+            BufferedWriter writer = Utility.getWriter(bestParamFile);
+            for (Selection selection : selections) {
+                writer.write(String.format("gmi\t%s\t%d\t%d\t%s\n", selection.ranker, selection.metricIndex,
+                        selection.folderId, selection.params));
+            }
+            writer.close();
+            Utility.infoWritten(bestParamFile.getAbsoluteFile());
+        }
+
+        public static class Selection implements Comparable<Selection> {
+
+            int folderId;
+            int metricIndex;
+            String ranker;
+            String params;
+
+            public Selection(String folderId, String metrixIndex, String ranker, String params) {
+                this.folderId = Integer.parseInt(folderId);
+                this.metricIndex = Integer.parseInt(metrixIndex);
+                this.ranker = ranker;
+                this.params = params;
+            }
+
+            @Override
+            public int compareTo(Selection that) {
+                int cmpRanker = this.ranker.compareTo(that.ranker);
+                if (cmpRanker == 0) {
+                    int metricCmp = this.metricIndex - that.metricIndex;
+                    return metricCmp == 0 ? this.folderId - that.folderId : metricCmp;
+                } else {
+                    return cmpRanker;
+                }
             }
 
         }
-
     }
 }
