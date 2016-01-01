@@ -24,6 +24,8 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import org.lemurproject.galago.core.tools.AppFunction;
 import org.lemurproject.galago.tupleflow.FileSource;
@@ -209,7 +211,6 @@ public class TuneFacetModel extends AppFunction {
         stage.addInput("folderBestParams", new TfFolderParameters.IdOptionParametersOrder());
 
         stage.add(new InputStep("folderBestParams"));
-        stage.add(Utility.getSorter(new TfFolderParameters.OptionIdParametersOrder()));
         stage.add(new Step(WriteParams.class, parameters));
         return stage;
     }
@@ -347,7 +348,6 @@ public class TuneFacetModel extends AppFunction {
     @OutputClass(className = "edu.umass.ciir.fws.types.TfFolderParameters")
     public static class SelectBestParam extends StandardStep<TfFolderParameters, TfFolderParameters> {
 
-        BufferedWriter writer;
         List<ModelParameters> params;
         String tuneDir;
         String model;
@@ -441,18 +441,18 @@ public class TuneFacetModel extends AppFunction {
     }
 
     @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.TfFolderParameters", order = {"+option", "+id", "+parameters"})
+    @InputClass(className = "edu.umass.ciir.fws.types.TfFolderParameters")
     public static class WriteParams implements Processor<TfFolderParameters> {
 
-        BufferedWriter writer;
         String model;
         File bestParamFile;
+        ArrayList<Selection> selections;
 
         public WriteParams(TupleFlowParameters parameters) throws IOException {
             Parameters p = parameters.getJSON();
             model = p.getString("facetModel");
             bestParamFile = new File(Utility.getFileName(p.getString("facetTuneDir"), model, "params"));
-            writer = Utility.getWriter(bestParamFile);
+            selections = new ArrayList<>();
         }
 
         @Override
@@ -460,14 +460,39 @@ public class TuneFacetModel extends AppFunction {
             String folderId = foldParams.id;
             String metricIndex = foldParams.option;
             ModelParameters maxScoreParams = new ModelParameters(foldParams.parameters);
-            writer.write(String.format("%s\t%s\t%s\t%s\n", model, folderId,
-                    metricIndex, TextProcessing.join(maxScoreParams.paramArray, "\t")));
+            selections.add(new Selection(folderId, metricIndex, TextProcessing.join(maxScoreParams.paramArray, "\t")));
         }
 
         @Override
         public void close() throws IOException {
+            Collections.sort(selections);
+            BufferedWriter writer = Utility.getWriter(bestParamFile);
+            for (Selection selection : selections) {
+                writer.write(String.format("%s\t%d\t%d\t%s\n", model, selection.folderId,
+                        selection.metricIndex, selection.params));
+            }
             writer.close();
             Utility.infoWritten(bestParamFile.getAbsoluteFile());
+        }
+
+        public static class Selection implements Comparable<Selection> {
+
+            int folderId;
+            int metricIndex;
+            String params;
+
+            public Selection(String folderId, String metrixIndex, String params) {
+                this.folderId = Integer.parseInt(folderId);
+                this.metricIndex = Integer.parseInt(metrixIndex);
+                this.params = params;
+            }
+
+            @Override
+            public int compareTo(Selection that) {
+                int metricCmp = this.metricIndex - that.metricIndex;
+                return metricCmp == 0 ? this.folderId - that.folderId : metricCmp;
+            }
+
         }
     }
 
