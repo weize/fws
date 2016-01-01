@@ -18,11 +18,13 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import static java.nio.file.Paths.get;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.util.ArrayList;
 import java.util.List;
 import org.lemurproject.galago.core.tools.AppFunction;
@@ -197,7 +199,8 @@ public class TuneFacetModel extends AppFunction {
         String facetTuneDir = Utility.getFileName(p.getString("facetTuneDir"), model, "facet");
 
         Utility.createDirectoryForFile(facetTuneDir);
-        CopyRun.makesLink(new File(facetRunDir), new File(facetTuneDir));
+        
+        //CopyRun.makesLink(new File(facetRunDir), new File(facetTuneDir));
     }
 
     @Verified
@@ -229,22 +232,22 @@ public class TuneFacetModel extends AppFunction {
             File facetFile = new File(Utility.getFacetFileName(facetDir, queryParams.id, model, metricIndex));
             Utility.infoOpen(facetFile);
             Utility.createDirectoryForFile(facetFile);
-            makesLink(runFacetFile, facetFile);
+            copy(runFacetFile, facetFile);
             Utility.infoWritten(facetFile);
 
         }
 
-        public static void makesLink(File runFacetFile, File facetFile) throws IOException {
+        public static void copy(File runFacetFile, File facetFile) throws IOException {
             System.err.println(runFacetFile.getAbsoluteFile());
             System.err.println(facetFile.getAbsoluteFile());
 
             Path runPath = Paths.get(runFacetFile.toURI());
             Path tunedPath = Paths.get(facetFile.toURI());
             if (Files.exists(tunedPath, LinkOption.NOFOLLOW_LINKS)) {
-                System.err.println("delete existing link");
+                System.err.println("delete existing file: " + facetFile.getAbsolutePath());
                 Files.delete(tunedPath);
             }
-            Files.createSymbolicLink(tunedPath, runPath);
+            Files.copy(runPath, tunedPath);
         }
     }
 
