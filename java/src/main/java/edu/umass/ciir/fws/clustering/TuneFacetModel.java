@@ -468,8 +468,8 @@ public class TuneFacetModel extends AppFunction {
             Collections.sort(selections);
             BufferedWriter writer = Utility.getWriter(bestParamFile);
             for (Selection selection : selections) {
-                writer.write(String.format("%s\t%d\t%d\t%s\n", model, selection.folderId,
-                        selection.metricIndex, selection.params));
+                writer.write(String.format("%s\t%d\t%d\t%s\n", model, selection.metricIndex,
+                        selection.folderId, selection.params));
             }
             writer.close();
             Utility.infoWritten(bestParamFile.getAbsoluteFile());
