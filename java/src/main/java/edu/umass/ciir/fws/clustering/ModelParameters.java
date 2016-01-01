@@ -11,9 +11,17 @@ import edu.umass.ciir.fws.utility.Utility;
  *
  * @author wkong
  */
-public abstract class ModelParameters {
+public class ModelParameters {
 
     public Object[] paramArray;
+
+    public ModelParameters(Object... params) {
+        packParamsAsArray(params);
+    }
+
+    public ModelParameters(String paramStr) {
+        packParamsAsArray(splitParameters(paramStr));
+    }
 
     public String toFilenameString() {
         return Utility.parametersToFileNameString(paramArray);

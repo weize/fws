@@ -8,21 +8,21 @@ package edu.umass.ciir.fws.clustering;
 import edu.emory.mathcs.backport.java.util.Arrays;
 import edu.umass.ciir.fws.eval.QueryMetrics;
 import edu.umass.ciir.fws.query.QueryFileParser;
-import edu.umass.ciir.fws.tool.app.ProcessQueryApp;
 import edu.umass.ciir.fws.types.TfFolderParameters;
 import edu.umass.ciir.fws.types.TfQuery;
-import edu.umass.ciir.fws.types.TfQueryParameters;
 import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import static java.nio.file.Paths.get;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 import org.lemurproject.galago.core.tools.AppFunction;
@@ -30,6 +30,7 @@ import org.lemurproject.galago.tupleflow.FileSource;
 import org.lemurproject.galago.tupleflow.InputClass;
 import org.lemurproject.galago.tupleflow.OutputClass;
 import org.lemurproject.galago.tupleflow.Parameters;
+import org.lemurproject.galago.tupleflow.Processor;
 import org.lemurproject.galago.tupleflow.StandardStep;
 import org.lemurproject.galago.tupleflow.TupleFlowParameters;
 import org.lemurproject.galago.tupleflow.execution.ConnectionAssignmentType;
@@ -115,12 +116,16 @@ public class TuneFacetModel extends AppFunction {
 
         job.add(getSplitStage(parameters));
         job.add(getEvalStage(parameters));
+        job.add(getSplitFoldStage(parameters));
         job.add(getSelectStage(parameters));
         job.add(getCopyRunStage(parameters));
+        job.add(getWriteStage(parameters));
 
         job.connect("split", "eval", ConnectionAssignmentType.Each);
-        job.connect("eval", "select", ConnectionAssignmentType.Combined);
+        job.connect("eval", "splitFold", ConnectionAssignmentType.Combined);
+        job.connect("splitFold", "select", ConnectionAssignmentType.Each);
         job.connect("select", "copyRun", ConnectionAssignmentType.Each);
+        job.connect("select", "write", ConnectionAssignmentType.Combined);
 
         return job;
     }
@@ -160,16 +165,30 @@ public class TuneFacetModel extends AppFunction {
         return stage;
     }
 
+    private Stage getSplitFoldStage(Parameters parameter) {
+        Stage stage = new Stage("splitFold");
+
+        stage.addInput("folderParams2", new TfFolderParameters.IdOptionParametersOrder());
+        stage.addOutput("folderMetrics", new TfFolderParameters.IdOptionParametersOrder());
+
+        stage.add(new InputStep("folderParams2"));
+        stage.add(new Step(SplitFoldMetrics.class, parameter));
+        stage.add(Utility.getSorter(new TfFolderParameters.IdOptionParametersOrder()));
+        stage.add(new OutputStep("folderMetrics"));
+
+        return stage;
+    }
+
     private Stage getSelectStage(Parameters parameter) {
         Stage stage = new Stage("select");
 
-        stage.addInput("folderParams2", new TfFolderParameters.IdOptionParametersOrder());
-        stage.addOutput("queryParams", new TfQueryParameters.IdParametersOrder());
+        stage.addInput("folderMetrics", new TfFolderParameters.IdOptionParametersOrder());
+        stage.addOutput("folderBestParams", new TfFolderParameters.IdOptionParametersOrder());
 
-        stage.add(new InputStep("folderParams2"));
+        stage.add(new InputStep("folderMetrics"));
         stage.add(new Step(SelectBestParam.class, parameter));
-        stage.add(Utility.getSorter(new TfQueryParameters.IdParametersOrder()));
-        stage.add(new OutputStep("queryParams"));
+        stage.add(Utility.getSorter(new TfFolderParameters.IdOptionParametersOrder()));
+        stage.add(new OutputStep("folderBestParams"));
 
         return stage;
     }
@@ -177,11 +196,21 @@ public class TuneFacetModel extends AppFunction {
     private Stage getCopyRunStage(Parameters parameters) {
         Stage stage = new Stage("copyRun");
 
-        stage.addInput("queryParams", new TfQueryParameters.IdParametersOrder());
+        stage.addInput("folderBestParams", new TfFolderParameters.IdOptionParametersOrder());
 
-        stage.add(new InputStep("queryParams"));
+        stage.add(new InputStep("folderBestParams"));
         stage.add(new Step(CopyRun.class, parameters));
-        stage.add(new Step(ProcessQueryApp.DoNonethingForQueryParams.class));
+        return stage;
+    }
+
+    private Stage getWriteStage(Parameters parameters) {
+        Stage stage = new Stage("write");
+
+        stage.addInput("folderBestParams", new TfFolderParameters.IdOptionParametersOrder());
+
+        stage.add(new InputStep("folderBestParams"));
+        stage.add(Utility.getSorter(new TfFolderParameters.OptionIdParametersOrder()));
+        stage.add(new Step(WriteParams.class, parameters));
         return stage;
     }
 
@@ -193,131 +222,48 @@ public class TuneFacetModel extends AppFunction {
      */
     private void handleGmj(Parameters p) throws IOException {
         String model = "gmj";
-        String facetRunDir = Utility.getFileName(p.getString("facetRunDir"), model, "facet");
-        String facetTuneDir = Utility.getFileName(p.getString("facetTuneDir"), model, "facet");
+        File facetRunDir = new File(Utility.getFileName(p.getString("facetRunDir"), model, "facet"));
+        File facetTuneDir = new File(Utility.getFileName(p.getString("facetTuneDir"), model, "facet"));
 
         Utility.createDirectoryForFile(facetTuneDir);
-        CopyRun.makesLink(new File(facetRunDir), new File(facetTuneDir));
+        Path sourcePath = Paths.get(facetRunDir.toURI());
+        Path targetPath = Paths.get(facetTuneDir.toURI());
+        if (Files.exists(targetPath, LinkOption.NOFOLLOW_LINKS)) {
+            System.err.println("delete existing file: " + facetTuneDir.getAbsolutePath());
+            Files.delete(targetPath);
+        }
+        Utility.info("copy " + facetRunDir.getAbsolutePath() + " to " + facetTuneDir.getAbsolutePath());
+        Files.walkFileTree(sourcePath, new CopyFileVisitor(targetPath));
     }
 
-    @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
-    @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
-    public static class CopyRun extends StandardStep<TfQueryParameters, TfQueryParameters> {
+    public static class CopyFileVisitor extends SimpleFileVisitor<Path> {
 
-        Parameters p;
-        BufferedWriter writer;
-        String modelDir;
-        String model;
-        String facetDir;
-        String runFacetDir;
+        private final Path targetPath;
+        private Path sourcePath = null;
 
-        public CopyRun(TupleFlowParameters parameters) throws IOException {
-            p = parameters.getJSON();
-            model = p.getString("facetModel");
-            modelDir = Utility.getFileName(p.getString("facetTuneDir"), model);
-            runFacetDir = Utility.getFileName(p.getString("facetRunDir"), model, "facet");
-            facetDir = Utility.getFileName(modelDir, "facet");
+        public CopyFileVisitor(Path targetPath) {
+            this.targetPath = targetPath;
         }
 
         @Override
-        public void process(TfQueryParameters queryParams) throws IOException {
-            String metricIndex = queryParams.text; // user query text field for metric index
-            String paramsFilenameString = queryParams.parameters;
-
-            File runFacetFile = new File(Utility.getFacetFileName(runFacetDir, queryParams.id, model, paramsFilenameString));
-            File facetFile = new File(Utility.getFacetFileName(facetDir, queryParams.id, model, metricIndex));
-            Utility.infoOpen(facetFile);
-            Utility.createDirectoryForFile(facetFile);
-            makesLink(runFacetFile, facetFile);
-            Utility.infoWritten(facetFile);
-
-        }
-
-        public static void makesLink(File runFacetFile, File facetFile) throws IOException {
-            System.err.println(runFacetFile.getAbsoluteFile());
-            System.err.println(facetFile.getAbsoluteFile());
-
-            Path runPath = Paths.get(runFacetFile.toURI());
-            Path tunedPath = Paths.get(facetFile.toURI());
-            if (Files.exists(tunedPath, LinkOption.NOFOLLOW_LINKS)) {
-                System.err.println("delete existing link");
-                Files.delete(tunedPath);
+        public FileVisitResult preVisitDirectory(final Path dir,
+                final BasicFileAttributes attrs) throws IOException {
+            if (sourcePath == null) {
+                sourcePath = dir;
+            } else {
+                Files.createDirectories(targetPath.resolve(sourcePath
+                        .relativize(dir)));
             }
-            Files.createSymbolicLink(tunedPath, runPath);
-        }
-    }
-
-    @Verified
-    @InputClass(className = "edu.umass.ciir.fws.types.TfFolderParameters")
-    @OutputClass(className = "edu.umass.ciir.fws.types.TfQueryParameters")
-    public static class SelectBestParam extends StandardStep<TfFolderParameters, TfQueryParameters> {
-
-        Parameters p;
-        BufferedWriter writer;
-        List<ModelParameters> params;
-        String modelDir;
-        String model;
-        int facetTuneRank;
-
-        public SelectBestParam(TupleFlowParameters parameters) throws IOException {
-            p = parameters.getJSON();
-            model = p.getString("facetModel");
-            modelDir = Utility.getFileName(p.getString("facetTuneDir"), model);
-            facetTuneRank = new Long(p.getLong("facetTuneRank")).intValue();
-            params = ParameterSettings.instance(p, model).getFacetingSettings();
+            return FileVisitResult.CONTINUE;
         }
 
         @Override
-        public void process(TfFolderParameters object) throws IOException {
-
+        public FileVisitResult visitFile(final Path file,
+                final BasicFileAttributes attrs) throws IOException {
+            Files.copy(file,
+                    targetPath.resolve(sourcePath.relativize(file)));
+            return FileVisitResult.CONTINUE;
         }
-
-        @Override
-        public void close() throws IOException {
-            long numFolders = p.getLong("cvFolderNum");
-            List<Long> metricIndices = p.getAsList("facetTuneMetricIndices", Long.class);
-            File bestParamFile = new File(Utility.getFileName(modelDir, "params"));
-            writer = Utility.getWriter(bestParamFile);
-
-            for (Long metricIdx : metricIndices) {
-                for (int i = 1; i <= numFolders; i++) {
-                    findBestParamAndEmitRun(String.valueOf(i), metricIdx.intValue());
-                }
-            }
-
-            processor.close();
-            writer.close();
-            Utility.infoWritten(bestParamFile);
-        }
-
-        private void findBestParamAndEmitRun(String folderId, int metricIndex) throws IOException {
-            String folderDir = Utility.getFileName(modelDir, "tune", folderId);
-            String evalDir = Utility.getFileName(folderDir, "eval");
-
-            double maxScore = Double.NEGATIVE_INFINITY;
-            ModelParameters maxScoreParams = null;
-            for (ModelParameters param : params) {
-                File evalFile = new File(Utility.getFacetEvalFileName(evalDir, model, param.toFilenameString(), facetTuneRank));
-                double score = QueryMetrics.getAvgScore(evalFile, metricIndex);
-                if (score > maxScore) {
-                    maxScore = score;
-                    maxScoreParams = param;
-                }
-            }
-
-            writer.write(String.format("%s\t%s\t%d\t%s\n", model, folderId,
-                    metricIndex, TextProcessing.join(maxScoreParams.paramArray, "\t")));
-
-            String testQueryFileName = Utility.getFileName(folderDir, "test.query");
-            TfQuery[] queries = QueryFileParser.loadQueryList(testQueryFileName);
-            for (TfQuery q : queries) {
-                // user query text field for metric index
-                processor.process(new TfQueryParameters(q.id, String.valueOf(metricIndex), maxScoreParams.toFilenameString()));
-            }
-
-        }
-
     }
 
     @Verified
@@ -365,4 +311,164 @@ public class TuneFacetModel extends AppFunction {
         }
 
     }
+
+    @Verified
+    @InputClass(className = "edu.umass.ciir.fws.types.TfFolderParameters")
+    @OutputClass(className = "edu.umass.ciir.fws.types.TfFolderParameters")
+    public static class SplitFoldMetrics extends StandardStep<TfFolderParameters, TfFolderParameters> {
+
+        long numFolders;
+        List<Long> metricIndices;
+
+        public SplitFoldMetrics(TupleFlowParameters parameters) throws IOException {
+            Parameters p = parameters.getJSON();
+            numFolders = p.getLong("cvFolderNum");
+            metricIndices = p.getAsList("facetTuneMetricIndices", Long.class);
+        }
+
+        @Override
+        public void process(TfFolderParameters fold) throws IOException {
+        }
+
+        @Override
+        public void close() throws IOException {
+            for (int i = 1; i <= numFolders; i++) {
+                for (Long metricIdx : metricIndices) {
+                    processor.process(new TfFolderParameters(String.valueOf(i), String.valueOf(metricIdx), ""));
+                }
+            }
+            processor.close();
+        }
+
+    }
+
+    @Verified
+    @InputClass(className = "edu.umass.ciir.fws.types.TfFolderParameters")
+    @OutputClass(className = "edu.umass.ciir.fws.types.TfFolderParameters")
+    public static class SelectBestParam extends StandardStep<TfFolderParameters, TfFolderParameters> {
+
+        BufferedWriter writer;
+        List<ModelParameters> params;
+        String tuneDir;
+        String model;
+        int facetTuneRank;
+
+        public SelectBestParam(TupleFlowParameters parameters) throws IOException {
+            Parameters p = parameters.getJSON();
+            model = p.getString("facetModel");
+            tuneDir = Utility.getFileName(p.getString("facetTuneDir"), model, "tune");
+            facetTuneRank = new Long(p.getLong("facetTuneRank")).intValue();
+            params = ParameterSettings.instance(p, model).getFacetingSettings();
+        }
+
+        @Override
+        public void process(TfFolderParameters foldMetric) throws IOException {
+            String folderId = foldMetric.id;
+            int metricIndex = Integer.parseInt(foldMetric.option);
+
+            String evalDir = Utility.getFileName(tuneDir, folderId, "eval");
+
+            double maxScore = Double.NEGATIVE_INFINITY;
+            ModelParameters maxScoreParams = null;
+            for (ModelParameters param : params) {
+                File evalFile = new File(Utility.getFacetEvalFileName(evalDir, model, param.toFilenameString(), facetTuneRank));
+                double score = QueryMetrics.getAvgScore(evalFile, metricIndex);
+                if (score > maxScore) {
+                    maxScore = score;
+                    maxScoreParams = param;
+                }
+            }
+
+            foldMetric.parameters = maxScoreParams.toString();
+            processor.process(foldMetric);
+        }
+    }
+
+    @Verified
+    @InputClass(className = "edu.umass.ciir.fws.types.TfFolderParameters")
+    public static class CopyRun implements Processor<TfFolderParameters> {
+
+        Parameters p;
+        BufferedWriter writer;
+        String tuneDir;
+        String model;
+        String facetDir;
+        String runFacetDir;
+
+        public CopyRun(TupleFlowParameters parameters) throws IOException {
+            p = parameters.getJSON();
+            model = p.getString("facetModel");
+            String facetTuneModelDir = Utility.getFileName(p.getString("facetTuneDir"), model);
+            tuneDir = Utility.getFileName(facetTuneModelDir, "tune");
+            facetDir = Utility.getFileName(facetTuneModelDir, "facet");
+            runFacetDir = Utility.getFileName(p.getString("facetRunDir"), model, "facet");
+
+        }
+
+        @Override
+        public void process(TfFolderParameters foldParams) throws IOException {
+            String folderId = foldParams.id;
+            String metricIndex = foldParams.option;
+            String paramsFilenameString = new ModelParameters(foldParams.parameters).toFilenameString();
+
+            String testQueryFileName = Utility.getFileName(tuneDir, folderId, "test.query");
+            TfQuery[] queries = QueryFileParser.loadQueryList(testQueryFileName);
+            for (TfQuery q : queries) {
+                File runFacetFile = new File(Utility.getFacetFileName(runFacetDir, q.id, model, paramsFilenameString));
+                File facetFile = new File(Utility.getFacetFileName(facetDir, q.id, model, metricIndex));
+                Utility.infoOpen(facetFile);
+                Utility.createDirectoryForFile(facetFile);
+                copy(runFacetFile, facetFile);
+                Utility.infoWritten(facetFile);
+            }
+        }
+
+        public static void copy(File runFacetFile, File facetFile) throws IOException {
+            Utility.info("copy " + runFacetFile.getAbsoluteFile() + " to " + facetFile.getAbsoluteFile());
+
+            Path runPath = Paths.get(runFacetFile.toURI());
+            Path tunedPath = Paths.get(facetFile.toURI());
+            if (Files.exists(tunedPath, LinkOption.NOFOLLOW_LINKS)) {
+                System.err.println("delete existing file: " + facetFile.getAbsolutePath());
+                Files.delete(tunedPath);
+            }
+            Files.copy(runPath, tunedPath);
+        }
+
+        @Override
+        public void close() throws IOException {
+        }
+    }
+
+    @Verified
+    @InputClass(className = "edu.umass.ciir.fws.types.TfFolderParameters", order = {"+option", "+id", "+parameters"})
+    public static class WriteParams implements Processor<TfFolderParameters> {
+
+        BufferedWriter writer;
+        String model;
+        File bestParamFile;
+
+        public WriteParams(TupleFlowParameters parameters) throws IOException {
+            Parameters p = parameters.getJSON();
+            model = p.getString("facetModel");
+            bestParamFile = new File(Utility.getFileName(p.getString("facetTuneDir"), model, "params"));
+            writer = Utility.getWriter(bestParamFile);
+        }
+
+        @Override
+        public void process(TfFolderParameters foldParams) throws IOException {
+            String folderId = foldParams.id;
+            String metricIndex = foldParams.option;
+            ModelParameters maxScoreParams = new ModelParameters(foldParams.parameters);
+            writer.write(String.format("%s\t%s\t%s\t%s\n", model, folderId,
+                    metricIndex, TextProcessing.join(maxScoreParams.paramArray, "\t")));
+        }
+
+        @Override
+        public void close() throws IOException {
+            writer.close();
+            Utility.infoWritten(bestParamFile.getAbsoluteFile());
+        }
+    }
+
 }

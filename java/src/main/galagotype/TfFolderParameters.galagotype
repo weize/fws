@@ -6,4 +6,5 @@ type TfFolderParameters {
         String parameters;
 
 	order: +id +option +parameters;
+        order: +option +id +parameters;
 }
