@@ -77,7 +77,7 @@ public class GmiTuneFacet extends AppFunction {
         job.add(getProcessStage(parameters));
         job.add(getWriteStage(parameters));
 
-        job.connect("split", "eval", ConnectionAssignmentType.Each);
+        job.connect("splitEval", "eval", ConnectionAssignmentType.Each);
         job.connect("eval", "splitFold", ConnectionAssignmentType.Combined);
         job.connect("splitFold", "select", ConnectionAssignmentType.Each);
         job.connect("select", "splitFoldQueries", ConnectionAssignmentType.Each);
