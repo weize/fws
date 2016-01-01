@@ -264,7 +264,7 @@ public class GmiTuneFacet extends AppFunction {
                 double score = QueryMetrics.getAvgScore(evalFile, metricIndex);
                 if (score > maxScore) {
                     maxScore = score;
-                    maxParams = params;
+                    maxParams = facetParams;
                 }
             }
 
