@@ -72,7 +72,7 @@ public class CmpTermWeightingIdealCW extends AppFunction {
     }
 
     private void outputAvg(ArrayList<ArrayList<double[]>> weights) throws IOException {
-        Utility.createDirectory(outputFile);
+        Utility.createDirectoryForFile(outputFile);
         BufferedWriter writer = Utility.getWriter(outputFile);
         writer.write("#rank\tTermEqual\tTermRating\tFacetEqual\tFacetRating\n");
         for (int i = 0; i < weights.size(); i++) {
@@ -81,14 +81,15 @@ public class CmpTermWeightingIdealCW extends AppFunction {
             double[] avg = new double[TermWeighting.size()];
             for (double[] cur : queries) {
                 for (int j = 0; j < TermWeighting.size(); j++) {
-                    avg[i] += cur[j];
+                    avg[j] += cur[j];
                 }
             }
 
-            Utility.avg(avg, queries.size());
+            Utility.avg(avg, queries.size()*(i+1));
             writer.write(String.format("%d\t%s\n", i+1, TextProcessing.join(avg, "\t")));
         }
         writer.close();
+        Utility.infoWritten(new File(outputFile));
     }
 
 }
