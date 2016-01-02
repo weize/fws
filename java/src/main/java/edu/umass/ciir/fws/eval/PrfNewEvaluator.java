@@ -34,7 +34,7 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
     Map<String, double[]> itemWeightMap; // only stored postive items
     Set<String> systemItemSet; // all items in the system facets
     List<HashSet<String>> itemSets; // stores annotator sysFacets as sets
-    double[][] idealTermCW; // idea clumulative term weight [#num of postive cases][#different weigting methods]
+    public double[][] idealTermCW; // idea clumulative term weight [#num of postive cases][#different weigting methods]
     double[][] idealPairCWComplete; // idea clumulative Pair weight for complete case
     double[][] idealPairCWOverlap; // idea clumulative Pair weight for overlap case
 
@@ -54,8 +54,18 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
     }
 
     protected void loadFacets(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets, int numTopFacets) {
-        // only using top n sysFacets
+        // only using top n sysFacets        
         sysFacets = sfacets.subList(0, Math.min(sfacets.size(), numTopFacets));
+        annFacets = new ArrayList<>();
+        for (AnnotatedFacet f : afacets) {
+            if (f.isValid()) {
+                annFacets.add(f);
+            }
+        }
+    }
+
+    public void loadAnnotatorFacets(List<AnnotatedFacet> afacets, int numTopFacets) {
+        // only using top n sysFacets        
         annFacets = new ArrayList<>();
         for (AnnotatedFacet f : afacets) {
             if (f.isValid()) {
@@ -102,7 +112,7 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
         };
     }
 
-    protected void loadItemWeightMap() {
+    public void loadItemWeightMap() {
         itemWeightMap.clear();
         for (AnnotatedFacet facet : annFacets) {
             for (String item : facet.terms) {
@@ -117,7 +127,7 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
 
     }
 
-    protected void cumulateTermWeights() {
+    public void cumulateTermWeights() {
         // compute idea cumulative weighting
         double[][] termWeights = itemWeightMap.values().toArray(new double[0][]);
         idealTermCW = cumulateWeights(termWeights);
@@ -265,7 +275,7 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
         double weight = 0.0;
 
         HashSet<String> pairSet = new HashSet<>();
-        
+
         for (ScoredFacet facet : sysFacets) {
             for (int i = 0; i < facet.items.size(); i++) {
                 String item1 = facet.items.get(i).item;
@@ -318,7 +328,7 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
     protected String getPairId(String item1, String item2) {
         return item1.compareTo(item2) < 0 ? item1 + "|" + item2 : item2 + "|" + item1;
     }
-    
+
     protected double harmonicMean(double p, double r, double f) {
         double a = alpha * alpha;
         double b = beta * beta;
