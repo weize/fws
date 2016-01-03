@@ -24,7 +24,7 @@ import org.lemurproject.galago.tupleflow.Utility;
  */
 public class PrfNewEvaluator implements QueryFacetEvaluator {
 
-    private static final int metricNum = 44; // 4 weighting X 11 metrics
+    private static int metricNum = 44; // 4 weighting X 11 metrics
     List<ScoredFacet> sysFacets; // system
     List<AnnotatedFacet> annFacets; // annotators
 
@@ -37,6 +37,7 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
     public double[][] idealTermCW; // idea clumulative term weight [#num of postive cases][#different weigting methods]
     double[][] idealPairCWComplete; // idea clumulative Pair weight for complete case
     double[][] idealPairCWOverlap; // idea clumulative Pair weight for overlap case
+    
 
     public static enum TermWeighting {
 

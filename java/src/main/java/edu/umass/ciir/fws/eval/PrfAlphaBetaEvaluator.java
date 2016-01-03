@@ -68,5 +68,10 @@ public class PrfAlphaBetaEvaluator extends PrfNewEvaluator {
         all[start++] = one;
         return start;
     }
+    
+    @Override
+    public int metricNum() {
+        return metricNum;
+    }
 
 }
