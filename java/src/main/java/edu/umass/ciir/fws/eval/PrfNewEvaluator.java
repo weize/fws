@@ -28,8 +28,8 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
     List<ScoredFacet> sysFacets; // system
     List<AnnotatedFacet> annFacets; // annotators
 
-    double alpha = 1;
-    double beta = 1;
+    private double alpha = 1;
+    private double beta = 1;
 
     Map<String, double[]> itemWeightMap; // only stored postive items
     Set<String> systemItemSet; // all items in the system facets
@@ -262,7 +262,7 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
     /**
      *
      * @param weighting
-     * @param overalap only consider system items that also appear in annotator
+     * @param overlap only consider system items that also appear in annotator
      * facets, otherwise also consider annotator terms that are not in system
      * facets (assume they are singletons).
      * @return
@@ -330,6 +330,13 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
     }
 
     protected double harmonicMean(double p, double r, double f) {
+        double a = alpha * alpha;
+        double b = beta * beta;
+        double d = a * r * f + b * p * f + p * r;
+        return d < Utility.epsilon ? 0 : p * r * f * (a + b + 1) / d;
+    }
+
+    public static double harmonicMean(double p, double r, double f, double alpha, double beta) {
         double a = alpha * alpha;
         double b = beta * beta;
         double d = a * r * f + b * p * f + p * r;
