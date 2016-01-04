@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class PrfAlphaBetaEvaluator extends PrfNewEvaluator {
 
-    private static final int metricNum = 32; // 2 weighting X (6+10) metrics
+    private static final int metricNum = 50; // 2 weighting X (6+19) metrics
     static double[][] alphaBetas = new double[][]{
         {1.0, 1.0},
         {2.0, 1.0}, // term precision is 2X important than term recall, and clustering
@@ -26,7 +26,16 @@ public class PrfAlphaBetaEvaluator extends PrfNewEvaluator {
         {7.0, 1.0},
         {8.0, 1.0},
         {9.0, 1.0},
-        {10.0, 1.0},};
+        {10.0, 1.0},
+        {1.0, 1.0 / 2.0}, // term precision and clustering is 2X important than term recall
+        {1.0, 1.0 / 3.0},
+        {1.0, 1.0 / 4.0},
+        {1.0, 1.0 / 5.0},
+        {1.0, 1.0 / 6.0},
+        {1.0, 1.0 / 7.0},
+        {1.0, 1.0 / 8.0},
+        {1.0, 1.0 / 9.0},
+        {1.0, 1.0 / 10.0},};
 
     static TermWeighting[] weightings = new TermWeighting[]{TermWeighting.TermEqual, TermWeighting.TermRating};
 
@@ -68,7 +77,7 @@ public class PrfAlphaBetaEvaluator extends PrfNewEvaluator {
         all[start++] = one;
         return start;
     }
-    
+
     @Override
     public int metricNum() {
         return metricNum;
