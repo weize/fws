@@ -156,7 +156,9 @@ public class EvalFacetModels extends AppFunction {
                 Utility.createDirectory(evalDir);
                 List<ModelParameters> paramsList = ParameterSettings.instance(p, model).
                         getTuningSettings(facetTuneMetricIndices);
-                for (int topFacets = 1; topFacets <= topFacetNum; topFacets++) {
+                // 
+                int start = topFacetNum > 100 ? topFacetNum : 1;
+                for (int topFacets = start; topFacets <= topFacetNum; topFacets++) {
                     for (ModelParameters params : paramsList) {
                         processor.process(new TfQueryParameters(model,
                                 String.valueOf(topFacets), params.toFilenameString()));
