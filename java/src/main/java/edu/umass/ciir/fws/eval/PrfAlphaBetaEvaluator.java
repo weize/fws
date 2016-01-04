@@ -31,7 +31,7 @@ public class PrfAlphaBetaEvaluator extends PrfNewEvaluator {
     static TermWeighting[] weightings = new TermWeighting[]{TermWeighting.TermEqual, TermWeighting.TermRating};
 
     @Override
-    public double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets, int numTopFacets) {
+    public double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets, int numTopFacets, String... params) {
         loadFacets(afacets, sfacets, numTopFacets);
         loadItemWeightMap();
         loadItemSets();

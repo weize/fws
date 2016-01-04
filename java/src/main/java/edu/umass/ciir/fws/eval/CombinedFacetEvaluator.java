@@ -77,7 +77,7 @@ public class CombinedFacetEvaluator implements QueryFacetEvaluator{
     }
 
     @Override
-    public double[] eval(List<AnnotatedFacet> facets, List<ScoredFacet> system, int numTopFacets) {
+    public double[] eval(List<AnnotatedFacet> facets, List<ScoredFacet> system, int numTopFacets, String... params) {
         double[] scores = new double[metricNum()];
         
         int i = 0;

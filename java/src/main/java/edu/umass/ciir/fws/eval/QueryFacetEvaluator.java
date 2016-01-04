@@ -20,6 +20,6 @@ public interface QueryFacetEvaluator {
     int  metricNum();
     
     // evaluate for these measures for top system facets
-    double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets, int numTopFacets);
+    double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets, int numTopFacets, String... params);
     
 }

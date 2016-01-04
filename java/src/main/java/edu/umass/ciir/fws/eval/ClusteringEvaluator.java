@@ -25,7 +25,7 @@ public class ClusteringEvaluator implements QueryFacetEvaluator {
     int itemNumInAnnFacets;
 
     @Override
-    public double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets, int numTopFacets) {
+    public double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets, int numTopFacets, String... params) {
         loadFacets(afacets, sfacets, numTopFacets);
         double purity = purity();
         double nmi = nmi();

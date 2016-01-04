@@ -24,7 +24,7 @@ import org.lemurproject.galago.tupleflow.Utility;
  */
 public class PrfNewEvaluator implements QueryFacetEvaluator {
 
-    private static int metricNum = 44; // 4 weighting X 11 metrics
+    private static final int metricNum = 44; // 4 weighting X 11 metrics
     List<ScoredFacet> sysFacets; // system
     List<AnnotatedFacet> annFacets; // annotators
 
@@ -76,7 +76,7 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
     }
 
     @Override
-    public double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets, int numTopFacets) {
+    public double[] eval(List<AnnotatedFacet> afacets, List<ScoredFacet> sfacets, int numTopFacets, String... params) {
         loadFacets(afacets, sfacets, numTopFacets);
         loadItemWeightMap();
         loadItemSets();
