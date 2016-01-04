@@ -67,7 +67,7 @@ public class CombinedFacetEvaluator implements QueryFacetEvaluator{
             FacetAnnotation annotator = facetMap.get(query.id);
             File systemFile = new File(Utility.getFacetFileName(facetDir, query.id, model, paramFileNameStr));
             List<ScoredFacet> system = ScoredFacet.loadFacets(systemFile);
-            double[] result = eval(annotator.facets, system, numTopFacets);
+            double[] result = eval(annotator.facets, system, numTopFacets, query.id);
             results.add(new QueryMetrics(query.id, result));
             Utility.add(avg, result);
         }
