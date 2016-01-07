@@ -61,7 +61,7 @@ public class GmLearn extends AppFunction {
     }
 
     private void prepareGmDir(Parameters p) throws IOException {
-        String gmDir = p.getString("gmDir");
+        String gmDir = Utility.getFileName(p.getString("facetRunDir"), "gm");
         long folderNum = p.getLong("cvFolderNum");
 
         String predictDir = Utility.getFileName(gmDir, "predict");
