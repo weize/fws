@@ -39,7 +39,7 @@ public class GmiClusterer extends StandardStep<TfQueryParameters, TfQueryParamet
 
     public GmiClusterer(TupleFlowParameters parameters) {
         Parameters p = parameters.getJSON();
-        String gmDir = p.getString("gmDir");
+        String gmDir = Utility.getFileName(p.getString("facetRunDir"), "gm");
         gmiRunDir = DirectoryUtility.getModelRunDir(p.getString("facetRunDir"), "gmi");
         gmiClusterDir = Utility.getFileName(p.getString("facetTuneDir"), "gmi", "cluster");
         gmPredictDir = DirectoryUtility.getGmPredictDir(gmDir);

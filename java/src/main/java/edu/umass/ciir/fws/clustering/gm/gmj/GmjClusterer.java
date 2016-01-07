@@ -36,7 +36,7 @@ public class GmjClusterer implements Processor<TfQueryParameters> {
         Parameters p = parameters.getJSON();
         String facetRunDir = p.getString("facetRunDir");
         clusterDir = DirectoryUtility.getCluterDir(facetRunDir, modelName);
-        String gmDir = p.getString("gmDir");
+        String gmDir = Utility.getFileName(p.getString("facetRunDir"), "gm");
         predictDir = DirectoryUtility.getGmPredictDir(gmDir);
     }
 

@@ -40,7 +40,7 @@ public class EvalTuneGmi extends StandardStep<TfFolderParameters, TfFolderParame
 
     public EvalTuneGmi(TupleFlowParameters parameters) throws IOException {
         Parameters p = parameters.getJSON();
-        String gmDir = p.getString("gmDir");
+        String gmDir = Utility.getFileName(p.getString("facetRunDir"), "gm");
         //predictDir = Utility.getFileName(gmDir, "predict");
         gmTrainDir = Utility.getFileName(gmDir, "train");
         gmiRunDir = DirectoryUtility.getModelRunDir(p.getString("facetRunDir"), model);

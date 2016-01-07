@@ -32,7 +32,7 @@ public class TrainPairModel extends StandardStep<TfFolder, TfFolder> {
 
     public TrainPairModel(TupleFlowParameters parameters) throws IOException {
         Parameters p = parameters.getJSON();
-        String gmDir = p.getString("gmDir");
+        String gmDir = Utility.getFileName(p.getString("facetRunDir"), "gm");
         trainDir = Utility.getFileName(gmDir, "train");
         pfIndices = p.getAsList("pairFeatureIndices", Long.class);
     }

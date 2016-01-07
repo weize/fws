@@ -38,10 +38,8 @@ public class ExtractTermPairDataForPostiveTerm extends StandardStep<TfQuery, TfQ
 
     public ExtractTermPairDataForPostiveTerm(TupleFlowParameters parameters) throws IOException, Exception {
         Parameters p = parameters.getJSON();
-        String gmDir = p.getString("gmDir");
+        String gmDir = Utility.getFileName(p.getString("facetRunDir"), "gm");
         predictDir = Utility.getFileName(gmDir, "predict");
-        //        File facetJsonFile = new File(p.getString("facetAnnotationJson"));
-//        facetMap = FacetAnnotation.loadAsMap(facetJsonFile);
         File facetTextFile = new File(p.getString("facetAnnotationText"));
         facetMap = FacetAnnotation.loadAsMapFromTextFile(facetTextFile);
         pfExtractor = new TermPairFeatureExtractor(p);

@@ -36,7 +36,7 @@ public abstract class PairPredictor extends StandardStep<TfQueryParameters, TfQu
     public PairPredictor(TupleFlowParameters parameters) {
 
         Parameters p = parameters.getJSON();
-        String gmDir = p.getString("gmDir");
+        String gmDir = Utility.getFileName(p.getString("facetRunDir"), "gm");
         trainDir = Utility.getFileName(gmDir, "train");
         indices = p.getAsList("pairFeatureIndices", Long.class);
     }

@@ -117,7 +117,8 @@ public class GmiFacetForTuning extends AppFunction {
             Parameters p = parameters.getJSON();
             numFolders = parameters.getJSON().getLong("cvFolderNum");
             gmiSettings = new GmiParameterSettings(p);
-            trainDir = DirectoryUtility.getTrainDir(p.getString("gmDir"));
+            String gmDir = Utility.getFileName(p.getString("facetRunDir"), "gm");
+            trainDir = DirectoryUtility.getTrainDir(gmDir);
             skipExisting = p.get("skipExisting", false);
             gmiRunDir = DirectoryUtility.getModelRunDir(p.getString("facetRunDir"), "gmi");
         }

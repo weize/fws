@@ -283,7 +283,7 @@ public class GmiTuneFacet extends AppFunction {
 
         public SplitFoldQueries(TupleFlowParameters parameters) throws IOException {
             Parameters p = parameters.getJSON();
-            gmTrainDir = Utility.getFileName(p.getString("gmDir"), "train");
+            gmTrainDir = Utility.getFileName(p.getString("facetRunDir"), "gm", "train");
         }
 
         @Override

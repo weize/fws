@@ -118,7 +118,7 @@ public class GmiPredictForTuning extends AppFunction {
 
         public SplitTuneRuns(TupleFlowParameters parameters) throws IOException {
             Parameters p = parameters.getJSON();
-            String gmDir = p.getString("gmDir");
+            String gmDir = Utility.getFileName(p.getString("facetRunDir"), "gm");
             trainDir = Utility.getFileName(gmDir, "train");
             numFolders = parameters.getJSON().getLong("cvFolderNum");
         }

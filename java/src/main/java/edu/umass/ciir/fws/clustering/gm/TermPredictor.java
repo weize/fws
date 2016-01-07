@@ -36,7 +36,7 @@ public abstract class TermPredictor extends StandardStep<TfQueryParameters, TfQu
 
     public TermPredictor(TupleFlowParameters parameters) {
         Parameters p = parameters.getJSON();
-        String gmDir = p.getString("gmDir");
+        String gmDir = Utility.getFileName(p.getString("facetRunDir"), "gm");
         dataDir = Utility.getFileName(gmDir, "predict"); // for get the data file
         trainDir = Utility.getFileName(gmDir, "train");
         tfIndices = p.getAsList("termFeatureIndices", Long.class);

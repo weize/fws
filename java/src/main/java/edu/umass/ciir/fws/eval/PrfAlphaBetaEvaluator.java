@@ -57,8 +57,11 @@ public class PrfAlphaBetaEvaluator extends PrfNewEvaluator {
             i = append(all, i, termPRF);
             i = append(all, i, pairPRFOverlap);
 
+            System.err.println("tP\ttR\tpF\tPRF\talpha\tbeta");
             for (double[] alphaBeta : alphaBetas) {
                 double prfOverlap = harmonicMean(termPRF[0], termPRF[1], pairPRFOverlap[2], alphaBeta[0], alphaBeta[1]);
+                System.err.println(String.format("%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f",
+                        termPRF[0], termPRF[1], pairPRFOverlap[2], prfOverlap, alphaBeta[0], alphaBeta[1]));
                 i = append(all, i, prfOverlap);
             }
         }

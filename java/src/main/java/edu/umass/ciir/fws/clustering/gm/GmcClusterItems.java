@@ -34,7 +34,7 @@ public class GmcClusterItems extends StandardStep<TfQueryParameters, TfQueryPara
     public GmcClusterItems(TupleFlowParameters parameters) {
         Parameters p = parameters.getJSON();
         clusterDir = p.getString("gmcClusterDir");
-        String gmDir = p.getString("gmDir");
+        String gmDir = Utility.getFileName(p.getString("facetRunDir"), "gm");
         predictDir = Utility.getFileName(gmDir, "predict");
         
     }

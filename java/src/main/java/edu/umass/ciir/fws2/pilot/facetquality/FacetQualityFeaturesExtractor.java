@@ -53,7 +53,7 @@ public class FacetQualityFeaturesExtractor implements Processor<TfQuery> {
         facetParam = p.getAsString("facetParam");
         fqDir = p.getString("fqDir");
         File annotatedFacetTextFile = new File(p.getString("facetAnnotationText"));
-        gmPredictDir = Utility.getFileName(p.getString("gmDir"), "predict");
+        gmPredictDir = Utility.getFileName(p.getString("facetRunDir"), "gm", "predict");
 
         facetAnnotationMap = FacetAnnotation.loadAsMapFromTextFile(annotatedFacetTextFile);
 

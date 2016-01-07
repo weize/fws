@@ -15,6 +15,7 @@ import edu.umass.ciir.fws.clustering.qd.QueryDimensionTFClusterer;
 import edu.umass.ciir.fws.demo.search.BingSearchEngine;
 import edu.umass.ciir.fws.demo.search.BingSearchEngine.RankResult;
 import edu.umass.ciir.fws.eval.ClusteringEvaluator;
+import edu.umass.ciir.fws.eval.PrfAlphaBetaEvaluator;
 import edu.umass.ciir.fws.eval.RpndcgEvaluator;
 import edu.umass.ciir.fws.nlp.HtmlContentExtractor;
 import edu.umass.ciir.fws.nlp.PeerPatternNLPParser;
@@ -71,10 +72,11 @@ public class TestFn extends AppFunction {
     public void run(Parameters p, PrintStream output) throws Exception {
         output.println("in test");
         output.println();
+        testPRFEval(p);
         //testBingSearch(p);
         //testCrawl(p);
         //testQdFacetFeaturesTFExtractor(p);
-        testQueryDimensionTFClusterer(p);
+        //testQueryDimensionTFClusterer(p);
 
         //testPrintHTML(p, output);
         //testNlp(output);
@@ -445,7 +447,6 @@ public class TestFn extends AppFunction {
         } catch (IOException ex) {
             Logger.getLogger(TestFn.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
 
     }
 
@@ -461,6 +462,19 @@ public class TestFn extends AppFunction {
         String params = "0.4-2.0";
         TfQueryParameters runParams = new TfQueryParameters(id, text, params);
         c.process(runParams);
+    }
+
+    private void testPRFEval(Parameters p) throws IOException {
+        String qid = p.getString("qid");
+        String facetFile = p.getString("facet");
+        String annotatedFacetTextFile = p.getString("facetAnnotationText");
+        HashMap<String, FacetAnnotation> facetMap = FacetAnnotation.loadAsMapFromTextFile(new File(annotatedFacetTextFile));
+        List<ScoredFacet> system = ScoredFacet.loadFacets(new File(facetFile));
+
+        PrfAlphaBetaEvaluator evaluator = new PrfAlphaBetaEvaluator();
+        double [] res = evaluator.eval(facetMap.get(qid).facets, system, 10);
+        //System.out.println(TextProcessing.join(res, "\n"));
+
     }
 
 }

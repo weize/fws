@@ -36,7 +36,7 @@ public class CollectTermTrainData extends StandardStep<TfFolder, TfFolder> {
 
     public CollectTermTrainData(TupleFlowParameters parameters) throws IOException {
         Parameters p = parameters.getJSON();
-        String gmDir = p.getString("gmDir");
+        String gmDir = Utility.getFileName(p.getString("facetRunDir"), "gm");
         trainDir = Utility.getFileName(gmDir, "train");
         predictDir = Utility.getFileName(gmDir, "predict");
         dataSampler = new TrainDataSampler();

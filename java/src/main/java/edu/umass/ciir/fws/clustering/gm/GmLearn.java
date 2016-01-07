@@ -258,7 +258,7 @@ public class GmLearn extends AppFunction {
 
         public SplitQueriesAfterTrain(TupleFlowParameters parameters) throws IOException {
             Parameters p = parameters.getJSON();
-            String gmDir = p.getString("gmDir");
+            String gmDir = Utility.getFileName(p.getString("facetRunDir"), "gm");
             trainDir = Utility.getFileName(gmDir, "train");
 
         }
@@ -283,7 +283,8 @@ public class GmLearn extends AppFunction {
 
         public TermPredictorForPrediction(TupleFlowParameters parameters) {
             super(parameters);
-            String gmDir = parameters.getJSON().getString("gmDir");
+            Parameters p = parameters.getJSON();
+            String gmDir = Utility.getFileName(p.getString("facetRunDir"), "gm");
             predictDir = DirectoryUtility.getGmPredictDir(gmDir);;
         }
 
@@ -302,7 +303,8 @@ public class GmLearn extends AppFunction {
 
         public ExtractTermPairDataForPrediectedTermsForPrediction(TupleFlowParameters parameters) throws Exception {
             super(parameters);
-            String gmDir = parameters.getJSON().getString("gmDir");
+            Parameters p = parameters.getJSON();
+            String gmDir = Utility.getFileName(p.getString("facetRunDir"), "gm");
             predictDir = Utility.getFileName(gmDir, "predict");
         }
 
@@ -322,7 +324,8 @@ public class GmLearn extends AppFunction {
 
         public PairPredictorForPrediction(TupleFlowParameters parameters) throws Exception {
             super(parameters);
-            String gmDir = parameters.getJSON().getString("gmDir");
+            Parameters p = parameters.getJSON();
+            String gmDir = Utility.getFileName(p.getString("facetRunDir"), "gm");
             predictDir = Utility.getFileName(gmDir, "predict");
         }
 

@@ -32,7 +32,7 @@ public class TrainTermModel extends StandardStep<TfFolder, TfFolder> {
 
     public TrainTermModel(TupleFlowParameters parameters) throws IOException {
         Parameters p = parameters.getJSON();
-        String gmDir = p.getString("gmDir");
+        String gmDir = Utility.getFileName(p.getString("facetRunDir"), "gm");
         trainDir = Utility.getFileName(gmDir, "train");
         tfIndices = p.getAsList("termFeatureIndices", Long.class);
     }

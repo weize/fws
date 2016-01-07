@@ -35,7 +35,7 @@ public class GmjClusterItemsOld extends StandardStep<TfQueryParameters, TfQueryP
     public GmjClusterItemsOld(TupleFlowParameters parameters) {
         Parameters p = parameters.getJSON();
         clusterDir = p.getString("gmjClusterDir");
-        String gmDir = p.getString("gmDir");
+        String gmDir = Utility.getFileName(p.getString("facetRunDir"), "gm");
         predictDir = Utility.getFileName(gmDir, "predict");
         
     }

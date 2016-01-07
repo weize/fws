@@ -51,7 +51,7 @@ public class QueryFeatureExtractor extends StandardStep<TfQuery, TfQueryParamete
         facetModel = p.getString("facetModel");
         facetDir = Utility.getFileName(p.getString("facetDir"), facetModel, "facet");
         facetParam = p.getString("facetParam");
-        gmPredictDir = Utility.getFileName(p.getString("gmDir"), "predict");
+        gmPredictDir = Utility.getFileName(p.getString("facetRunDir"), "gm", "predict");
     }
 
     @Override

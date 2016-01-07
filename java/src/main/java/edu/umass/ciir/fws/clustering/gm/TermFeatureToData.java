@@ -39,7 +39,7 @@ public class TermFeatureToData extends StandardStep<TfQuery, TfQuery> {
 
     public TermFeatureToData(TupleFlowParameters parameters) throws IOException {
         Parameters p = parameters.getJSON();
-        String gmDir = p.getString("gmDir");
+        String gmDir = Utility.getFileName(p.getString("facetRunDir"), "gm");
         predictDir = Utility.getFileName(gmDir, "predict");
 //        File facetJsonFile = new File(p.getString("facetAnnotationJson"));
 //        facetMap = FacetAnnotation.loadAsMap(facetJsonFile);
