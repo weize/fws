@@ -6,6 +6,7 @@
 package edu.umass.ciir.fws.clustering.gm.gmj;
 
 import edu.umass.ciir.fws.clustering.ScoredFacet;
+import edu.umass.ciir.fws.clustering.gm.gmj.GmjParameterSettings.GmjFacetParameters;
 import edu.umass.ciir.fws.types.TfQueryParameters;
 import edu.umass.ciir.fws.utility.DirectoryUtility;
 import edu.umass.ciir.fws.utility.Utility;
@@ -41,8 +42,8 @@ public class GmjClusterToFacetConverter implements Processor<TfQueryParameters> 
     @Override
     public void process(TfQueryParameters queryParams) throws IOException {
         Utility.infoProcessing(queryParams);
-        String[] params = Utility.splitParameters(queryParams.parameters);
-        String ranker = params[params.length - 1]; // last one should be ranker
+        GmjFacetParameters params = new GmjFacetParameters(queryParams.parameters);
+        String ranker = params.ranker;
 
         // loadClusters clusters
         File clusterFile = new File(Utility.getGmjClusterFileName(clusterDir, queryParams.id));
