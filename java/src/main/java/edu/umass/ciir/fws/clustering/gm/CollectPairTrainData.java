@@ -57,8 +57,10 @@ public class CollectPairTrainData extends StandardStep<TfFolder, TfFolder> {
         }
 
         if (sample) {
+            Utility.info("sample negative data");
             dataSampler.sampleToFile(trainFiles, outfile);
         } else {
+            Utility.info("use all training data");
             TrainDataSampler.combine(trainFiles, outfile);
         }
         Utility.infoWritten(outfile);
