@@ -11,10 +11,12 @@ import edu.umass.ciir.fws.clustering.ScoredItem;
 import edu.umass.ciir.fws.feature.TermPairFeatureExtractor;
 import edu.umass.ciir.fws.types.TfQuery;
 import edu.umass.ciir.fws.utility.Utility;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import org.lemurproject.galago.tupleflow.InputClass;
 import org.lemurproject.galago.tupleflow.OutputClass;
 import org.lemurproject.galago.tupleflow.Parameters;
@@ -49,13 +51,19 @@ public class ExtractTermPairDataForPostiveTerm extends StandardStep<TfQuery, TfQ
     public void process(TfQuery query) throws IOException {
 
         // load facet terms
+        File termFeatureFile = new File(Utility.getGmTermDataFileName(predictDir, query.id));
+        HashSet<String> termsInCandidateLists = loadTerms(termFeatureFile);
+
         ArrayList<ScoredItem> items = new ArrayList<>();
         if (facetMap.containsKey(query.id)) {
             FacetAnnotation fa = facetMap.get(query.id);
             for (AnnotatedFacet f : fa.facets) {
                 if (f.isValid()) {
                     for (String term : f.terms) {
-                        items.add(new ScoredItem(term, 0));
+                        // need to make sure this term also appear in candidate lists
+                        if (termsInCandidateLists.contains(term)) {
+                            items.add(new ScoredItem(term, 0));
+                        }
                     }
                 }
             }
@@ -69,5 +77,21 @@ public class ExtractTermPairDataForPostiveTerm extends StandardStep<TfQuery, TfQ
         Utility.infoWritten(dataFile);
 
         processor.process(query);
+    }
+
+    private HashSet<String> loadTerms(File termFeatureFile) throws IOException {
+        HashSet<String> terms = new HashSet<>();
+        BufferedReader reader = Utility.getReader(termFeatureFile);
+        String line;
+        while ((line = reader.readLine()) != null) {
+            // label feature1 feature2 ... feature_n #label qid term
+            String[] dataComment = line.split("#", 2);
+            String comment = dataComment[1].trim();
+            String term = comment.split("\t")[2];
+            terms.add(term);
+
+        }
+        reader.close();
+        return terms;
     }
 }
