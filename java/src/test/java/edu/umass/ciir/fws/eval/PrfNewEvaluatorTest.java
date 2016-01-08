@@ -3,11 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package edu.umass.ciir.fws.eval;
 
 import edu.umass.ciir.fws.anntation.AnnotatedFacet;
 import edu.umass.ciir.fws.clustering.ScoredFacet;
+import static edu.umass.ciir.fws.eval.PrfAlphaBetaEvaluator.weightings;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
@@ -18,24 +18,38 @@ import static org.junit.Assert.*;
  * @author wkong
  */
 public class PrfNewEvaluatorTest {
-    
+
     public PrfNewEvaluatorTest() {
     }
-    
+
+    @Test
+    public void testHarmonicMean() {
+        System.out.println("testHarmonicMean");
+
+        double p = 0.2802;
+        double r = 0.4975;
+        double f = 0.4018;
+
+        for (double[] alphaBeta : PrfAlphaBetaEvaluator.alphaBetas) {
+            double prf = PrfNewEvaluator.harmonicMean(p, r, f, alphaBeta[0], alphaBeta[1]);
+            System.out.println(prf);
+        }
+    }
+
     @Test
     public void testEval() {
         System.out.println("eval");
-        
+
         List<AnnotatedFacet> afacets = createAfacetsCase();
         List<ScoredFacet> sfacets = createSfacetCase();
         int numTopFacets = 10;
         PrfNewEvaluator instance = new PrfNewEvaluator();
         double[] expResult = {
             // term equal
-            0.625, 0.5, 0.625/(0.625+0.5),
-            0.5, 1.0/13, 1.0/13/(1.0/13 + 0.5),
-            0.5, 1.0/3, (2.0/6)/(0.5+1.0/3),
-            0.2702702703, 0.4918032787, 
+            0.625, 0.5, 0.625 / (0.625 + 0.5),
+            0.5, 1.0 / 13, 1.0 / 13 / (1.0 / 13 + 0.5),
+            0.5, 1.0 / 3, (2.0 / 6) / (0.5 + 1.0 / 3),
+            0.2702702703, 0.4918032787,
             // term rating
             0.5625, 0.45, 0.5,
             0.5, 0.07692307692, 0.1333333333,
@@ -53,13 +67,13 @@ public class PrfNewEvaluatorTest {
             0.1532033426, 0.4236200257
         };
         double[] result = instance.eval(afacets, sfacets, numTopFacets);
-        for(double res: result) {
-        System.out.println(res);
+        for (double res : result) {
+            System.out.println(res);
         }
         assertArrayEquals(expResult, result, 0.1);
     }
-    
-     public List<AnnotatedFacet> createAfacetsCase() {
+
+    public List<AnnotatedFacet> createAfacetsCase() {
         // 2: ["a", "b", "c", "d"]
         // 2: ["e", "f"]
         // 1: ["g", "h", "i", "j"]
@@ -100,5 +114,4 @@ public class PrfNewEvaluatorTest {
         return sfacets;
     }
 
-    
 }
