@@ -311,7 +311,6 @@ public class ClassifyQueryPerofmranceCV extends AppFunction {
         String folderDir;
         String trainQueryFile;
         String testQueryFile;
-        TrainDataSampler dataSampler;
         double threshold;
         File trainFile;
         File testFile;
