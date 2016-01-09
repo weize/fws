@@ -17,6 +17,7 @@ import java.util.Arrays;
 public class GmPRFMaximizable implements Optimizable.ByGradientValue {
 
     double alphaSquare, betaSquare;
+    double c = 0; // regulization, PRF - c/2 * w^2 - c/2 * u^2
 
     private double[] tParams; // term params: w_k
     private double[] pParams; // pair params: u_k
@@ -222,12 +223,23 @@ public class GmPRFMaximizable implements Optimizable.ByGradientValue {
     }
 
     private double avgPRF() {
-        double avg = 0;
+        double prf = 0;
         for (int i = 0; i < nInstances; i++) {
-            avg += safelyNormalize(2 * (alphaSquare + betaSquare + 1) * Tc[i] * Pc[i], D[i]);
+            prf += safelyNormalize(2 * (alphaSquare + betaSquare + 1) * Tc[i] * Pc[i], D[i]);
         }
-        avg /= nInstances;
-        return avg;
+        prf /= nInstances;
+
+        //PRF - c/2 * w^2 - c/2 * u^2
+        double regulization = 0;
+        for (double a : tParams) {
+            regulization += a * a;
+        }
+
+        for (double a : pParams) {
+            regulization += a * a;
+        }
+        prf -= c * regulization * 0.5;
+        return prf;
     }
 
     /**
@@ -303,6 +315,7 @@ public class GmPRFMaximizable implements Optimizable.ByGradientValue {
                 cachedTGradient[k] += gPrfW;
             }
             cachedTGradient[k] /= nInstances; // average
+            cachedTGradient[k] -= c * tParams[k]; // regulization
         }
 
         // update pair gradient
@@ -343,6 +356,7 @@ public class GmPRFMaximizable implements Optimizable.ByGradientValue {
                 cachedPGradient[k] += gPrfU;
             }
             cachedPGradient[k] /= nInstances;
+            cachedPGradient[k] -= c * pParams[k]; // regulization
         }
     }
 
