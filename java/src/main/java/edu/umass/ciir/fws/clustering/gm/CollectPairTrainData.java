@@ -39,7 +39,7 @@ public class CollectPairTrainData extends StandardStep<TfFolder, TfFolder> {
         trainDir = Utility.getFileName(gmDir, "train");
         predictDir = Utility.getFileName(gmDir, "predict");
         dataSampler = new TrainDataSampler();
-        sample = p.getBoolean("gmSample");
+        sample = p.getBoolean("gmPairSample");
 
     }
 
