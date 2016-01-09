@@ -33,20 +33,12 @@ public class GmPRFTrainer {
     List<Integer> pfIndices;
 
     public GmPRFTrainer(Parameters p) {
+        this(p.getAsList("termFeatureIndices"), p.getAsList("pairFeatureIndices"));
         tolerance = p.get("gmTrainTolerance", 0.0001);
         maxIterations = (int) p.get("gmTrainIteration", 1500);
         nStart = (int) p.get("gmTrainRestart", 10);
         alpha = p.get("gmPRFAlpha", 1.0);
         beta = p.get("gmPRFBeta", 1.0);
-        this.tfIndices = new ArrayList<>(tfIndices.size());
-        for (long tfIdx : tfIndices) {
-            this.tfIndices.add((int) tfIdx);
-        }
-        this.pfIndices = new ArrayList<>(pfIndices.size());
-
-        for (long pfIdx : pfIndices) {
-            this.pfIndices.add((int) pfIdx);
-        }
     }
 
     public GmPRFTrainer(List<Long> tfIndices, List<Long> pfIndices) {
