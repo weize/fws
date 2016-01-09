@@ -30,8 +30,7 @@ public class PrfTrainTermPairModel extends StandardStep<TfFolder, TfFolder> {
     String trainDir;
     List<Long> tfIndices;
     List<Long> pfIndices;
-    double alpha;
-    double beta;
+    GmPRFTrainer trainer;
 
     public PrfTrainTermPairModel(TupleFlowParameters parameters) throws IOException {
         Parameters p = parameters.getJSON();
@@ -39,8 +38,8 @@ public class PrfTrainTermPairModel extends StandardStep<TfFolder, TfFolder> {
         trainDir = Utility.getFileName(gmDir, "train");
         tfIndices = p.getAsList("termFeatureIndices", Long.class);
         pfIndices = p.getAsList("pairFeatureIndices", Long.class);
-        alpha = p.getDouble("gmPRFAlpha");
-        alpha = p.getDouble("gmPRFBeta");
+
+        trainer = new GmPRFTrainer(p);
     }
 
     @Override
@@ -54,8 +53,7 @@ public class PrfTrainTermPairModel extends StandardStep<TfFolder, TfFolder> {
         File pModelFile = new File(Utility.getFileName(folderDir, "train.p.model"));
         File pScalerFile = new File(Utility.getFileName(folderDir, "train.p.scaler"));
 
-        GmPRFTrainer trainer = new GmPRFTrainer(tfIndices, pfIndices);
-        trainer.train(tDataFile, pDataFile, tModelFile, pModelFile, tScalerFile, pScalerFile, alpha, beta);
+        trainer.train(tDataFile, pDataFile, tModelFile, pModelFile, tScalerFile, pScalerFile);
 
         Utility.infoWritten(tModelFile);
         Utility.infoWritten(tScalerFile);
