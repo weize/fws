@@ -29,9 +29,12 @@ public class GmPRFTrainer {
     int nStart = 10;
     double alpha = 1;
     double beta = 1;
+    double c = 0;
     static Random random = new Random();
     List<Integer> tfIndices;
     List<Integer> pfIndices;
+    double[] paramStart;
+    String optimizerName;
 
     public GmPRFTrainer(Parameters p) {
         this(p.getAsList("termFeatureIndices"), p.getAsList("pairFeatureIndices"));
@@ -40,8 +43,19 @@ public class GmPRFTrainer {
         nStart = (int) p.get("gmTrainRestart", 10);
         alpha = p.get("gmPRFAlpha", 1.0);
         beta = p.get("gmPRFBeta", 1.0);
+        c = p.getDouble("gmRegularizer");
+        optimizerName = p.getString("gmOptimizer");
+        List<Double> paramInitialization = p.getAsList("gmParamInitial");
+        paramStart = new double [paramInitialization.size()];
+        for(int i = 0; i < paramStart.length; i ++) {
+            paramStart[i] = paramInitialization.get(i);
+        }
         Utility.info("alpha = " + alpha);
         Utility.info("beta = " + beta);
+//        double[] params = new double[]{
+//            -0.3762050277171397, -0.1767789384657117, 0.2636189780605572, 0.01443498082458111, 0.07693741865527474, -0.2746843538121086, 0.1784435302779528, -0.2777087551505914, -0.1574900052990597, 0.6340636025733660, -0.3905306459439568, -0.1597969204354845, 0.5026913743301520, 0.08568241667767658, 0.1097080410269183, -0.1855926707185300, -0.03751924070834197, -0.1912785856713757, 0.4260920554060768, 0.06864309267355007, -0.02752296230909643, -0.05769599025371386, 0.04740505796407326, 0.5248502726122284, -0.4313215258514472, 0.6328677061102274, -0.07293937195128440, -0.5784744536227051, 0.1416276249252304, 0.8923167305734128, -7.649110438647697,
+//            0.01834205965655030, 0.08698109808524315, 1.175087396030538, 0.7652535509044945, -1.951643915232145
+//        };        
     }
 
     public GmPRFTrainer(List<Long> tfIndices, List<Long> pfIndices) {
@@ -63,34 +77,36 @@ public class GmPRFTrainer {
         normalizeTermFeatures(instances, tScalerFile);
         normalizePairFeatures(instances, pScalerFile);
 
-        GmPRFMaximizable optimizable = new GmPRFMaximizable(instances, alpha, beta);
+        GmPRFMaximizable optimizable = new GmPRFMaximizable(instances, alpha, beta, c);
 
         double bestScore = Double.NEGATIVE_INFINITY;
+        double bestScorePRF = Double.NEGATIVE_INFINITY;
         double[] bestParams = new double[optimizable.nf];
 
         for (int i = 0; i < nStart; i++) {
-
             if (i == 0) {
-                double[] params = new double[]{
-                    -0.3762050277171397, -0.1767789384657117, 0.2636189780605572, 0.01443498082458111, 0.07693741865527474, -0.2746843538121086, 0.1784435302779528, -0.2777087551505914, -0.1574900052990597, 0.6340636025733660, -0.3905306459439568, -0.1597969204354845, 0.5026913743301520, 0.08568241667767658, 0.1097080410269183, -0.1855926707185300, -0.03751924070834197, -0.1912785856713757, 0.4260920554060768, 0.06864309267355007, -0.02752296230909643, -0.05769599025371386, 0.04740505796407326, 0.5248502726122284, -0.4313215258514472, 0.6328677061102274, -0.07293937195128440, -0.5784744536227051, 0.1416276249252304, 0.8923167305734128, -7.649110438647697,
-                    0.01834205965655030, 0.08698109808524315, 1.175087396030538, 0.7652535509044945, -1.951643915232145
-                };
-
-                optimizable.setParameters(params);
+                optimizable.setParameters(paramStart);
             } else {
                 initializeParams(optimizable);
             }
-            GradientAscent optimizer = new GradientAscent(optimizable);
-            //LimitedMemoryBFGS optimizer = new LimitedMemoryBFGS(optimizable);
-            optimizer.setTolerance(tolerance);
-            optimizer.optimize(maxIterations);
+
+            if (optimizerName.equals("gradientAscent")) {
+                GradientAscent optimizer = new GradientAscent(optimizable);
+                optimizer.setTolerance(tolerance);
+                optimizer.optimize(maxIterations);
+            } else {
+                LimitedMemoryBFGS optimizer = new LimitedMemoryBFGS(optimizable);
+                optimizer.setTolerance(tolerance);
+                optimizer.optimize(maxIterations);
+            }
 
             double curScore = optimizable.getValue();
             if (curScore > bestScore) {
                 bestScore = curScore;
+                bestScorePRF = optimizable.getPRFValue();
                 optimizable.getParameters(bestParams);
             }
-            Utility.info("random start " + (i + 1) + "\tPRF=" + bestScore);
+            Utility.info("random start " + (i + 1) + "\tPRFrl=" + bestScore + "\tPRF=" + bestScorePRF);
         }
 
         saveModel(Arrays.copyOfRange(bestParams, 0, optimizable.nTf), tModelFile);

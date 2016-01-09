@@ -50,9 +50,10 @@ public class GmPRFMaximizable implements Optimizable.ByGradientValue {
     // D = 2*alpha^2*Ts*Pc + 2*beta^2*Tg*Pc + Tc*Ps + Tc*Pg
     double[] D;
 
-    public GmPRFMaximizable(Instance[] instances, double alpha, double beta) {
+    public GmPRFMaximizable(Instance[] instances, double alpha, double beta, double c) {
         this.alphaSquare = alpha * alpha;
         this.betaSquare = beta * beta;
+        this.c = c;
         this.instances = instances;
         nInstances = instances.length;
         nTf = instances[0].tFeatures[0].length;
@@ -160,6 +161,10 @@ public class GmPRFMaximizable implements Optimizable.ByGradientValue {
         return cachedValue;
     }
 
+    public double getPRFValue() {
+        return cachedValue + getRegulizationCost();
+    }
+
     public void checkOutParamsUpdates() {
         if (paramCacheStamp != paramStamp) {
             updateTermPairProb();
@@ -229,6 +234,11 @@ public class GmPRFMaximizable implements Optimizable.ByGradientValue {
         }
         prf /= nInstances;
 
+        prf -= getRegulizationCost();
+        return prf;
+    }
+
+    public double getRegulizationCost() {
         //PRF - c/2 * w^2 - c/2 * u^2
         double regulization = 0;
         for (double a : tParams) {
@@ -238,8 +248,7 @@ public class GmPRFMaximizable implements Optimizable.ByGradientValue {
         for (double a : pParams) {
             regulization += a * a;
         }
-        prf -= c * regulization * 0.5;
-        return prf;
+        return c * regulization * 0.5;
     }
 
     /**
