@@ -5,8 +5,7 @@
  */
 package edu.umass.ciir.fws.clustering.gm.utility;
 
-import cc.mallet.optimize.LimitedMemoryBFGS;
-import cc.mallet.optimize.Optimizable;
+import cc.mallet.optimize.GradientAscent;
 import cc.mallet.optimize.Optimizer;
 import edu.emory.mathcs.backport.java.util.Arrays;
 import static edu.umass.ciir.fws.clustering.gm.utility.StandardScaler.minStd;
@@ -22,62 +21,57 @@ import java.util.Random;
  *
  * @author wkong
  */
-public class GmuModel implements Optimizable.ByGradientValue {
-
+public class GmPRFTrainer {
+    
     static Random random = new Random();
-
+    
     int nStart = 10;
-    Instance[] instances;
-    int nTf, nPf; // number of term features, and number of pair features, including bias
-    int nf; // nTf + nPf
     List<Integer> tfIndices;
     List<Integer> pfIndices;
-    double[] tParams; // term params: w_i
-    double[] pParams; // pair params: u_i
-
-    public GmuModel(List<Long> tfIndices, List<Long> pfIndices) {
+    
+    public GmPRFTrainer(List<Long> tfIndices, List<Long> pfIndices) {
         this.tfIndices = new ArrayList<>(tfIndices.size());
         for (long tfIdx : tfIndices) {
             this.tfIndices.add((int) tfIdx);
         }
         this.pfIndices = new ArrayList<>(pfIndices.size());
-
+        
         for (long pfIdx : pfIndices) {
             this.pfIndices.add((int) pfIdx);
         }
     }
-
-    public void train(File tFeatureFile, File pFeatureFile, File tModelFile, File pModelFile, File tScalerFile, File pScalerFile) throws IOException {
-        instances = Instance.readInstances(tFeatureFile, pFeatureFile, tfIndices, pfIndices);
-        nTf = instances[0].tFeatures[0].length;
-        nPf = instances[0].pFeatures[0].length;
-        nf = nTf + nPf;
-        tParams = new double[nTf];
-        pParams = new double[nPf];
-
+    
+    public void train(File tFeatureFile, File pFeatureFile, File tModelFile,
+            File pModelFile, File tScalerFile, File pScalerFile, double alpha, double beta) throws IOException {
+        Instance[] instances = Instance.readInstances(tFeatureFile, pFeatureFile, tfIndices, pfIndices);
         // normalize data
-        normalizeTermFeatures(tScalerFile);
-        normalizePairFeatures(pScalerFile);
-
+        normalizeTermFeatures(instances, tScalerFile);
+        normalizePairFeatures(instances, pScalerFile);
+        
+        GmPRFMaximizable optimizable = new GmPRFMaximizable(instances, alpha, beta);
+        
         double bestScore = Double.NEGATIVE_INFINITY;
-        double[] bestTParams = null;
-        double[] bestPParams = null;
-
+        double[] bestParams = new double[optimizable.nf];
+        
         for (int i = 0; i < nStart; i++) {
-            initializeParams();
-            Optimizer bfgs = new LimitedMemoryBFGS(this);
-            bfgs.optimize();
-            double curScore = this.getValue();
+            
+            initializeParams(optimizable);
+            GradientAscent bfgs = new GradientAscent(optimizable);
+            //Optimizer bfgs = new LimitedMemoryBFGS(optimizable);
+            bfgs.setTolerance(0.00001);
+            bfgs.optimize(10000);
+            
+            double curScore = optimizable.getValue();
             if (curScore > bestScore) {
                 bestScore = curScore;
-                bestTParams = Arrays.copyOf(tParams, nTf);
-                bestPParams = Arrays.copyOf(pParams, nPf);
+                optimizable.getParameters(bestParams);
             }
+            Utility.info("random start " + (i + 1) + "\tPRF=" + bestScore);
         }
-
-        saveModel(bestTParams, tModelFile);
-        saveModel(bestPParams, pModelFile);
-
+        
+        saveModel(Arrays.copyOfRange(bestParams, 0, optimizable.nTf), tModelFile);
+        saveModel(Arrays.copyOfRange(bestParams, optimizable.nTf, optimizable.nf), pModelFile);
+        
     }
 
     /**
@@ -108,32 +102,27 @@ public class GmuModel implements Optimizable.ByGradientValue {
         writer.write(String.format("bias %.16g\n", 1.0));
         writer.write("w\n");
         for (double param : params) {
-            writer.write(String.format("%.16g", param));
+            writer.write(String.format("%.16g\n", param));
         }
         writer.close();
     }
-
-    private void initializeParams() {
+    
+    private void initializeParams(GmPRFMaximizable optimizable) {
         double rangeMin = -2;
         double rangeMax = +2;
-
-        for (int i = 0; i < nTf; i++) {
-            tParams[i] = random(rangeMin, rangeMax);
+        
+        for (int i = 0; i < optimizable.nf; i++) {
+            optimizable.setParameter(i, random(rangeMin, rangeMax));
         }
-
-        for (int i = 0; i < nPf; i++) {
-            pParams[i] = random(rangeMin, rangeMax);
-        }
-
     }
-
+    
     public double random(double rangeMin, double rangeMax) {
         return rangeMin + (rangeMax - rangeMin) * random.nextDouble();
     }
-
-    private void normalizeTermFeatures(File scalerFile) throws IOException {
+    
+    public static void normalizeTermFeatures(Instance[] instances, File scalerFile) throws IOException {
         // fit data: find means and stds
-        int n = nTf;
+        int n = instances[0].tFeatures[0].length;
         double[] means = new double[n - 1]; // exclude bias
         double[] stds = new double[n - 1]; // exclude bias
 
@@ -146,9 +135,9 @@ public class GmuModel implements Optimizable.ByGradientValue {
             }
             count += instance.tFeatures.length;
         }
-
+        
         Utility.avg(means, count);
-
+        
         for (Instance instance : instances) {
             for (double[] features : instance.tFeatures) { // all terms 
                 for (int k = 0; k < n - 1; k++) {
@@ -157,11 +146,11 @@ public class GmuModel implements Optimizable.ByGradientValue {
                 }
             }
         }
-
+        
         for (int i = 0; i < stds.length; i++) {
             stds[i] = Math.sqrt(stds[i] / (count - 1));
         }
-
+        
         saveScaler(means, stds, scalerFile);
 
         // transform data
@@ -174,12 +163,12 @@ public class GmuModel implements Optimizable.ByGradientValue {
                 }
             }
         }
-
+        
     }
-
-    private void normalizePairFeatures(File scalerFile) throws IOException {
-
-        int n = nPf;
+    
+    public static void normalizePairFeatures(Instance[] instances, File scalerFile) throws IOException {
+        
+        int n = instances[0].pFeatures[0].length;;
         double[] means = new double[n - 1]; // exclude bias
         double[] stds = new double[n - 1]; // exclude bias
 
@@ -192,9 +181,9 @@ public class GmuModel implements Optimizable.ByGradientValue {
             }
             count += instance.pFeatures.length;
         }
-
+        
         Utility.avg(means, count);
-
+        
         for (Instance instance : instances) {
             for (double[] features : instance.pFeatures) { // all terms 
                 for (int k = 0; k < n - 1; k++) {
@@ -203,11 +192,11 @@ public class GmuModel implements Optimizable.ByGradientValue {
                 }
             }
         }
-
+        
         for (int i = 0; i < stds.length; i++) {
             stds[i] = Math.sqrt(stds[i] / (count - 1));
         }
-
+        
         saveScaler(means, stds, scalerFile);
 
         // transform data
@@ -220,10 +209,10 @@ public class GmuModel implements Optimizable.ByGradientValue {
                 }
             }
         }
-
+        
     }
-
-    public final void saveScaler(double[] means, double[] stds, File file) throws IOException {
+    
+    public static final void saveScaler(double[] means, double[] stds, File file) throws IOException {
         BufferedWriter writer = Utility.getWriter(file);
         writer.write("#mean\tstd\n");
         for (int i = 0; i < means.length; i++) {
@@ -231,59 +220,5 @@ public class GmuModel implements Optimizable.ByGradientValue {
         }
         writer.close();
     }
-
-    @Override
-    public void getValueGradient(double[] buffer) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public double getValue() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public int getNumParameters() {
-        return this.nf;
-    }
-
-    @Override
-    public void getParameters(double[] buffer) {
-        int i = 0;
-        for (int k = 0; k < nTf; k++) {
-            buffer[i++] = tParams[k];
-        }
-
-        for (int k = 0; k < nPf; k++) {
-            buffer[i++] = pParams[k];
-        }
-    }
-
-    @Override
-    public double getParameter(int index) {
-        return index < nTf ? tParams[index] : pParams[index - nTf];
-    }
-
-    @Override
-    public void setParameters(double[] params) {
-        int i = 0;
-        for (int k = 0; k < nTf; k++) {
-            tParams[k] = params[i++];
-        }
-
-        for (int k = 0; k < nPf; k++) {
-            pParams[k] = params[i++];
-        }
-
-    }
-
-    @Override
-    public void setParameter(int index, double value) {
-        if (index < nTf) {
-            tParams[index] = value;
-        } else {
-            pParams[index - nTf] = value;
-        }
-    }
-
+    
 }

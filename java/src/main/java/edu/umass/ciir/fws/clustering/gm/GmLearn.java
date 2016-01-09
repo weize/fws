@@ -6,6 +6,7 @@
 package edu.umass.ciir.fws.clustering.gm;
 
 import edu.emory.mathcs.backport.java.util.Arrays;
+import edu.umass.ciir.fws.clustering.gm.utility.PrfTrainTermPairModel;
 import edu.umass.ciir.fws.query.QueryFileParser;
 import edu.umass.ciir.fws.tool.app.ProcessQueryApp;
 import edu.umass.ciir.fws.types.TfFolder;
@@ -182,14 +183,19 @@ public class GmLearn extends AppFunction {
     private Stage getTrainStage(Parameters parameters) {
         Stage stage = new Stage("train");
 
+        String gmTrainTarget = parameters.getString("gmTrainTarget");
         stage.addInput("folders", new TfFolder.IdOrder());
         stage.addOutput("folders2", new TfFolder.IdOrder());
 
         stage.add(new InputStep("folders"));
         stage.add(new Step(CollectTermTrainData.class, parameters));
-        stage.add(new Step(TrainTermModel.class, parameters));
         stage.add(new Step(CollectPairTrainData.class, parameters));
-        stage.add(new Step(TrainPairModel.class, parameters));
+        if (gmTrainTarget.equals("prf")) {
+            stage.add(new Step(PrfTrainTermPairModel.class, parameters));
+        } else {
+            stage.add(new Step(TrainTermModel.class, parameters));
+            stage.add(new Step(TrainPairModel.class, parameters));
+        }
         stage.add(Utility.getSorter(new TfFolder.IdOrder()));
         stage.add(new OutputStep("folders2"));
 

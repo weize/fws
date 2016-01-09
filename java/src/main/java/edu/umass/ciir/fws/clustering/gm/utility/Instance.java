@@ -19,7 +19,7 @@ import java.util.List;
  */
 public class Instance {
 
-    static boolean debug = true;
+    static boolean debug = false;
 
     String qid;
     double[][] tFeatures; // term features[termIndex][featureIndex]
@@ -31,6 +31,8 @@ public class Instance {
     // pos Id : index the positive terms
     Integer[] posIdToTid; // posIdToTid[posId] == termIndex
     int nPosTerms; // pos term: 0 to nPosTerms -1
+    int nT; // number of all terms
+    int nP; // number of all pairs
 
     public static Instance[] readInstances(File tData, File pData, List<Integer> tfIndices, List<Integer> pfIndices) throws IOException {
         // read tData
@@ -50,6 +52,7 @@ public class Instance {
             instance.tFeatures = new double[nTerms][]; // # terms
             instance.Ys = new boolean[nTerms];
 
+            instance.nT = nTerms;
             HashMap<String, Integer> posTermIdMap = new HashMap<>(); // posTerm -> posId
             ArrayList<Integer> posIdToTidList = new ArrayList<>();
             for (int i = 0; i < tLines.size(); i++) {
@@ -70,18 +73,25 @@ public class Instance {
             // load pair
             List<String> pLines = pDataGroups.get(qid);
             int nPairs = pLines.size();
+            instance.nP = nPairs;
             instance.pFeatures = new double[nPairs][];
             instance.Zs = new boolean[nPairs];
-            
+
             if (debug) {
                 System.err.println("nPairs=" + nPairs);
             }
             for (String line : pLines) {
                 LabelFeatures lf = new LabelFeatures(line, pfIndices);
                 String[] terms = lf.name.split("\\|");
+
+                // pairs not appear in term files
+                // some postive terms in anntation files
+                // are not found in candidate lists, therefore not found in feature file
+                // simply ignore this for now
                 int pid = instance.getPid(posTermIdMap.get(terms[0]), posTermIdMap.get(terms[1]));
                 instance.pFeatures[pid] = lf.features;
                 instance.Zs[pid] = lf.label > 0;
+
             }
 
             instanceList.add(instance);
@@ -125,7 +135,7 @@ public class Instance {
      * @param posId2
      * @return
      */
-    private int getPid(int posId1, int posId2) {
+    public int getPid(int posId1, int posId2) {
         if (posId1 < posId2) {
             return getPidWithSmallBigPosIds(posId1, posId2);
         } else {
@@ -133,7 +143,7 @@ public class Instance {
         }
     }
 
-    private int getPidWithSmallBigPosIds(int small, int big) {
+    public int getPidWithSmallBigPosIds(int small, int big) {
         if (debug) {
             System.err.println("small= " + small + "\tbig= " + big);
         }

@@ -244,19 +244,19 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
         }
 
         double idealWeight = correct == 0 ? 0.0 : idealTermCW[correct - 1][weighting.ordinal()];
-        double weightRatio = safelyDivide(weight, idealWeight);
+        double weightRatio = safelyNormalize(weight, idealWeight);
 
-        double precision = safelyDivide(correct, stotal) * weightRatio;
-        double recall = safelyDivide(correct, atotal) * weightRatio;
+        double precision = safelyNormalize(correct, stotal) * weightRatio;
+        double recall = safelyNormalize(correct, atotal) * weightRatio;
         double f1 = CombinedFacetEvaluator.f1(precision, recall);
         return new double[]{precision, recall, f1};
     }
 
-    public static double safelyDivide(int numerator, int denominator) {
+    public static double safelyNormalize(int numerator, int denominator) {
         return denominator == 0 ? 0.0 : (double) numerator / (double) denominator;
     }
 
-    public static double safelyDivide(double numerator, double denominator) {
+    public static double safelyNormalize(double numerator, double denominator) {
         return Math.abs(denominator) < Utility.epsilon ? 0.0 : numerator / denominator;
     }
 
@@ -306,7 +306,7 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
         double idealWeight = correct == 0 ? 0.0
                 : (overlap ? idealPairCWOverlap[correct - 1][weighting.ordinal()]
                 : idealPairCWComplete[correct - 1][weighting.ordinal()]);
-        double weightRatio = safelyDivide(weight, idealWeight);
+        double weightRatio = safelyNormalize(weight, idealWeight);
 
         // only consider terms in both system and annoator facets
         for (AnnotatedFacet afacet : annFacets) {
@@ -320,8 +320,8 @@ public class PrfNewEvaluator implements QueryFacetEvaluator {
             aTotal += size * (size - 1) / 2;
         }
 
-        double precision = safelyDivide(correct, sTotal) * weightRatio;
-        double recall = safelyDivide(correct, aTotal) * weightRatio;
+        double precision = safelyNormalize(correct, sTotal) * weightRatio;
+        double recall = safelyNormalize(correct, aTotal) * weightRatio;
         double f1 = CombinedFacetEvaluator.f1(precision, recall);
         return new double[]{precision, recall, f1};
     }
