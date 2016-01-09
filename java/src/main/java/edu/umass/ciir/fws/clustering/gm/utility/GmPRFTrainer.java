@@ -5,8 +5,8 @@
  */
 package edu.umass.ciir.fws.clustering.gm.utility;
 
+import cc.mallet.optimize.GradientAscent;
 import cc.mallet.optimize.LimitedMemoryBFGS;
-import cc.mallet.optimize.Optimizer;
 import edu.emory.mathcs.backport.java.util.Arrays;
 import static edu.umass.ciir.fws.clustering.gm.utility.StandardScaler.minStd;
 import edu.umass.ciir.fws.utility.Utility;
@@ -80,10 +80,10 @@ public class GmPRFTrainer {
             } else {
                 initializeParams(optimizable);
             }
-            // GradientAscent bfgs = new GradientAscent(optimizable);
-            LimitedMemoryBFGS bfgs = new LimitedMemoryBFGS(optimizable);
-            bfgs.setTolerance(tolerance);
-            bfgs.optimize(maxIterations);
+            GradientAscent optimizer = new GradientAscent(optimizable);
+            //LimitedMemoryBFGS optimizer = new LimitedMemoryBFGS(optimizable);
+            optimizer.setTolerance(tolerance);
+            optimizer.optimize(maxIterations);
 
             double curScore = optimizable.getValue();
             if (curScore > bestScore) {
