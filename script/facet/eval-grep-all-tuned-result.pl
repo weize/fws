@@ -27,14 +27,14 @@ for my $i (@metrics) {
 	my $file;
 	my @res;
 
-	# ============ gmj
+	# ============ gmi
 	$file = "gmi/eval/gmi.sum-$i.$rank.eval";
 	@res = grepTunedResults($file, $i);
-	print "$run\tgmi.sum\t$name\t".join("\t", @res)."\n";
-	# ============ gmi
+	print "$run\tgmIndep\t$name\t".join("\t", @res)."\n";
+	# ============ gmj
 	$file = "gmj/eval/gmj.sum.$rank.eval";
 	my @res = grepTunedResults($file, $i);
-	print "$run\tgmj.sum\t$name\t".join("\t", @res)."\n";
+	print "$run\tgmJoint\t$name\t".join("\t", @res)."\n";
 }
 
 sub grepTunedResults {
