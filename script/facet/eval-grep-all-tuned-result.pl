@@ -20,7 +20,8 @@ my $run = $ARGV[1];
 
 die "topFacetNum=?" if !$rank;
 die "run=?" if !$run;
-
+#header
+print "run\tmodel\ttuneMetric\tscore\ttSize\ttP\ttR\ttF\tpP\tpR\tpF\ttPtr\ttRtr\ttFtr\tpPtr\tpRtr\tpFtr\n";
 for my $i (@metrics) {
 	my $name  = $names[$i];
 	my $file;
