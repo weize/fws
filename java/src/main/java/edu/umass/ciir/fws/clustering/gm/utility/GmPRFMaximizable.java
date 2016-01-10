@@ -62,6 +62,7 @@ public class GmPRFMaximizable implements Optimizable.ByGradientValue {
         tParams = new double[nTf];
         pParams = new double[nPf];
 
+        Utility.info(String.format("alpha=%f, beta=%f, c=%f", alpha, beta, c));
         paramCacheStamp = -1;
         paramStamp = 0;
         valueCacheStamp = -1;
@@ -162,6 +163,7 @@ public class GmPRFMaximizable implements Optimizable.ByGradientValue {
     }
 
     public double getPRFValue() {
+        getValue(); // update value
         return cachedValue + getRegulizationCost();
     }
 

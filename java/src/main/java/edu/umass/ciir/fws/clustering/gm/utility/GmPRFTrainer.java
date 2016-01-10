@@ -9,6 +9,7 @@ import cc.mallet.optimize.GradientAscent;
 import cc.mallet.optimize.LimitedMemoryBFGS;
 import edu.emory.mathcs.backport.java.util.Arrays;
 import static edu.umass.ciir.fws.clustering.gm.utility.StandardScaler.minStd;
+import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -46,12 +47,17 @@ public class GmPRFTrainer {
         c = p.getDouble("gmRegularizer");
         optimizerName = p.getString("gmOptimizer");
         List<Double> paramInitialization = p.getAsList("gmParamInitial");
-        paramStart = new double [paramInitialization.size()];
-        for(int i = 0; i < paramStart.length; i ++) {
+        paramStart = new double[paramInitialization.size()];
+        for (int i = 0; i < paramStart.length; i++) {
             paramStart[i] = paramInitialization.get(i);
         }
-        Utility.info("alpha = " + alpha);
-        Utility.info("beta = " + beta);
+
+        Utility.info(String.format("optimizer=%s", optimizerName));
+        Utility.info(String.format("alpha=%f, beta=%f, c=%f", alpha, beta, c));
+        Utility.info(String.format("tolerance=%f, maxIterations=%d, nStart=%d", tolerance, maxIterations, nStart));
+        Utility.info(String.format("termFeatures=[%s]", TextProcessing.join(tfIndices, ", ")));
+        Utility.info(String.format("pairFeatures=[%s]", TextProcessing.join(pfIndices, ", ")));
+        Utility.info(String.format("intialize=[%s]", TextProcessing.join(paramStart, ", ")));
 //        double[] params = new double[]{
 //            -0.3762050277171397, -0.1767789384657117, 0.2636189780605572, 0.01443498082458111, 0.07693741865527474, -0.2746843538121086, 0.1784435302779528, -0.2777087551505914, -0.1574900052990597, 0.6340636025733660, -0.3905306459439568, -0.1597969204354845, 0.5026913743301520, 0.08568241667767658, 0.1097080410269183, -0.1855926707185300, -0.03751924070834197, -0.1912785856713757, 0.4260920554060768, 0.06864309267355007, -0.02752296230909643, -0.05769599025371386, 0.04740505796407326, 0.5248502726122284, -0.4313215258514472, 0.6328677061102274, -0.07293937195128440, -0.5784744536227051, 0.1416276249252304, 0.8923167305734128, -7.649110438647697,
 //            0.01834205965655030, 0.08698109808524315, 1.175087396030538, 0.7652535509044945, -1.951643915232145
