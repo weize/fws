@@ -33,4 +33,4 @@ mean2
 res
 
 cat(sprintf("diff:%f\tp-value:%g\n", diff, res$p.value));
-cat(sprintf("%f\t%g\n", diff, res$p.value), file = stderr());
+cat(sprintf("%g\n", res$p.value), file = stderr());
