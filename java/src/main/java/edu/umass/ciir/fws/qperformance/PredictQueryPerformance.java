@@ -133,7 +133,7 @@ public class PredictQueryPerformance extends AppFunction {
 
             String facetTuneDir = Utility.getFileName(expDir, "facet-tune-" + facetTuneId);
             String gmPredictDir = Utility.getFileName(expDir, "facet-run-" + facetRunId, "gm", "predict");
-            String qpRunDir = Utility.getFileName(qpDir, qpRunId);
+            String qpRunDir = Utility.getFileName(qpDir, "run", qpRunId);
             classifier.run(facetTuneDir, facetModel, modelParams, gmPredictDir, metricIdx, qpRunDir);
         }
 
