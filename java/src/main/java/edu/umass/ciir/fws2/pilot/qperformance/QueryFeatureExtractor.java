@@ -40,7 +40,7 @@ public class QueryFeatureExtractor extends StandardStep<TfQuery, TfQueryParamete
     String facetParam;
     String gmPredictDir;
 
-    int topK = 10;
+    int topK;
     List<ScoredFacet> facets;
     QueryFeatures features;
     TfQuery q;
@@ -49,6 +49,7 @@ public class QueryFeatureExtractor extends StandardStep<TfQuery, TfQueryParamete
     public QueryFeatureExtractor(TupleFlowParameters parameters) throws Exception {
         Parameters p = parameters.getJSON();
         facetModel = p.getString("facetModel");
+        topK = (int) p.getLong("topFacetNum");
         facetDir = Utility.getFileName(p.getString("facetDir"), facetModel, "facet");
         facetParam = p.getString("facetParam");
         gmPredictDir = Utility.getFileName(p.getString("facetRunDir"), "gm", "predict");
@@ -60,7 +61,7 @@ public class QueryFeatureExtractor extends StandardStep<TfQuery, TfQueryParamete
         features = new QueryFeatures(q.id, q.text);
 
         File facetFile = new File(Utility.getFacetFileName(facetDir, q.id, facetModel, facetParam));
-        facets = ScoredFacet.loadFacets(facetFile);
+        facets = ScoredFacet.loadFacets(facetFile, topK);
 
         // load terms
         itemIdMap = new HashMap<>();
@@ -103,7 +104,7 @@ public class QueryFeatureExtractor extends StandardStep<TfQuery, TfQueryParamete
         double tProbSum = 0;
         double tSize = 0;
 
-        for (int i = 0; i < 10 && i < facets.size(); i++) {
+        for (int i = 0; i < facets.size(); i++) {
             ScoredFacet facet = facets.get(i);
             tSize += facet.items.size();
             tProbSum += facet.score;
@@ -153,7 +154,7 @@ public class QueryFeatureExtractor extends StandardStep<TfQuery, TfQueryParamete
         reader.close();
 
         // aggreate
-        for (int i = 0; i < 10 && i < facets.size(); i++) {
+        for (int i = 0; i < facets.size(); i++) {
             List<ScoredItem> items = facets.get(i).items;
             for (int j = 0; j < items.size(); j++) {
                 for (int k = j + 1; k < items.size(); k++) {
@@ -165,7 +166,7 @@ public class QueryFeatureExtractor extends StandardStep<TfQuery, TfQueryParamete
 
                 }
                 // other facets
-                for (int ii = i + 1; ii < 10 && ii < facets.size(); ii++) {
+                for (int ii = i + 1; ii < facets.size(); ii++) {
                     for (ScoredItem t : facets.get(ii).items) {
                         double pProb = pProbMap.get(getItemPairId(items.get(j).item, t.item));
                         pInterSize++;

@@ -114,6 +114,11 @@ public class ScoredFacet implements Comparable<ScoredFacet> {
         return facets;
     }
 
+    public static List<ScoredFacet> loadFacets(File file, int topK) throws IOException {
+        List<ScoredFacet> facets = loadFacets(file);
+        return facets.subList(0, Math.min(topK, facets.size()));
+    }
+
     public static ScoredFacet parseFacet(String line) {
         String[] fields = line.split("\t");
         double score = Double.parseDouble(fields[0]);
