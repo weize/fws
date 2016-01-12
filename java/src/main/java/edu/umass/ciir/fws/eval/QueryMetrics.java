@@ -72,7 +72,7 @@ public class QueryMetrics {
         throw new IOException("cannot find avg score for index " + metricIdx + " in " + evalFile);
     }
 
-    private static QueryMetrics parse(String line) {
+    public static QueryMetrics parse(String line) {
         String[] elems = line.split("\t");
         String qid = elems[0];
         String[] valueStrs = Arrays.copyOfRange(elems, 1, elems.length);

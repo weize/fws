@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.umass.ciir.fws2.pilot.qperformance;
+package edu.umass.ciir.fws.qperformance;
 
 import edu.umass.ciir.fws.feature.Features;
 import edu.umass.ciir.fws.types.TfQueryParameters;

@@ -119,11 +119,12 @@ public class LinearRegressionModel {
         BufferedWriter writer = Utility.getWriter(preditFile);
         Model model = Linear.loadModel(modelFile);
         double[] prob_estimates = new double[2];
-        assert model.getLabels()[0] == 1.0 : "defulat class label not 1";
+        int idx = model.getLabels()[0] == 1.0 ? 0 : 1;
+        //assert model.getLabels()[0] == 1.0 : "defulat class label not 1";
         for (int i = 0; i < prob.l; i++) {
             Feature[] fs = prob.x[i];
             Linear.predictProbability(model, fs, prob_estimates);
-            writer.write(String.format("%f\t%s\n", prob_estimates[0], comments[i]));
+            writer.write(String.format("%f\t%s\n", prob_estimates[idx], comments[i]));
         }
         writer.close();
     }
@@ -230,13 +231,13 @@ public class LinearRegressionModel {
         for (int i = 0; i < selectedFeatureIndices.length; i++) {
             // feature index in Class features start from 0, but in LableFeature file start from 1
             Object val = features.getFeature(selectedFeatureIndices[i] - 1);
-            double doubleVal;            
+            double doubleVal;
             if (val instanceof Integer) {
                 doubleVal = ((Integer) val).doubleValue();
             } else if (val instanceof Double) {
                 doubleVal = (Double) val;
             } else {
-                throw new RuntimeException(val.getClass()+ " : " + val + ",  is not supported as a feature");
+                throw new RuntimeException(val.getClass() + " : " + val + ",  is not supported as a feature");
             }
             x[i] = new FeatureNode(i + 1, doubleVal);
         }

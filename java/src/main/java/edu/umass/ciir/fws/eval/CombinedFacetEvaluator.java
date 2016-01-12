@@ -23,9 +23,10 @@ import org.lemurproject.galago.tupleflow.Parameters;
 
 /**
  * Combine other query facet evaluators together
+ *
  * @author wkong
  */
-public class CombinedFacetEvaluator implements QueryFacetEvaluator{
+public class CombinedFacetEvaluator implements QueryFacetEvaluator {
 
     List<QueryFacetEvaluator> evaluators;
     HashMap<String, FacetAnnotation> facetMap;
@@ -35,19 +36,18 @@ public class CombinedFacetEvaluator implements QueryFacetEvaluator{
         facetMap = FacetAnnotation.loadAsMapFromTextFile(new File(annotatedFacetTextFile));
         List<String> evaluatorNames = p.getAsList("facetEvaluators");
         evaluators = new ArrayList<>(evaluatorNames.size());
-        
-        for(String className : evaluatorNames) {
+
+        for (String className : evaluatorNames) {
             try {
                 Class<?> c = Class.forName(className);
-                evaluators.add((QueryFacetEvaluator)c.newInstance());
+                evaluators.add((QueryFacetEvaluator) c.newInstance());
             } catch (ClassNotFoundException | IllegalAccessException | InstantiationException ex) {
                 Logger.getLogger(CombinedFacetEvaluator.class.getName()).log(Level.SEVERE, null, ex);
                 throw new RuntimeException(ex);
             }
         }
     }
-    
-    
+
 //    public CombinedFacetEvaluator(File annotatedFacetTextFile) throws IOException {
 //        evaluators = new ArrayList<>();
 //        //evaluators.add(new PrfEvaluator(numTopFacets));
@@ -58,7 +58,6 @@ public class CombinedFacetEvaluator implements QueryFacetEvaluator{
 //        
 //        facetMap = FacetAnnotation.loadAsMapFromTextFile(annotatedFacetTextFile);
 //    }
-   
     public void eval(File queryFile, String facetDir, String model, String paramFileNameStr, File outfile, int numTopFacets) throws IOException {
         List<TfQuery> queries = QueryFileParser.loadQueries(queryFile);
         double[] avg = new double[metricNum()];
@@ -79,14 +78,14 @@ public class CombinedFacetEvaluator implements QueryFacetEvaluator{
     @Override
     public double[] eval(List<AnnotatedFacet> facets, List<ScoredFacet> system, int numTopFacets, String... params) {
         double[] scores = new double[metricNum()];
-        
+
         int i = 0;
-        for(QueryFacetEvaluator evaluator : evaluators) {
-            for(double score : evaluator.eval(facets, system, numTopFacets)) {
+        for (QueryFacetEvaluator evaluator : evaluators) {
+            for (double score : evaluator.eval(facets, system, numTopFacets)) {
                 scores[i++] = score;
             }
         }
-        
+
         return scores;
     }
 
@@ -94,15 +93,18 @@ public class CombinedFacetEvaluator implements QueryFacetEvaluator{
         return p + r < Utility.epsilon ? 0 : 2 * p * r / (p + r);
     }
 
+    public static double Fmeasure(double p, double r, double beta) {
+        double betaSquare = beta * beta;
+        return p + r < Utility.epsilon ? 0 : (1 + betaSquare) * p * r / (p * betaSquare + r);
+    }
+
     @Override
     public int metricNum() {
         int num = 0;
-        for(QueryFacetEvaluator evaluator : evaluators) {
+        for (QueryFacetEvaluator evaluator : evaluators) {
             num += evaluator.metricNum();
         }
         return num;
     }
-
-    
 
 }
