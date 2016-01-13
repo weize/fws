@@ -30,7 +30,7 @@ import org.lemurproject.galago.tupleflow.Parameters;
  */
 public class QPClassifierCV {
 
-    final static double[] betas = new double[]{1, 0.75, 0.5, 0.25, 0.1}; // weight for racall
+    final static double[] betas = new double[]{1, 0.5, 0.2, 0.1}; // weight for racall
     String querySplitDir;
     List<Double> thresholds; // for producing labels
     QPfeatureExtractor featureExtractor;
@@ -278,7 +278,7 @@ public class QPClassifierCV {
                 }
 
                 // for each metrics
-                for (int j = 0; j < size; j++) {
+                for (int j = 0; j <= size; j++) {
                     double th = tunedThresholds[j];
                     int predictLabel = prob >= th ? 1 : -1;
                     predictLabels[j] = predictLabel;
@@ -304,7 +304,7 @@ public class QPClassifierCV {
         int natotal = total - atotal; // # negatives in truth data
         
         writerEval.write("#return\tAvgPerf\tP\tR\tTNR\tF1\n");
-        for (int j = 0; j < size; j++) {
+        for (int j = 0; j <= size; j++) {
             double precision = safelyNormalize(correct[j], stotal[j]);
             double recall = safelyNormalize(correct[j], atotal);
             double tureNegativeRate = safelyNormalize(ncorrect[j], natotal);
