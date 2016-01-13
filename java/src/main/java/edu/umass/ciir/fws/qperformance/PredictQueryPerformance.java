@@ -66,7 +66,7 @@ public class PredictQueryPerformance extends AppFunction {
     private Stage getSplitRunsStage(Parameters parameter) {
         Stage stage = new Stage("splitRuns");
 
-        stage.addOutput("runs", new TfQuery.IdOrder());
+        stage.addOutput("runs", new TfParameters.ParamsOrder());
 
         Parameters p = new Parameters();
         p.set("input", parameter.getString("qpRunFile"));
