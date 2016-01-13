@@ -44,6 +44,8 @@ public class QPClassifierCV {
     String predictDir;
     double threshold;
     LinearRegressionModel lrModel;
+    OLSMultipleLinearRegressionModel rgModel;
+    boolean regression; // regression or classifciation
 
     public QPClassifierCV(Parameters p) throws IOException {
         querySplitDir = p.getString("querySplitDir");
@@ -52,7 +54,9 @@ public class QPClassifierCV {
         queryFile = new File(p.getString("queryFile"));
         folderNum = (int) p.getLong("cvFolderNum");
         topK = (int) p.getLong("topFacetNum");
+        regression = p.getBoolean("qpRegression");
         lrModel = new LinearRegressionModel(p.getAsList("qpFeatureIndices"));
+        rgModel = new OLSMultipleLinearRegressionModel(p.getAsList("qpFeatureIndices"));
     }
 
     public void run(String facetTuneDir, String facetModel, String modelParams,
@@ -69,7 +73,9 @@ public class QPClassifierCV {
         for (double t : thresholds) {
             threshold = t;
             String qpClassifyDir = Utility.getFileName(runDir, Utility.parametersToFileNameString(threshold));
-            prepareQpClassifyDir(qpClassifyDir, folderNum);
+            String qpRegressionDir = Utility.getFileName(runDir, "rg_" + Utility.parametersToFileNameString(threshold));
+            String dir = regression ? qpRegressionDir : qpClassifyDir;
+            prepareQpClassifyDir(dir, folderNum);
             // training and tuning
             for (int i = 1; i <= folderNum; i++) {
                 trainTunePredict(String.valueOf(i));
@@ -171,18 +177,30 @@ public class QPClassifierCV {
     }
 
     private void train(File trainFile, File modelFile, File scalerFile) throws IOException {
-        lrModel.train(trainFile, modelFile, scalerFile);
+        if (regression) {
+            rgModel.train(trainFile, modelFile, scalerFile);
+        } else {
+            lrModel.train(trainFile, modelFile, scalerFile);
+        }
         Utility.infoWritten(modelFile);
         Utility.infoWritten(scalerFile);
     }
 
     private void predict(File testFile, File modelFile, File scalerFile, File predictTestFile) throws IOException {
-        lrModel.predict(testFile, modelFile, scalerFile, predictTestFile);
+        if (regression) {
+            rgModel.predict(testFile, modelFile, scalerFile, predictTestFile);
+        } else {
+            lrModel.predict(testFile, modelFile, scalerFile, predictTestFile);
+        }
         Utility.infoWritten(predictTestFile);
     }
 
     private void tune(File trainFile, File modelFile, File scalerFile, File predictTrainFile, File predictTrainEvalFile) throws IOException {
-        lrModel.predict(trainFile, modelFile, scalerFile, predictTrainFile);
+        if (regression) {
+            rgModel.predict(trainFile, modelFile, scalerFile, predictTrainFile);
+        } else {
+            lrModel.predict(trainFile, modelFile, scalerFile, predictTrainFile);
+        }
         Utility.infoWritten(predictTrainFile);
 
         // tuen F1
@@ -253,6 +271,9 @@ public class QPClassifierCV {
 
         int total = 0;
         ArrayList<Prediction> predictions = new ArrayList<>();
+        double rmsd = 0;
+        ArrayList<Double> perfs = new ArrayList<>();
+        ArrayList<Double> probs = new ArrayList<>();
         for (int i = 1; i <= folderNum; i++) {
             String folderId = String.valueOf(i);
             String folderDir = Utility.getFileName(trainDir, folderId);
@@ -269,7 +290,11 @@ public class QPClassifierCV {
                 total++;
                 String[] elems = line.split("\t");
                 double perf = Double.parseDouble(elems[4]); // performance
-                double prob = Double.parseDouble(elems[0]); // prob
+                double prob = Double.parseDouble(elems[0]); // prob or regression results
+                double diff = prob - perf; // 
+                perfs.add(perf);
+                probs.add(prob);
+                rmsd += diff * diff;
                 int label = Integer.parseInt(elems[1]);
                 if (label == 1) {
                     atotal++;
@@ -300,6 +325,10 @@ public class QPClassifierCV {
             reader.close();
         }
 
+        // r squared
+        double rsquared = rSquared(perfs, probs);
+
+        rmsd = Math.sqrt(rmsd / total);
         int natotal = total - atotal; // # negatives in truth data
 
         Collections.sort(predictions);
@@ -308,14 +337,13 @@ public class QPClassifierCV {
         for (Prediction p : predictions) {
             writer.write(p.info);
         }
-        
+
         writer.close();
         Utility.infoWritten(predictFile);
-        
-        
+
         BufferedWriter writerEval = Utility.getWriter(evalFile);
 
-        writerEval.write("#return\tAvgPerf\tP\tR\tTNR\tF1\n");
+        writerEval.write("#return\tAvgPerf\tP\tR\tTNR\tF1\tRMSD\tRSq\n");
         for (int j = 0; j <= size; j++) {
             double precision = safelyNormalize(correct[j], stotal[j]);
             double recall = safelyNormalize(correct[j], atotal);
@@ -323,7 +351,8 @@ public class QPClassifierCV {
             double f1 = CombinedFacetEvaluator.f1(precision, recall);
             avgPerfs[j] = safelyNormalize(avgPerfs[j], stotal[j]);
 
-            writerEval.write(String.format("%d\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n", stotal[j], avgPerfs[j], precision, recall, tureNegativeRate, f1));
+            writerEval.write(String.format("%d\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n",
+                    stotal[j], avgPerfs[j], precision, recall, tureNegativeRate, f1, rmsd, rsquared));
         }
 
         writerEval.close();
@@ -344,6 +373,28 @@ public class QPClassifierCV {
         }
         reader.close();
         return ths;
+    }
+
+    private double rSquared(ArrayList<Double> perfs, ArrayList<Double> probs) {
+        double perfAvg = 0;
+        for (double one : perfs) {
+            perfAvg += one;
+        }
+        perfAvg /= perfs.size();
+
+        double sTotal = 0;
+        for (double one : perfs) {
+            double diff = one - perfAvg;
+            sTotal += diff * diff;
+        }
+
+        double sRes = 0;
+        for (int i = 0; i < perfs.size(); i++) {
+            double diff = perfs.get(i) - probs.get(i);
+            sRes += diff * diff;
+        }
+
+        return 1 - sRes / sTotal;
     }
 
     public static class Prediction implements Comparable<Prediction> {

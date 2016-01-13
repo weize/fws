@@ -24,9 +24,9 @@ public class StandardScaler {
      * Do not standardize the feature if the std is very small.
      *
      */
-    static final double minStd = 0.000001;
-    double[] means;
-    double[] stds;
+    public static final double minStd = 0.000001;
+    public double[] means;
+    public double[] stds;
     
     public StandardScaler() {
         
