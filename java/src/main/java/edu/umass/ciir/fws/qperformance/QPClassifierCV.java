@@ -243,18 +243,16 @@ public class QPClassifierCV {
         File predictFile = new File(Utility.getFileName(predictDir, "test.qp.predcit"));
         File evalFile = new File(Utility.getFileName(predictDir, "test.qp.predcit.eval"));
 
-        BufferedWriter writer = Utility.getWriter(predictFile);
-        BufferedWriter writerEval = Utility.getWriter(evalFile);
-
         int size = betas.length; // size of tuen metrics F1, F0.5 ....
         int atotal = 0; // annotator total
         int[] stotal = new int[size + 1]; // size total return
         int[] correct = new int[size + 1]; // correct ones: true positive
-        int[] ncorrect = new int[size+1]; // true negative
+        int[] ncorrect = new int[size + 1]; // true negative
         double[] avgPerfs = new double[size + 1];
         int[] predictLabels = new int[size + 1];
 
         int total = 0;
+        ArrayList<Prediction> predictions = new ArrayList<>();
         for (int i = 1; i <= folderNum; i++) {
             String folderId = String.valueOf(i);
             String folderDir = Utility.getFileName(trainDir, folderId);
@@ -264,11 +262,11 @@ public class QPClassifierCV {
             // get threshold tuned based on different metrics
             // add an extra one to get results of predicting everyting as postive
             double[] tunedThresholds = readThresholds(trainEvalFile);
-            
+
             BufferedReader reader = Utility.getReader(testPredictFile);
             String line;
             while ((line = reader.readLine()) != null) {
-                total ++;
+                total++;
                 String[] elems = line.split("\t");
                 double perf = Double.parseDouble(elems[4]); // performance
                 double prob = Double.parseDouble(elems[0]); // prob
@@ -296,13 +294,27 @@ public class QPClassifierCV {
                     }
                 }
 
-                writer.write(String.format("%s\t%s\n", TextProcessing.join(predictLabels, "\t"), line));
+                predictions.add(new Prediction(prob,
+                        String.format("%s\t%s\n", TextProcessing.join(predictLabels, "\t"), line)));
             }
             reader.close();
         }
 
         int natotal = total - atotal; // # negatives in truth data
+
+        Collections.sort(predictions);
+
+        BufferedWriter writer = Utility.getWriter(predictFile);
+        for (Prediction p : predictions) {
+            writer.write(p.info);
+        }
         
+        writer.close();
+        Utility.infoWritten(predictFile);
+        
+        
+        BufferedWriter writerEval = Utility.getWriter(evalFile);
+
         writerEval.write("#return\tAvgPerf\tP\tR\tTNR\tF1\n");
         for (int j = 0; j <= size; j++) {
             double precision = safelyNormalize(correct[j], stotal[j]);
@@ -314,9 +326,8 @@ public class QPClassifierCV {
             writerEval.write(String.format("%d\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n", stotal[j], avgPerfs[j], precision, recall, tureNegativeRate, f1));
         }
 
-        writer.close();
         writerEval.close();
-        Utility.infoWritten(predictFile);
+
         Utility.infoWritten(evalFile);
 
     }
@@ -324,7 +335,7 @@ public class QPClassifierCV {
     private double[] readThresholds(File trainEvalFile) throws IOException {
         BufferedReader reader = Utility.getReader(trainEvalFile);
         String line;
-        double[] ths = new double[betas.length+1];
+        double[] ths = new double[betas.length + 1];
         ths[0] = -0.1;
         int i = 1;
         while ((line = reader.readLine()) != null) {
@@ -339,10 +350,16 @@ public class QPClassifierCV {
 
         double prob;
         int label; // ground truth
+        String info;
 
         public Prediction(double prob, int label) {
             this.prob = prob;
             this.label = label;
+        }
+
+        public Prediction(double prob, String info) {
+            this.prob = prob;
+            this.info = info;
         }
 
         @Override
