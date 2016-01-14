@@ -115,7 +115,7 @@ public class StandardScaler {
         BufferedWriter writer = Utility.getWriter(file);
         writer.write("#mean\tstd\n");
         for (int i = 0; i < means.length; i++) {
-            writer.write(String.format("%f\t%f\n", means[i], stds[i]));
+            writer.write(String.format("%.16g\t%.16g\n", means[i], stds[i]));
         }
         writer.close();
     }
