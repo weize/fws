@@ -6,7 +6,6 @@
 package edu.umass.ciir.fws.qperformance;
 
 import edu.umass.ciir.fws.clustering.gm.lr.StandardScaler;
-import edu.umass.ciir.fws.clustering.gm.utility.Instance;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -15,6 +14,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
+import weka.classifiers.functions.LinearRegression;
+import weka.core.Attribute;
+import weka.core.FastVector;
+import weka.core.Instance;
+import weka.core.Instances;
 
 /**
  *
@@ -36,7 +40,7 @@ public class OLSMultipleLinearRegressionModel {
         }
     }
 
-    public void train(File featureFile, File modelFile, File scalerFile) throws IOException {
+    public void train(File featureFile, File modelFile, File scalerFile) throws IOException, Exception {
 
         // read data
         //writer.write(String.format("%d\t%s\t#%d\t%s\t%s\t%f\n", label, qpf.featuresToString(), label, query.id, query.text, qpf.score));
@@ -44,11 +48,33 @@ public class OLSMultipleLinearRegressionModel {
         scale(scalerFile);
         normalizeFeatures(scalerFile);
         // train
-        OLSMultipleLinearRegression regression = new OLSMultipleLinearRegression();
-        regression.setNoIntercept(true);
-        regression.newSampleData(y, x);
-        double[] beta = regression.estimateRegressionParameters();
-        saveModel(beta, modelFile);
+
+//        OLSMultipleLinearRegression regression = new OLSMultipleLinearRegression();
+//        regression.setNoIntercept(true);
+//        regression.newSampleData(y, x);
+//        double[] beta = regression.estimateRegressionParameters();
+//        BufferedWriter writer = Utility.getWriter(modelFile);
+//        for (double b : beta) {
+//            writer.write(String.format("%.16g\n", b));
+//        }
+//        writer.close();
+        // convert to weka data
+        Instances data = toWekaData();
+
+        LinearRegression regression = new LinearRegression();//(xMatrix, new Matrix(new double[][]{y}), ridge);
+        //regression.setRidge(0);
+
+        regression.buildClassifier(data);
+
+        double[] beta = regression.coefficients();
+        BufferedWriter writer = Utility.getWriter(modelFile);
+        // the line before last line: is for class attrs
+        // last line: coeff for intercept
+        for (int i = 0; i < beta.length - 2; i++) {
+            writer.write(String.format("%.16g\n", beta[i]));
+        }
+        writer.write(String.format("%.16g\n", beta[beta.length - 1]));
+        writer.close();
 
     }
 
@@ -87,14 +113,6 @@ public class OLSMultipleLinearRegressionModel {
             }
         }
 
-    }
-
-    private void saveModel(double[] beta, File file) throws IOException {
-        BufferedWriter writer = Utility.getWriter(file);
-        for (double b : beta) {
-            writer.write(String.format("%.16g\n", b));
-        }
-        writer.close();
     }
 
     private void loadData(File featureFile) throws IOException {
@@ -183,5 +201,26 @@ public class OLSMultipleLinearRegressionModel {
             beta[i] = Double.parseDouble(lines.get(i));
         }
         return beta;
+    }
+
+    private Instances toWekaData() {
+        int nInstances = x.length;
+        int nF = x[0].length;
+        // ATTRIBUTES
+        FastVector attrs = new FastVector(nF);
+        for (int i = 0; i < nF; i++) {
+            attrs.addElement(new Attribute(String.valueOf(i)));
+        }
+        Instances dataset = new Instances("regression", attrs, nInstances);
+
+        for (int i = 0; i < nInstances; i++) {
+            double[] features = x[i];
+            double[] attrValues = new double[nF];
+            System.arraycopy(features, 0, attrValues, 0, nF - 1); // do not copy intercept/bias
+            attrValues[nF - 1] = y[i]; // use the bias field for class attr
+            dataset.add(new Instance(1.0, attrValues));
+        }
+        dataset.setClassIndex(nF - 1); // last index for class attr
+        return dataset;
     }
 }

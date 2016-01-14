@@ -61,7 +61,7 @@ public class QPClassifierCV {
 
     public void run(String facetTuneDir, String facetModel, String modelParams,
             String gmPredictDir,
-            int metricIdx, String runDir) throws IOException {
+            int metricIdx, String runDir) throws IOException, Exception {
 
         prepareRunDir(runDir, folderNum);
 
@@ -86,7 +86,7 @@ public class QPClassifierCV {
 
     }
 
-    private void trainTunePredict(String folderId) throws IOException {
+    private void trainTunePredict(String folderId) throws IOException, Exception {
         String folderDir = Utility.getFileName(trainDir, folderId);
         File trainQueryFile = new File(Utility.getFileName(folderSplitDir, folderId, "train.query")); // input
         File testQueryFile = new File(Utility.getFileName(folderSplitDir, folderId, "test.query")); // input
@@ -176,7 +176,7 @@ public class QPClassifierCV {
         Utility.infoWritten(dataFile);
     }
 
-    private void train(File trainFile, File modelFile, File scalerFile) throws IOException {
+    private void train(File trainFile, File modelFile, File scalerFile) throws IOException, Exception {
         if (regression) {
             rgModel.train(trainFile, modelFile, scalerFile);
         } else {
