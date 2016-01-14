@@ -7,6 +7,9 @@ package edu.umass.ciir.fws.qperformance;
 
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.clustering.ScoredItem;
+import edu.umass.ciir.fws.eval.CombinedFacetEvaluator;
+import edu.umass.ciir.fws.eval.PrfAlphaBetaEvaluator;
+import static edu.umass.ciir.fws.eval.PrfNewEvaluator.safelyNormalize;
 import edu.umass.ciir.fws.eval.QueryMetrics;
 import edu.umass.ciir.fws.query.QueryFileParser;
 import edu.umass.ciir.fws.types.TfQuery;
@@ -14,7 +17,6 @@ import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -28,6 +30,11 @@ public class QPfeatureExtractor {
     List<ScoredFacet> facets;
     HashMap<String, Integer> itemIdMap;
     HashMap<String, Double> scoreMap; // qid -> score
+
+    double tP;
+    double tR;
+    double pP;
+    double pR;
 
     public HashMap<String, QueryPerformanceFeatures> run(File queryFile,
             String facetTuneDir, String facetModel, String modelParams, int topK,
@@ -95,6 +102,7 @@ public class QPfeatureExtractor {
         extractTermProbFeature(termPredictFile);
         extractTermPairProbFeature(pairPredictFile);
 
+        extractPRFFeatures();
         return features;
     }
 
@@ -103,6 +111,8 @@ public class QPfeatureExtractor {
         double tProbMin = Double.POSITIVE_INFINITY;
         double tProbMax = Double.NEGATIVE_INFINITY;
 
+        double llSum = 0; //log likelihod
+        double allProbSum = 0;
         BufferedReader reader = Utility.getReader(termPredictFile);
         String line;
 
@@ -114,7 +124,11 @@ public class QPfeatureExtractor {
             if (itemIdMap.containsKey(item)) {
                 tProbMin = Math.min(score, tProbMin);
                 tProbMax = Math.max(score, tProbMax);
+                llSum += safelyLog(score);
+            } else {
+                llSum += safelyLog(1 - score);
             }
+            allProbSum += score;
         }
         reader.close();
 
@@ -130,6 +144,7 @@ public class QPfeatureExtractor {
         }
 
         double tProbAvg;
+        double llAvg = 0;
         if (tSize == 0) {
             tProbSum = 0.000001;
             tProbMax = 0.000001;
@@ -137,13 +152,24 @@ public class QPfeatureExtractor {
             tProbAvg = 0.000001;
         } else {
             tProbAvg = tProbSum / (double) tSize;
+            llAvg = llSum / tSize;
         }
+
+        tP = tProbAvg;
+        tR = safelyNormalize(tProbSum, allProbSum);
 
         features.setFeature(tSize, QueryFeatures._tSize);
         features.setFeature(tProbSum, QueryFeatures._tProbSum);
         features.setFeature(tProbAvg, QueryFeatures._tProbAvg);
         features.setFeature(tProbMin, QueryFeatures._tProbMin);
         features.setFeature(tProbMax, QueryFeatures._tProbMax);
+        features.setFeature(llSum, QueryFeatures._tLlSum);
+        features.setFeature(llAvg, QueryFeatures._tLlAvg);
+    }
+
+    public double safelyLog(double prob) {
+        return prob < Utility.epsilon ? - 20 : Math.log(prob);
+
     }
 
     private void extractTermPairProbFeature(File pairPredictFile) throws IOException {
@@ -160,6 +186,8 @@ public class QPfeatureExtractor {
         double pInterProbMin = Double.POSITIVE_INFINITY;
         double pInterProbMax = Double.NEGATIVE_INFINITY;
 
+        double llSum = 0; // loglikelihood
+        double allProbSum = 0;
         // load pair prob
         HashMap<String, Double> pProbMap = new HashMap<>();
 
@@ -185,17 +213,18 @@ public class QPfeatureExtractor {
                 for (int k = j + 1; k < items.size(); k++) {
                     String pid = getItemPairId(items.get(j).item, items.get(k).item);
                     double pProb = pProbMap.containsKey(pid) ? pProbMap.get(pid) : 0.0001;
+                    llSum += safelyLog(pProb);
                     pIntraSize++;
                     pIntraProbSum += pProb;
                     pIntraProbMin = Math.min(pProb, pIntraProbMin);
                     pIntraProbMax = Math.max(pProb, pIntraProbMax);
-
                 }
                 // other facets
                 for (int ii = i + 1; ii < facets.size(); ii++) {
                     for (ScoredItem t : facets.get(ii).items) {
                         String pid = getItemPairId(items.get(j).item, t.item);
                         double pProb = pProbMap.containsKey(pid) ? pProbMap.get(pid) : 0.0001;
+                        llSum += safelyLog(1 - pProb);
                         pInterSize++;
                         pInterProbSum += pProb;
                         pInterProbMin = Math.min(pProb, pInterProbMin);
@@ -225,6 +254,15 @@ public class QPfeatureExtractor {
             pIntraProbAvg = pIntraProbSum / (double) pIntraSize;
         }
 
+        allProbSum = pIntraProbSum + pInterProbSum;
+        pP = pIntraProbAvg;
+        pR = safelyNormalize(pIntraProbSum, allProbSum);
+
+        double llAvg = 0;
+        if (pInterSize + pIntraSize != 0) {
+            llAvg = llSum / (pInterSize + pIntraSize);
+        }
+
         features.setFeature(pInterSize, QueryFeatures._pInterSize);
         features.setFeature(pIntraSize, QueryFeatures._pIntraSize);
         features.setFeature(pInterProbSum, QueryFeatures._pInterProbSum);
@@ -235,6 +273,8 @@ public class QPfeatureExtractor {
         features.setFeature(pIntraProbMin, QueryFeatures._pIntraProbMin);
         features.setFeature(pInterProbMax, QueryFeatures._pInterProbMax);
         features.setFeature(pIntraProbMax, QueryFeatures._pIntraProbMax);
+        features.setFeature(llSum, QueryFeatures._pLlSum);
+        features.setFeature(llAvg, QueryFeatures._pLlAvg);
 
     }
 
@@ -244,6 +284,19 @@ public class QPfeatureExtractor {
 
     public String getItemPairId(int a, int b) {
         return a < b ? a + "_" + b : b + "_" + a;
+    }
+
+    private void extractPRFFeatures() {
+        double tF = CombinedFacetEvaluator.f1(tP, tR);
+        double pF = CombinedFacetEvaluator.f1(pP, pR);
+        double prf = PrfAlphaBetaEvaluator.harmonicMean(tP, tR, pF, 1.0, 1.0);
+        //features.setFeature(tP, QueryFeatures._tP);
+        features.setFeature(tR, QueryFeatures._tR);
+        features.setFeature(tF, QueryFeatures._tF);
+        //features.setFeature(pP, QueryFeatures._pP);
+        features.setFeature(pR, QueryFeatures._pR);
+        features.setFeature(pF, QueryFeatures._pF);
+        features.setFeature(prf, QueryFeatures._prf);
     }
 
 }

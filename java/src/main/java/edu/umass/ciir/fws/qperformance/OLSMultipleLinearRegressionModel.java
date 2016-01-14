@@ -49,32 +49,32 @@ public class OLSMultipleLinearRegressionModel {
         normalizeFeatures(scalerFile);
         // train
 
-        OLSMultipleLinearRegression regression = new OLSMultipleLinearRegression();
-        regression.setNoIntercept(true);
-        regression.newSampleData(y, x);
-        double[] beta = regression.estimateRegressionParameters();
-        BufferedWriter writer = Utility.getWriter(modelFile);
-        for (double b : beta) {
-            writer.write(String.format("%.16g\n", b));
-        }
-        writer.close();
-        // convert to weka data
-//        Instances data = toWekaData();
-//
-//        LinearRegression regression = new LinearRegression();//(xMatrix, new Matrix(new double[][]{y}), ridge);
-//        //regression.setRidge(0);
-//
-//        regression.buildClassifier(data);
-//
-//        double[] beta = regression.coefficients();
+//        OLSMultipleLinearRegression regression = new OLSMultipleLinearRegression();
+//        regression.setNoIntercept(true);
+//        regression.newSampleData(y, x);
+//        double[] beta = regression.estimateRegressionParameters();
 //        BufferedWriter writer = Utility.getWriter(modelFile);
-//        // the line before last line: is for class attrs
-//        // last line: coeff for intercept
-//        for (int i = 0; i < beta.length - 2; i++) {
-//            writer.write(String.format("%.16g\n", beta[i]));
+//        for (double b : beta) {
+//            writer.write(String.format("%.16g\n", b));
 //        }
-//        writer.write(String.format("%.16g\n", beta[beta.length - 1]));
 //        writer.close();
+        // convert to weka data
+        Instances data = toWekaData();
+
+        LinearRegression regression = new LinearRegression();//(xMatrix, new Matrix(new double[][]{y}), ridge);
+        //regression.setRidge(0);
+
+        regression.buildClassifier(data);
+
+        double[] beta = regression.coefficients();
+        BufferedWriter writer = Utility.getWriter(modelFile);
+        // the line before last line: is for class attrs
+        // last line: coeff for intercept
+        for (int i = 0; i < beta.length - 2; i++) {
+            writer.write(String.format("%.16g\n", beta[i]));
+        }
+        writer.write(String.format("%.16g\n", beta[beta.length - 1]));
+        writer.close();
 
     }
 

@@ -34,8 +34,18 @@ public class QueryFeatures extends Features {
     public static final int _pInterProbAvg = 12;
     public static final int _pInterProbMin = 13;
     public static final int _pInterProbMax = 14;
-
-    public static final int size = 15;
+    public static final int _tLlSum = 15; //
+    public static final int _tLlAvg = 16; // avg loglikelihood
+    public static final int _pLlSum = 17; //
+    public static final int _pLlAvg = 18; // avg loglikelihood
+    public static final int _tR = 19; // avg loglikelihood
+    public static final int _tF = 20; // avg loglikelihood
+    public static final int _pR = 21; // avg loglikelihood
+    public static final int _pF = 22; // avg loglikelihood
+    public static final int _prf = 23; // avg loglikelihood
+    //public static final int _tP = 19; //
+    //    public static final int _pP = 22; // avg loglikelihood
+    public static final int size = 24;
 
     public QueryFeatures(String qid, String query) {
         this.qid = qid;
