@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import org.apache.commons.math3.stat.correlation.KendallsCorrelation;
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 import org.lemurproject.galago.tupleflow.Parameters;
 
@@ -333,6 +334,7 @@ public class QPClassifierCV {
         // r squared
         double rsquared = rSquared(perfs, probs);
         double correlation = correlation(perfs, probs);
+        double tau = kendallTau(perfs, probs);
 
         rmsd = Math.sqrt(rmsd / total);
         int natotal = total - atotal; // # negatives in truth data
@@ -349,7 +351,7 @@ public class QPClassifierCV {
 
         BufferedWriter writerEval = Utility.getWriter(evalFile);
 
-        writerEval.write("#return\tAvgPerf\tP\tR\tTNR\tF1\tRMSD\tRSq\tcor\n");
+        writerEval.write("#return\tAvgPerf\tP\tR\tTNR\tF1\tRMSD\tRSq\tcor\tKdTau\n");
         for (int j = 0; j <= size; j++) {
             double precision = safelyNormalize(correct[j], stotal[j]);
             double recall = safelyNormalize(correct[j], atotal);
@@ -357,8 +359,8 @@ public class QPClassifierCV {
             double f1 = CombinedFacetEvaluator.f1(precision, recall);
             avgPerfs[j] = safelyNormalize(avgPerfs[j], stotal[j]);
 
-            writerEval.write(String.format("%d\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n",
-                    stotal[j], avgPerfs[j], precision, recall, tureNegativeRate, f1, rmsd, rsquared, correlation));
+            writerEval.write(String.format("%d\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n",
+                    stotal[j], avgPerfs[j], precision, recall, tureNegativeRate, f1, rmsd, rsquared, correlation, tau));
         }
 
         writerEval.close();
@@ -404,8 +406,8 @@ public class QPClassifierCV {
     }
 
     private double correlation(ArrayList<Double> perfs, ArrayList<Double> probs) {
-        PearsonsCorrelation PearsonsCorrelation = new PearsonsCorrelation();
-        return PearsonsCorrelation.correlation(unbox(perfs), unbox(probs));
+        PearsonsCorrelation pearsonsCorrelation = new PearsonsCorrelation();
+        return pearsonsCorrelation.correlation(unbox(perfs), unbox(probs));
     }
 
     public double[] unbox(List<Double> perfs) {
@@ -414,6 +416,11 @@ public class QPClassifierCV {
             ret[i] = perfs.get(i);
         }
         return ret;
+    }
+
+    private double kendallTau(ArrayList<Double> perfs, ArrayList<Double> probs) {
+        KendallsCorrelation kendallsCorrelation = new KendallsCorrelation();
+        return kendallsCorrelation.correlation(unbox(perfs), unbox(probs));        
     }
 
     public static class Prediction implements Comparable<Prediction> {
