@@ -331,9 +331,8 @@ public class QPClassifierCV {
             reader.close();
         }
 
-        // r squared
-        double rsquared = rSquared(perfs, probs);
         double correlation = correlation(perfs, probs);
+        double rsquared = correlation*correlation;
         double tau = kendallTau(perfs, probs);
 
         rmsd = Math.sqrt(rmsd / total);
