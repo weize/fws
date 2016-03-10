@@ -10,32 +10,16 @@ import edu.umass.ciir.fws.clustering.ScoredFacet;
 import java.util.List;
 
 /**
- * PRF_{alpha, beta}: with different alpha, beta settings.
+ * PRF_{alpha=1, beta=1}, and corresponding TP, TR, TF, PT, PR, PF
+ * wPRF_{alpha=1, beta=1}
  * @author wkong
  */
-public class PrfAlphaBetaEvaluator extends PrfNewEvaluator {
+public class PrfEqualEvaluator extends PrfNewEvaluator {
 
-    private static final int metricNum = 50; // 2 weighting X (6+19) metrics
+    private static final int metricNum = 14; // 2 weighting X (6+1) metrics
     static double[][] alphaBetas = new double[][]{
         {1.0, 1.0},
-        {2.0, 1.0}, // term precision is 2X important than term recall, and clustering
-        {3.0, 1.0},
-        {4.0, 1.0},
-        {5.0, 1.0}, // term precision is 5X important than term recall, and clustering
-        {6.0, 1.0},
-        {7.0, 1.0},
-        {8.0, 1.0},
-        {9.0, 1.0},
-        {10.0, 1.0},
-        {1.0, 1.0 / 2.0}, // term precision and clustering is 2X important than term recall
-        {1.0, 1.0 / 3.0},
-        {1.0, 1.0 / 4.0},
-        {1.0, 1.0 / 5.0},
-        {1.0, 1.0 / 6.0},
-        {1.0, 1.0 / 7.0},
-        {1.0, 1.0 / 8.0},
-        {1.0, 1.0 / 9.0},
-        {1.0, 1.0 / 10.0},};
+    };
 
     static TermWeighting[] weightings = new TermWeighting[]{TermWeighting.TermEqual, TermWeighting.TermRating};
 
