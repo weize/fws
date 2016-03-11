@@ -41,6 +41,7 @@ public class SelectCandidateLists extends AppFunction {
         String clistDir = p.getAsString("clistDir");
 
         String queryFile = p.getAsString("queryFile");
+        Utility.createDirectory(clistDir);
 
         List<TfQuery> queries = QueryFileParser.loadQueries(new File(queryFile));
 
