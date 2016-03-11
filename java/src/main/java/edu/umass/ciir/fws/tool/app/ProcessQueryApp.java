@@ -50,7 +50,7 @@ public abstract class ProcessQueryApp extends AppFunction {
 
     }
 
-    private Job createJob(Parameters parameters) {
+    public Job createJob(Parameters parameters) {
         Job job = new Job();
 
         job.add(getSplitStage(parameters));
