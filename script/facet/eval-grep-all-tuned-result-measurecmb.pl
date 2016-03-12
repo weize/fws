@@ -15,6 +15,8 @@ my @models = qw/gmi gmj qd lda plsa/;
 #my @names = qw/ P wP R wR F wF Fc wFc PRF wPRF NDCG pNDCG prNDCG fNDCG purity NMI tP tR tF pcP pcR pcF poP poR poF cPRF oPRF tPtr tRtr tFtr pcPtr pcRtr pcFtr poPtr poRtr poFtr cPRFtr oPRFtr tPfe tRfe tFfe pcPfe pcRfe pcFfe poPfe poRfe poFfe cPRFfe oPRFfe tPfr tRfr tFfr pcPfr pcRfr pcFfr poPfr poRfr poFfr cPRFfr oPRFfr tSizeA tSizeS tSizeS2 pcSizeA poSizeA pSizeS pSizeS2/;
 
 my $run = $ARGV[0];
+my $path = $ARGV[1];
+$path = "./" if (!$path);
 my $rank = 10;
 
 die "run=?" if !$run;
@@ -27,6 +29,7 @@ for my $i (@metrics) {
 		my $file = "$model/eval/$model.$i.$rank.eval";
 		$file = "$model/eval/$model.sum-$i.$rank.eval" if ($model eq "gmi");
 		$file = "$model/eval/$model.sum.$rank.eval" if ($model eq "gmj");
+		$file = "$path/$file";
 		next if (! -e $file);
 		my @res = grepTunedResults($file);
 		print "$run\t$model\t$name\t".join("\t", @res)."\n";
