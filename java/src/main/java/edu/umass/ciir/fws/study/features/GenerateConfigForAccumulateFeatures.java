@@ -11,6 +11,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import org.lemurproject.galago.core.tools.AppFunction;
 import org.lemurproject.galago.tupleflow.Parameters;
 
@@ -49,6 +50,8 @@ public class GenerateConfigForAccumulateFeatures extends AppFunction {
             }
             
             if (!pIndice.isEmpty() && !pIndice.isEmpty()) {
+                Collections.sort(pIndice);
+                Collections.sort(tIndice);
                 Parameters p = param.clone();
                 p.set("termFeatureIndices", tIndice);
                 p.set("pairFeatureIndices", pIndice);
