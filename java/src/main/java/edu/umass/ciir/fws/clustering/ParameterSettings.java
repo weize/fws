@@ -44,6 +44,8 @@ public abstract class ParameterSettings {
                 return new GmiParameterSettings(p);
             case "gmj":
                 return new GmjParameterSettings(p);
+            case "prm":
+                return new PrmParameterSettings(p);
         }
         return null;
     }

@@ -31,7 +31,7 @@ public class ClusterToFacet extends ProcessQueryParametersApp {
     public String getName() {
         return "cluster-to-facet";
     }
-    
+
     @Override
     protected Class getQueryParametersGeneratorClass() {
         return GenerateFacetParameters.class;
@@ -49,12 +49,12 @@ public class ClusterToFacet extends ProcessQueryParametersApp {
                 return LdaClusterToFacetConverter.class;
             case "gmj":
                 return GmjClusterToFacetConverter.class;
+            case "prm":
+                return PrmFaceter.class;
         }
 
         return null;
     }
-
-    
 
     /**
      * generate parameters
@@ -68,7 +68,6 @@ public class ClusterToFacet extends ProcessQueryParametersApp {
         boolean skipExisting;
         String facetDir;
         String model;
-        
 
         public GenerateFacetParameters(TupleFlowParameters parameters) {
             Parameters p = parameters.getJSON();
