@@ -5,12 +5,14 @@
  */
 package edu.umass.ciir.fws.ffeedback;
 
+import edu.emory.mathcs.backport.java.util.Arrays;
 import edu.umass.ciir.fws.anntation.FeedbackTerm;
 import edu.umass.ciir.fws.clustering.FacetModelParamGenerator;
 import edu.umass.ciir.fws.clustering.ScoredFacet;
 import edu.umass.ciir.fws.clustering.ScoredItem;
 import edu.umass.ciir.fws.types.TfFacetFeedbackParams;
 import edu.umass.ciir.fws.types.TfFeedbackParams;
+import edu.umass.ciir.fws.utility.TextProcessing;
 import edu.umass.ciir.fws.utility.Utility;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -204,7 +206,7 @@ public class ExtractSimulatedFfeedback extends AppFunction {
             int topK = 50;
             HashSet<String> selected = new HashSet<>();
             for (FeedbackTerm term : feedbackSource.terms) {
-                selected.add(term.term);
+                selected.addAll(TextProcessing.tokenize(term.term));
             }
 
             ArrayList<FeedbackTerm> fterms = new ArrayList<>();
