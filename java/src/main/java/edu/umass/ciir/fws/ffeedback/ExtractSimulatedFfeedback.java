@@ -201,6 +201,7 @@ public class ExtractSimulatedFfeedback extends AppFunction {
         }
 
         public static FacetFeedback getSimulatedFfeedbackForPrm(FacetFeedback feedbackSource, List<ScoredFacet> facets) {
+            int topK = 50;
             HashSet<String> selected = new HashSet<>();
             for (FeedbackTerm term : feedbackSource.terms) {
                 selected.add(term.term);
@@ -209,10 +210,12 @@ public class ExtractSimulatedFfeedback extends AppFunction {
             ArrayList<FeedbackTerm> fterms = new ArrayList<>();
             for (int fidx = 0; fidx < facets.size(); fidx++) {
                 List<ScoredItem> items = facets.get(fidx).items;
-                for (int tidx = 0; tidx < items.size(); tidx++) {
-                    String term = items.get(tidx).item;
-                    if (selected.contains(term.split(":")[0])) {
-                        fterms.add(new FeedbackTerm(term, fidx, tidx));
+                for (int tidx = 0; tidx < items.size() && tidx < topK; tidx++) {
+                    String item = items.get(tidx).item;
+                    String term = item.split(":")[0];
+                    String score = item.split(":")[1];
+                    if (selected.contains(term)) {
+                        fterms.add(new FeedbackTerm(term+"@"+score, fidx, tidx));
                         selected.remove(term);
                     }
                 }
