@@ -58,8 +58,31 @@ public class QueryExpansion {
                 return expandFeedbackTermAnd(originalQuery, expansion);
             case "ftandor":
                 return expandFeedbackTermAndOr(originalQuery, expansion);
+            case "iprm": // interactive prm
+                return expandFeedbackTermPrm(originalQuery, expansion);
         }
         return null;
+    }
+
+    private static String expandFeedbackTermPrm(String originalQuery, String expansion) {
+        FacetFeedback feedback = FacetFeedback.parseFromExpansionString(expansion);
+        StringBuilder query = new StringBuilder();
+        if (feedback.terms.isEmpty()) {
+            return String.format("#sdm( %s )", originalQuery);
+        } else {
+            query.append(String.format("#combine:0=0.8:1=0.2(#sdm( %s ) #combine", originalQuery));
+
+            // weights
+            for (int i = 0; i < feedback.terms.size(); i++) {
+                query.append(String.format(":%d=%s", i, feedback.terms.get(i).term.split("@")[1]));
+            }
+            query.append("(");
+            for (FeedbackTerm term : feedback.terms) {
+                query.append(" ").append(term.term);
+            }
+            query.append("))");
+        }
+        return query.toString();
     }
 
     private static String expandSingleTermSimple(String originalQuery, String expansion) {
