@@ -63,7 +63,7 @@ public class CandidateListsStat extends AppFunction {
                 termSets.get(cl.listType).addAll(Arrays.asList(cl.items));
                 listNums.put(cl.listType, listNums.get(cl.listType) + 1);
                 termSets.get(all).addAll(Arrays.asList(cl.items));
-                listNums.put(all, listNums.get(cl.listType) + 1);
+                listNums.put(all, listNums.get(all) + 1);
             }
             
             for (String type : termSets.keySet()) {
