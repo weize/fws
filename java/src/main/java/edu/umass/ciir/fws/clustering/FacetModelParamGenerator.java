@@ -26,7 +26,7 @@ public class FacetModelParamGenerator {
         this.p = p;
         facetTuneMetricIndices = p.getAsList("facetTuneMetricIndices");
         gmRankers = p.getAsList("gmFacetRanker");
-        
+
     }
 
     public List<String> getParams(String model) throws IOException {
@@ -50,6 +50,11 @@ public class FacetModelParamGenerator {
 
         } else if (model.equals("annotator")) {
             params.add("");
+        } else if (model.equals("prm")) {
+            PrmParameterSettings settings = new PrmParameterSettings(p);
+            for (ModelParameters param : settings.getFacetingSettings()) {
+                params.add(param.toString());
+            }
         } else {
             throw new IOException("cannot recognize " + model);
         }

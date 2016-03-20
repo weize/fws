@@ -5,8 +5,10 @@
  */
 package edu.umass.ciir.fws.ffeedback;
 
+import edu.umass.ciir.fws.anntation.FeedbackTerm;
 import edu.umass.ciir.fws.clustering.FacetModelParamGenerator;
 import edu.umass.ciir.fws.clustering.ScoredFacet;
+import edu.umass.ciir.fws.clustering.ScoredItem;
 import edu.umass.ciir.fws.types.TfFacetFeedbackParams;
 import edu.umass.ciir.fws.types.TfFeedbackParams;
 import edu.umass.ciir.fws.utility.Utility;
@@ -15,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import org.lemurproject.galago.core.tools.AppFunction;
 import org.lemurproject.galago.tupleflow.FileSource;
@@ -187,13 +190,35 @@ public class ExtractSimulatedFfeedback extends AppFunction {
             for (FacetFeedback anFk : anntatorFkList) {
                 File facetFile = new File(Utility.getFacetFileName(facetDir, anFk.qid, param.facetSource, param.facetParams));
                 List<ScoredFacet> facets = ScoredFacet.loadFacets(facetFile);
-                FacetFeedback simulatedFdbk = FacetFeedback.getSimulatedFfeedback(anFk, facets);
+                FacetFeedback simulatedFdbk = param.facetSource.equals("prm") ? getSimulatedFfeedbackForPrm(anFk, facets)
+                        : FacetFeedback.getSimulatedFfeedback(anFk, facets);
                 writer.write(simulatedFdbk.toString());
                 writer.newLine();
             }
 
             writer.close();
             Utility.infoWritten(outfile);
+        }
+
+        public static FacetFeedback getSimulatedFfeedbackForPrm(FacetFeedback feedbackSource, List<ScoredFacet> facets) {
+            HashSet<String> selected = new HashSet<>();
+            for (FeedbackTerm term : feedbackSource.terms) {
+                selected.add(term.term);
+            }
+
+            ArrayList<FeedbackTerm> fterms = new ArrayList<>();
+            for (int fidx = 0; fidx < facets.size(); fidx++) {
+                List<ScoredItem> items = facets.get(fidx).items;
+                for (int tidx = 0; tidx < items.size(); tidx++) {
+                    String term = items.get(tidx).item;
+                    if (selected.contains(term.split(":")[0])) {
+                        fterms.add(new FeedbackTerm(term, fidx, tidx));
+                        selected.remove(term);
+                    }
+                }
+            }
+
+            return new FacetFeedback(feedbackSource.qid, feedbackSource.sid, fterms);
         }
 
         @Override
