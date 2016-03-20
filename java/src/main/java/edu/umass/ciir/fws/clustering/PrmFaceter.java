@@ -89,6 +89,7 @@ public class PrmFaceter implements Processor<TfQueryParameters> {
         } catch (Exception ex) {
             throw new RuntimeException("failed at " + queryParams);
         }
+        Utility.createDirectoryForFile(facetFile);
         ScoredFacet.outputAsFacets(facets, facetFile);
        
     }
