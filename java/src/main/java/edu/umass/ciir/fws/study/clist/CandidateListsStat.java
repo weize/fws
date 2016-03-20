@@ -36,7 +36,7 @@ public class CandidateListsStat extends AppFunction {
     @Override
     public void run(Parameters p, PrintStream output) throws Exception {
 
-        File facetFile = new File(p.getString("facetAnnotationJson"));
+        File facetFile = new File(p.getString("facetAnnotationText"));
         HashMap<String, FacetAnnotation> fas = FacetAnnotation.loadAsMapFromTextFile(facetFile);
         String clistDir = p.getAsString("clistDir");
         String queryFile = p.getAsString("queryFile");
