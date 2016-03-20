@@ -78,7 +78,7 @@ public class QueryExpansion {
             }
             query.append("(");
             for (FeedbackTerm term : feedback.terms) {
-                query.append(" ").append(term.term);
+                query.append(" ").append(term.term.split("@")[0]);
             }
             query.append("))");
         }
