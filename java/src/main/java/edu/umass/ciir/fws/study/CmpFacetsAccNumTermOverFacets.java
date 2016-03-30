@@ -32,12 +32,12 @@ public class CmpFacetsAccNumTermOverFacets extends AppFunction {
     
     @Override
     public String getName() {
-        return "cmp-feedbacks-selected-term-num";
+        return "cmp-facet-term-num";
     }
     
     @Override
     public String getHelpString() {
-        return "fws cmp-feedbacks-selected-term-num\n";
+        return "fws cmp-facet-term-num\n";
     }
     
     @Override
